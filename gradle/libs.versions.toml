@@ -1,12 +1,12 @@
 [versions]
 androidx-lifecycle = "2.8.4"
-compose-multiplatform = "1.7.3"
-junit = "4.13.2"
-kotlin = "2.1.10"
-kotlinx-coroutines = "1.10.1"
-kotlinx-datetime = "0.6.2"
-ktor-version = "3.1.0"
-skie = "0.10.1"
+compose-multiplatform = "1.7.3" # https://github.com/JetBrains/compose-multiplatform
+junit = "4.13.2" # https://github.com/junit-team/junit4
+kotlin = "2.1.10" # https://github.com/JetBrains/kotlin
+kotlinx-coroutines = "1.10.1" # https://github.com/Kotlin/kotlinx.coroutines
+kotlinx-datetime = "0.6.2" # https://github.com/Kotlin/kotlinx-datetime
+ktor-version = "3.1.1" # https://github.com/ktorio/ktor
+skie = "0.10.1" # https://github.com/touchlab/SKIE
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -23,7 +23,6 @@ ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "
 ktor-client-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor-version" }
 ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor-version" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor-version" }
-
 
 [plugins]
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
