@@ -1,22 +1,28 @@
 package me.forketyfork.welk
 
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
-    private val _greetingList = MutableStateFlow<List<String>>(listOf())
-    val greetingList: StateFlow<List<String>> get() = _greetingList
 
-    init {
-        viewModelScope.launch {
-            Greeting().greet().collect { phrase ->
-                _greetingList.update { list -> list + phrase }
-            }
-        }
+    private val cardStore = CardStore()
+
+    private val idx = mutableStateOf(0)
+
+    val open = mutableStateOf(false)
+
+    val currentCard = derivedStateOf {
+        cardStore.cards[idx.value]
+    }
+
+    fun flipCard() {
+        open.value = !open.value
+    }
+
+    fun nextCard() {
+        idx.value = idx.value.inc() % cardStore.cards.size
+        open.value = false
     }
 
 }
