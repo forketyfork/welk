@@ -4,12 +4,17 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlin.math.absoluteValue
+import kotlin.math.roundToInt
 
 class CardAnimationManager {
 
@@ -25,24 +30,30 @@ class CardAnimationManager {
         targetValue = _cardAnimationState.value.offset,
         animationSpec = tween(durationMillis = 1000),
         label = "offset"
-    )
+    ).also { animatedOffset ->
+        LaunchedEffect(animatedOffset.value) {
+            if (animatedOffset.value == 1600.dp || animatedOffset.value == (-1600).dp) {
+                _animationCompleteTrigger.value = true
+            }
+        }
+    }.let { animatedOffset ->
+        derivedStateOf {
+            val x = animatedOffset.value.value
+            val y = -((x * x) / 12000 - 100).absoluteValue
+            IntOffset(x.roundToInt(), y.roundToInt())
+        }
+    }
 
     @Composable
     fun animateColor() = animateColorAsState(
         targetValue = _cardAnimationState.value.targetColor,
         animationSpec = tween(durationMillis = 1000),
         label = "color"
-    )
-
-    fun onOffsetChange(offset: Dp) {
-        if (offset == 1600.dp || offset == (-1600).dp) {
-            _animationCompleteTrigger.value = true
-        }
-    }
-
-    fun onColorChange(color: Color) {
-        if (color == Color.Red || color == Color.Green) {
-            _animationCompleteTrigger.value = true
+    ).also { animatedColor ->
+        LaunchedEffect(animatedColor.value) {
+            if (animatedColor.value == Color.Green || animatedColor.value == Color.Red) {
+                _animationCompleteTrigger.value = true
+            }
         }
     }
 
