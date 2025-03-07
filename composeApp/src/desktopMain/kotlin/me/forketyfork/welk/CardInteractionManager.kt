@@ -5,19 +5,13 @@ import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
+import me.forketyfork.welk.presentation.CardAction
 
 /**
  * Converts various interactions with the card (key and mouse events, swipes, etc.) into actions.
  */
 interface CardInteractionManager {
     fun handleKeyEvent(keyEvent: KeyEvent): CardAction
-}
-
-sealed class CardAction {
-    data object Flip : CardAction()
-    data object SwipeRight : CardAction()
-    data object SwipeLeft : CardAction()
-    data object NoAction : CardAction()
 }
 
 class DefaultCardInteractionManager : CardInteractionManager {

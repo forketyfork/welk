@@ -12,19 +12,15 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import me.forketyfork.welk.vm.CommonCardAnimationManager
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
-class CardAnimationManager {
+class AndroidCardAnimationManager : CommonCardAnimationManager() {
 
     private val _cardAnimationState = MutableStateFlow(CardAnimationState())
     private val cardAnimationState = _cardAnimationState.asStateFlow()
-
-    // Trigger for animation completion
-    private val _animationCompleteTrigger = MutableStateFlow(false)
-    val animationCompleteTrigger: StateFlow<Boolean> = _animationCompleteTrigger.asStateFlow()
 
     @Composable
     fun animateOffset() = with(cardAnimationState.collectAsState()) {
@@ -53,20 +49,14 @@ class CardAnimationManager {
             targetValue = value.targetColor,
             animationSpec = tween(durationMillis = 1000),
             label = "color"
-        ).also { animatedColor ->
-            LaunchedEffect(animatedColor.value) {
-                if (animatedColor.value == Color.Green || animatedColor.value == Color.Red) {
-                    _animationCompleteTrigger.value = true
-                }
-            }
-        }
+        )
     }
 
-    fun reset() {
+    override fun reset() {
         _cardAnimationState.value = CardAnimationState()
     }
 
-    fun swipeRight() {
+    override fun swipeRight() {
         _animationCompleteTrigger.value = false
         _cardAnimationState.value = CardAnimationState(
             offset = (1600).dp,
@@ -74,7 +64,7 @@ class CardAnimationManager {
         )
     }
 
-    fun swipeLeft() {
+    override fun swipeLeft() {
         _animationCompleteTrigger.value = false
         _cardAnimationState.value = CardAnimationState(
             offset = (-1600).dp,

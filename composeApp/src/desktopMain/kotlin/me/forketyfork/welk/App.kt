@@ -28,7 +28,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import me.forketyfork.welk.domain.Card
 
 @Composable
 fun App(
@@ -37,7 +39,8 @@ fun App(
 ) {
     MaterialTheme {
 
-        val currentCard = mainViewModel.currentCard.value
+        val currentCard = mainViewModel.currentCard.collectAsStateWithLifecycle(Card("", ""))
+        val isFlipped = mainViewModel.isFlipped.collectAsStateWithLifecycle()
 
         val focusRequester = remember { FocusRequester() }
         LaunchedEffect(Unit) {
@@ -68,10 +71,10 @@ fun App(
                     .focusable(),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Text(currentCard.front)
+                Text(currentCard.value.front)
                 Divider()
-                if (mainViewModel.isFlipped.value) {
-                    Text(currentCard.back)
+                if (isFlipped.value) {
+                    Text(currentCard.value.back)
                 }
             }
         }
