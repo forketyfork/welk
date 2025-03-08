@@ -1,8 +1,11 @@
 package me.forketyfork.welk.domain
 
+import dev.gitlive.firebase.firestore.FirebaseFirestore
+import me.forketyfork.welk.getPlatform
+
 interface CardRepository {
-    fun getByIndex(idx: Int): Card
-    fun getCardCount(): Int
+    suspend fun getByIndex(idx: Int): Card
+    suspend fun getCardCount(): Int
 }
 
 class HardcodedCardRepository : CardRepository {
@@ -14,8 +17,22 @@ class HardcodedCardRepository : CardRepository {
     )
 
 
-    override fun getByIndex(idx: Int) = cards[idx]
+    override suspend fun getByIndex(idx: Int) = cards[idx]
 
-    override fun getCardCount() = cards.size
+    override suspend fun getCardCount() = cards.size
+
+}
+
+class FirestoreRepository : CardRepository {
+    private val firestore: FirebaseFirestore = getPlatform().initializeFirestore()
+    private val cardsCollection = firestore.collection("cards")
+
+    override suspend fun getByIndex(idx: Int): Card {
+        return cardsCollection.document(idx.toString()).get().data<Card>()
+    }
+
+    override suspend fun getCardCount(): Int {
+        return cardsCollection.get().documents.size
+    }
 
 }

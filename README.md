@@ -15,3 +15,18 @@ This is a Kotlin Multiplatform project targeting iOS, Desktop.
 
 
 Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+
+## Development prerequisites
+
+For local development:
+- the `GoogleService-Info.plist` file should be placed into the `iosApp/iosApp` directory.
+- the `firebase.properties` file should be placed into the directory `shared/src/jvmMain/resources` with the following configuration:
+  ```properties
+  # Firebase configuration
+  firebase.apiKey=
+  firebase.authDomain=
+  firebase.projectId=
+  firebase.storageBucket=
+  firebase.messagingSenderId=
+  firebase.appId=
+  ```

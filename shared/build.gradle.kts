@@ -23,9 +23,12 @@ kotlin {
             // put your Multiplatform dependencies here
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.serialization.json)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.firebase.auth)
+            implementation(libs.firebase.firestore)
         }
         jvmMain.dependencies {
             implementation(libs.ktor.client.cio)
@@ -34,4 +37,5 @@ kotlin {
             implementation(libs.ktor.client.darwin)
         }
     }
+
 }

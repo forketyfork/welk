@@ -7,6 +7,9 @@ kotlinx-coroutines = "1.10.1" # https://github.com/Kotlin/kotlinx.coroutines
 kotlinx-datetime = "0.6.2" # https://github.com/Kotlin/kotlinx-datetime
 ktor-version = "3.1.1" # https://github.com/ktorio/ktor
 skie = "0.10.1" # https://github.com/touchlab/SKIE
+google-services = "4.4.2"
+kotlinx-serialization-json = "1.8.0" # https://github.com/Kotlin/kotlinx.serialization
+firebase-kotlin-sdk = "2.1.0" # https://github.com/GitLiveApp/firebase-kotlin-sdk
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -18,11 +21,15 @@ androidx-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle
 kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor-version" }
 ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor-version" }
 ktor-client-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor-version" }
 ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor-version" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor-version" }
+google-services = { group = "com.google.gms", name = "google-services", version.ref = "google-services" }
+firebase-auth = { group = "dev.gitlive", name = "firebase-auth", version.ref = "firebase-kotlin-sdk"}
+firebase-firestore = { group = "dev.gitlive", name = "firebase-firestore", version.ref = "firebase-kotlin-sdk"}
 
 [plugins]
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }

@@ -14,7 +14,7 @@ interface CardViewModel {
     val isFlipped: StateFlow<Boolean>
     val currentCard: Flow<Card>
     fun flipCard()
-    fun nextCard()
+    suspend fun nextCard()
     fun processAction(action: CardAction): Boolean
     suspend fun nextCardOnAnimationCompletion()
 }
@@ -36,7 +36,7 @@ class CommonCardViewModel(
         _isFlipped.value = _isFlipped.value.not()
     }
 
-    override fun nextCard() {
+    override suspend fun nextCard() {
         _currentCardIndex.value = (_currentCardIndex.value + 1) % repository.getCardCount()
         _isFlipped.value = false
     }
