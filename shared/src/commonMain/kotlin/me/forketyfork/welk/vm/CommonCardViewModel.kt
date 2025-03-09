@@ -19,7 +19,7 @@ interface CardViewModel {
     suspend fun nextCardOnAnimationCompletion()
 }
 
-class CommonCardViewModel(
+open class CommonCardViewModel(
     private val repository: CardRepository,
     private val cardAnimationManager: CardAnimationManager
 ) : CardViewModel {
