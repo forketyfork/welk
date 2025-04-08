@@ -2,7 +2,7 @@
 androidx-lifecycle = "2.8.4" # https://central.sonatype.com/artifact/org.jetbrains.androidx.lifecycle/lifecycle-viewmodel/versions
 compose-multiplatform = "1.7.3" # https://github.com/JetBrains/compose-multiplatform
 junit = "4.13.2" # https://github.com/junit-team/junit4
-kotlin = "2.1.20" # https://github.com/JetBrains/kotlin
+kotlin = "2.1.10" # https://github.com/JetBrains/kotlin
 kotlinx-coroutines = "1.10.1" # https://github.com/Kotlin/kotlinx.coroutines
 kotlinx-datetime = "0.6.2" # https://github.com/Kotlin/kotlinx-datetime
 ktor-version = "3.1.2" # https://github.com/ktorio/ktor
