@@ -43,9 +43,11 @@ open class CommonCardViewModel(
 
     override suspend fun nextCardOnAnimationCompletion() {
         cardAnimationManager.animationCompleteTrigger
-            .filter { it } // Only react when trigger is true
+            .filter { it.idx != -1 } // skipping initial value
             .collect {
                 nextCard()
+                // TODO error handling
+                repository.updateCardLearnedStatus(it.idx, it.learned)
                 // Reset the trigger
                 cardAnimationManager.reset()
             }
@@ -59,12 +61,12 @@ open class CommonCardViewModel(
             }
 
             CardAction.SwipeRight -> {
-                cardAnimationManager.swipeRight()
+                cardAnimationManager.swipeRight(_currentCardIndex.value)
                 true
             }
 
             CardAction.SwipeLeft -> {
-                cardAnimationManager.swipeLeft()
+                cardAnimationManager.swipeLeft(_currentCardIndex.value)
                 true
             }
 

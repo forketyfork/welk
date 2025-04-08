@@ -6,21 +6,11 @@ import me.forketyfork.welk.getPlatform
 interface CardRepository {
     suspend fun getByIndex(idx: Int): Card
     suspend fun getCardCount(): Int
-}
 
-class HardcodedCardRepository : CardRepository {
-
-    private val cards = listOf(
-        Card("welk", "увядший"),
-        Card("das Laken", "простынь"),
-        Card("das Kissen", "подушка")
-    )
-
-
-    override suspend fun getByIndex(idx: Int) = cards[idx]
-
-    override suspend fun getCardCount() = cards.size
-
+    /**
+     * Called when the user swipes, marking the card as learned or forgotten.
+     */
+    suspend fun updateCardLearnedStatus(idx: Int, learned: Boolean)
 }
 
 class FirestoreRepository : CardRepository {
@@ -28,6 +18,7 @@ class FirestoreRepository : CardRepository {
     private val cardsCollection = firestore.collection("cards")
 
     override suspend fun getByIndex(idx: Int): Card {
+        println("Getting card with index $idx")
         return cardsCollection.document(idx.toString()).get().data<Card>()
     }
 
@@ -35,4 +26,12 @@ class FirestoreRepository : CardRepository {
         return cardsCollection.get().documents.size
     }
 
+    override suspend fun updateCardLearnedStatus(idx: Int, learned: Boolean) {
+        val card = getByIndex(idx)
+        card.learned = learned
+        cardsCollection.document(idx.toString())
+            .update(card) {
+                this.encodeDefaults = encodeDefaults
+            }
+    }
 }

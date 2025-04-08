@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import me.forketyfork.welk.vm.AnimationCompleteOutcome
 import me.forketyfork.welk.vm.CommonCardAnimationManager
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
@@ -31,7 +32,9 @@ class AndroidCardAnimationManager : CommonCardAnimationManager() {
         ).also { animatedOffset ->
             LaunchedEffect(animatedOffset.value) {
                 if (animatedOffset.value == 1600.dp || animatedOffset.value == (-1600).dp) {
-                    _animationCompleteTrigger.value = true
+                    // TODO eww
+                    _animationCompleteTrigger.value =
+                        AnimationCompleteOutcome(value.idx, animatedOffset.value == 1600.dp)
                 }
             }
         }.let { animatedOffset ->
@@ -56,17 +59,17 @@ class AndroidCardAnimationManager : CommonCardAnimationManager() {
         _cardAnimationState.value = CardAnimationState()
     }
 
-    override fun swipeRight() {
-        _animationCompleteTrigger.value = false
+    override fun swipeRight(idx: Int) {
         _cardAnimationState.value = CardAnimationState(
+            idx = idx,
             offset = (1600).dp,
             targetColor = Color.Green,
         )
     }
 
-    override fun swipeLeft() {
-        _animationCompleteTrigger.value = false
+    override fun swipeLeft(idx: Int) {
         _cardAnimationState.value = CardAnimationState(
+            idx = idx,
             offset = (-1600).dp,
             targetColor = Color.Red,
         )
@@ -74,6 +77,7 @@ class AndroidCardAnimationManager : CommonCardAnimationManager() {
 }
 
 data class CardAnimationState(
+    val idx: Int = -1,
     val offset: Dp = 0.dp,
     val targetColor: Color = Color.Transparent
 )
