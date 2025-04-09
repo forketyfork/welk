@@ -64,7 +64,7 @@ struct ContentView: View {
 extension ContentView {
     @MainActor
     class IosCardViewModel: CommonCardViewModel, ObservableObject {
-        @Published var sCurrentCard: Card = Card(front: "", back: "")
+        @Published var sCurrentCard: Card = Card(front: "", back: "", learned: false)
         @Published var sIsFlipped: Bool = false
         
         init(repository: CardRepository = FirestoreRepository()) {
@@ -101,26 +101,26 @@ extension ContentView {
 class IosCardAnimationManager: CommonCardAnimationManager {
     
     override func reset() {
-        _animationCompleteTrigger.value = false
+        _animationCompleteTrigger.value = AnimationCompleteOutcome(idx: -1, learned: false)
     }
     
-    override func swipeLeft() {
-        _animationCompleteTrigger.value = true
+    override func swipeLeft(idx: Int32) {
+        _animationCompleteTrigger.value = AnimationCompleteOutcome(idx: -1, learned: false)
         // Animation is now handled in the view
         // Just need to reset the trigger after a delay to match animation timing
         Task {
             try? await Task.sleep(nanoseconds: 400_000_000) // 0.4 seconds
-            _animationCompleteTrigger.value = false
+            _animationCompleteTrigger.value = AnimationCompleteOutcome(idx: idx, learned: false)
         }
     }
     
-    override func swipeRight() {
-        _animationCompleteTrigger.value = true
+    override func swipeRight(idx: Int32) {
+        _animationCompleteTrigger.value = AnimationCompleteOutcome(idx: -1, learned: false)
         // Animation is now handled in the view
         // Just need to reset the trigger after a delay to match animation timing
         Task {
             try? await Task.sleep(nanoseconds: 400_000_000) // 0.4 seconds
-            _animationCompleteTrigger.value = false
+            _animationCompleteTrigger.value = AnimationCompleteOutcome(idx: idx, learned: true)
         }
     }
     
