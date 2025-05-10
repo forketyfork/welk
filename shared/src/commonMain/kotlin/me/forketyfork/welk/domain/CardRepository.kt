@@ -18,7 +18,6 @@ class FirestoreRepository : CardRepository {
     private val cardsCollection = firestore.collection("cards")
 
     override suspend fun getByIndex(idx: Int): Card {
-        println("Getting card with index $idx")
         return cardsCollection.document(idx.toString()).get().data<Card>()
     }
 
