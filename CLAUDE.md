@@ -100,3 +100,12 @@ The main workflow of the application:
   - Test the Swift compilation by running `xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.4' build`
   - When working with Kotlin-Swift interop, be careful with type conversions. Use optional casting with `as?` and null checks for Kotlin types exposed to Swift.
   - Remember that Kotlin types like `Pair<String, String>` are exposed to Swift with properties named `first` and `second`, which are `NSString?` type and need proper handling.
+
+## Library Management
+
+- All dependencies must be defined in `gradle/libs.versions.toml` file
+- When adding new libraries:
+  1. First add the library details to `libs.versions.toml` under the appropriate section
+  2. Then reference the library in build files using the `libs.some.library` syntax
+  3. For version references, use `version.ref = "some-version"` format
+- This approach ensures consistent dependency management across the project

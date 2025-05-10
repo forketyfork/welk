@@ -10,6 +10,7 @@ skie = "0.10.2-preview.2.1.20" # https://github.com/touchlab/SKIE
 google-services = "4.4.2" # https://maven.google.com/web/index.html#com.google.gms.google-services:com.google.gms.google-services.gradle.plugin
 kotlinx-serialization-json = "1.8.1" # https://github.com/Kotlin/kotlinx.serialization
 firebase-kotlin-sdk = "2.1.0" # https://github.com/GitLiveApp/firebase-kotlin-sdk
+compose-material = "1.8.0" # https://search.maven.org/artifact/org.jetbrains.compose.material/material
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -30,6 +31,7 @@ ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serializatio
 google-services = { group = "com.google.gms", name = "google-services", version.ref = "google-services" }
 firebase-auth = { group = "dev.gitlive", name = "firebase-auth", version.ref = "firebase-kotlin-sdk"}
 firebase-firestore = { group = "dev.gitlive", name = "firebase-firestore", version.ref = "firebase-kotlin-sdk"}
+compose-material-ripple = { group = "org.jetbrains.compose.material", name = "material-ripple", version.ref = "compose-material" }
 
 [plugins]
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }

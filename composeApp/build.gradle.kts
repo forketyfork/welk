@@ -8,10 +8,10 @@ plugins {
 
 kotlin {
     jvm("desktop")
-    
+
     sourceSets {
         val desktopMain by getting
-        
+
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -24,6 +24,8 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.androidx.lifecycle.viewmodel.compose)
             implementation(projects.shared)
+            // Google Fonts integration for nicer UI
+            implementation(libs.compose.material.ripple)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)

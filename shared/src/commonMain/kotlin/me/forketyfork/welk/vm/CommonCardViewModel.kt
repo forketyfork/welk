@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import me.forketyfork.welk.domain.Card
 import me.forketyfork.welk.domain.CardRepository
+import me.forketyfork.welk.domain.Deck
+import me.forketyfork.welk.domain.DeckRepository
 import me.forketyfork.welk.presentation.CardAction
 
 interface CardViewModel {
@@ -14,8 +16,13 @@ interface CardViewModel {
     val isEditing: StateFlow<Boolean>
     val currentCard: StateFlow<Card>
     val editCardContent: StateFlow<Pair<String, String>>
+    val currentDeck: StateFlow<Deck?>
+    val availableDecks: StateFlow<List<Deck>>
+
     fun flipCard()
     suspend fun nextCard()
+    suspend fun loadDecks()
+    suspend fun selectDeck(deckId: String)
     fun processAction(action: CardAction): Boolean
     suspend fun nextCardOnAnimationCompletion()
     fun updateEditContent(front: String, back: String)
@@ -23,10 +30,23 @@ interface CardViewModel {
 }
 
 open class CommonCardViewModel(
-    private val repository: CardRepository,
+    private val cardRepository: CardRepository,
+    private val deckRepository: DeckRepository,
     private val cardAnimationManager: CardAnimationManager
 ) : CardViewModel {
-    private val _currentCardIndex = MutableStateFlow(0)
+    // Current position within the deck
+    private val _currentCardPosition = MutableStateFlow(0)
+
+    // Current selected deck
+    private val _currentDeck = MutableStateFlow<Deck?>(null)
+    override val currentDeck: StateFlow<Deck?> = _currentDeck.asStateFlow()
+
+    // List of available decks
+    private val _availableDecks = MutableStateFlow<List<Deck>>(emptyList())
+    override val availableDecks: StateFlow<List<Deck>> = _availableDecks.asStateFlow()
+
+    // List of cards in the current deck (cached to avoid repeated Firestore queries)
+    private val _currentDeckCards = MutableStateFlow<List<Card>>(emptyList())
 
     private val _isFlipped = MutableStateFlow(false)
     override val isFlipped: StateFlow<Boolean> = _isFlipped.asStateFlow()
@@ -43,11 +63,76 @@ open class CommonCardViewModel(
     init {
         // Use coroutine scope from the platform
         kotlinx.coroutines.MainScope().launch {
-            // Observe card index changes and load the card
-            _currentCardIndex.collect { index ->
-                val card = repository.getByIndex(index)
-                _currentCard.value = card
+            // Load all decks initially
+            loadDecks()
+
+            // When deck changes, load its cards
+            _currentDeck.collect { deck ->
+                if (deck != null) {
+                    _currentDeckCards.value = cardRepository.getCardsByDeckId(deck.id)
+                    // Reset to the first card in the deck
+                    _currentCardPosition.value = 0
+                    updateCurrentCardFromPosition()
+                }
             }
+        }
+
+        // Observe position changes and load the card
+        kotlinx.coroutines.MainScope().launch {
+            _currentCardPosition.collect { position ->
+                updateCurrentCardFromPosition()
+            }
+        }
+    }
+
+    /**
+     * Fetches the current card based on position in the current deck
+     */
+    private fun updateCurrentCardFromPosition() {
+        val deck = _currentDeck.value ?: return
+        val cards = _currentDeckCards.value
+
+        if (cards.isEmpty()) {
+            _currentCard.value = Card(deckId = deck.id)
+            return
+        }
+
+        val position = _currentCardPosition.value.coerceIn(0, cards.size - 1)
+        _currentCard.value = cards.getOrNull(position) ?: Card(deckId = deck.id)
+    }
+
+    /**
+     * Loads all available decks
+     */
+    override suspend fun loadDecks() {
+        try {
+            val decks = deckRepository.getAllDecks()
+            _availableDecks.value = decks
+
+            // If we don't have a selected deck yet but decks exist, select the first one
+            if (_currentDeck.value == null && decks.isNotEmpty()) {
+                selectDeck(decks.first().id)
+            }
+        } catch (e: Exception) {
+            // If there's an error loading decks, set to empty list but don't crash
+            println("Error loading decks: ${e.message}")
+            _availableDecks.value = emptyList()
+        }
+    }
+
+    /**
+     * Selects a deck by its ID and loads its cards
+     */
+    override suspend fun selectDeck(deckId: String) {
+        try {
+            val deck = deckRepository.getDeckById(deckId)
+            _currentDeck.value = deck
+            _currentDeckCards.value = cardRepository.getCardsByDeckId(deckId)
+            _currentCardPosition.value = 0
+            _isFlipped.value = false
+        } catch (e: Exception) {
+            // If there's an error selecting a deck, keep the current deck
+            println("Error selecting deck: ${e.message}")
         }
     }
 
@@ -56,18 +141,27 @@ open class CommonCardViewModel(
     }
 
     override suspend fun nextCard() {
-        _currentCardIndex.value = (_currentCardIndex.value + 1) % repository.getCardCount()
-        _isFlipped.value = false
+        val cardCount = _currentDeckCards.value.size
+        if (cardCount > 0) {
+            _currentCardPosition.value = (_currentCardPosition.value + 1) % cardCount
+            _isFlipped.value = false
+        }
     }
 
     override suspend fun nextCardOnAnimationCompletion() {
         cardAnimationManager.animationCompleteTrigger
             .filter { it.idx != -1 } // skipping initial value
             .collect {
+                val currentCard = _currentCard.value
+                // Update the learned status of the current card
+                cardRepository.updateCardLearnedStatus(
+                    currentCard.id,
+                    currentCard.deckId,
+                    it.learned
+                )
+                // Move to the next card
                 nextCard()
-                // TODO error handling
-                repository.updateCardLearnedStatus(it.idx, it.learned)
-                // Reset the trigger
+                // Reset the animation trigger
                 cardAnimationManager.reset()
             }
     }
@@ -78,14 +172,22 @@ open class CommonCardViewModel(
 
     override suspend fun saveCardEdit() {
         val (front, back) = _editCardContent.value
-        repository.updateCardContent(_currentCardIndex.value, front, back)
+        val currentCard = _currentCard.value
+
+        // Update card content in repository
+        cardRepository.updateCardContent(currentCard.id, currentCard.deckId, front, back)
 
         // Update our local state with the changes
-        val updatedCard = _currentCard.value.copy(front = front, back = back)
+        val updatedCard = currentCard.copy(front = front, back = back)
         _currentCard.value = updatedCard
 
-        // This ensures the UI reflects the changes immediately
-        // regardless of when the repository's data change is visible
+        // Also update the cached list of cards
+        val currentPosition = _currentCardPosition.value
+        val updatedCards = _currentDeckCards.value.toMutableList()
+        if (currentPosition < updatedCards.size) {
+            updatedCards[currentPosition] = updatedCard
+            _currentDeckCards.value = updatedCards
+        }
     }
 
     override fun processAction(action: CardAction): Boolean {
@@ -99,14 +201,14 @@ open class CommonCardViewModel(
 
             CardAction.SwipeRight -> {
                 if (!_isEditing.value) {
-                    cardAnimationManager.swipeRight(_currentCardIndex.value)
+                    cardAnimationManager.swipeRight(_currentCardPosition.value)
                     true
                 } else false
             }
 
             CardAction.SwipeLeft -> {
                 if (!_isEditing.value) {
-                    cardAnimationManager.swipeLeft(_currentCardIndex.value)
+                    cardAnimationManager.swipeLeft(_currentCardPosition.value)
                     true
                 } else false
             }
@@ -133,5 +235,4 @@ open class CommonCardViewModel(
             CardAction.NoAction -> false
         }
     }
-
 }

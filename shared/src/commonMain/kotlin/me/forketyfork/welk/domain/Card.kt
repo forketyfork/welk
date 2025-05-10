@@ -7,7 +7,13 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class Card(
+    // Document ID in Firestore
+    val id: String = "",
+    // Reference to parent deck
+    val deckId: String = "",
     val front: String = "",
     val back: String = "",
-    var learned: Boolean = false
+    var learned: Boolean = false,
+    // Position within the deck for ordering
+    val position: Int = 0
 )
