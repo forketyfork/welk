@@ -20,3 +20,4 @@ captures
 # Firebase configuration
 GoogleService-Info.plist
 firebase.properties
+**/.claude/settings.local.json

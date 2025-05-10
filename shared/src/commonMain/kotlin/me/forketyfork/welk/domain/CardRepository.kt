@@ -11,6 +11,11 @@ interface CardRepository {
      * Called when the user swipes, marking the card as learned or forgotten.
      */
     suspend fun updateCardLearnedStatus(idx: Int, learned: Boolean)
+
+    /**
+     * Updates the card's content (front and back text).
+     */
+    suspend fun updateCardContent(idx: Int, front: String, back: String)
 }
 
 class FirestoreRepository : CardRepository {
@@ -30,6 +35,15 @@ class FirestoreRepository : CardRepository {
         card.learned = learned
         cardsCollection.document(idx.toString())
             .update(card) {
+                this.encodeDefaults = encodeDefaults
+            }
+    }
+
+    override suspend fun updateCardContent(idx: Int, front: String, back: String) {
+        val card = getByIndex(idx)
+        val updatedCard = card.copy(front = front, back = back)
+        cardsCollection.document(idx.toString())
+            .update(updatedCard) {
                 this.encodeDefaults = encodeDefaults
             }
     }

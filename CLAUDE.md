@@ -82,9 +82,15 @@ The main workflow of the application:
 
 ## Dependencies
 
-- Kotlin Multiplatform (2.1.20)
-- Compose Multiplatform (1.8.0)
-- Kotlinx Coroutines (1.10.2)
-- Ktor (3.1.3)
-- Firebase Kotlin SDK (2.1.0)
-- SKIE for iOS interop (0.10.2-preview.2.1.20)
+- Kotlin
+- Compose Multiplatform
+- Kotlinx Coroutines
+- Ktor
+- Firebase Kotlin SDK
+- SKIE for iOS interop
+
+## Development Flow
+
+- Try to reuse as much code as possible between the iOS and Desktop by placing it into the `shared` module.
+- Implement the reactive code using Kotlin's `StateFlow`, do not rely on the Android specific reactive features.
+- After implementing changes to the shared or desktop code, check that the application builds by executing `./gradlew :composeApp:build`

@@ -24,6 +24,9 @@ class DefaultCardInteractionManager : CardInteractionManager {
             Key.Spacebar -> CardAction.Flip
             Key.DirectionRight -> CardAction.SwipeRight
             Key.DirectionLeft -> CardAction.SwipeLeft
+            Key.E -> CardAction.Edit
+            Key.Enter -> CardAction.SaveEdit
+            Key.Escape -> CardAction.CancelEdit
             else -> CardAction.NoAction
         }
     }
