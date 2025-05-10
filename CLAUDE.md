@@ -22,7 +22,7 @@ Welk is a Kotlin Multiplatform project targeting iOS and Desktop platforms. It's
 
 ```bash
 # Build the iOS application
-./gradlew :shared:assembleXcframework
+xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.4' build
 
 # Open the Xcode project and run from there
 open iosApp/iosApp.xcodeproj
@@ -77,8 +77,9 @@ The main workflow of the application:
 1. Cards are fetched from Firestore
 2. User can flip cards to see front/back
 3. User can swipe right (learned) or left (not learned)
-4. Card status is updated in Firestore
-5. Next card is displayed
+4. User can edit card content by tapping the edit button (pencil icon)
+5. Card status and content are updated in Firestore
+6. Next card is displayed
 
 ## Dependencies
 
