@@ -94,3 +94,8 @@ The main workflow of the application:
 - Try to reuse as much code as possible between the iOS and Desktop by placing it into the `shared` module.
 - Implement the reactive code using Kotlin's `StateFlow`, do not rely on the Android specific reactive features.
 - After implementing changes to the shared or desktop code, check that the application builds by executing `./gradlew :composeApp:build`
+- When making changes to iOS code:
+  - First build the shared module with `./gradlew :shared:build`
+  - Test the Swift compilation by running `xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.4' build`
+  - When working with Kotlin-Swift interop, be careful with type conversions. Use optional casting with `as?` and null checks for Kotlin types exposed to Swift.
+  - Remember that Kotlin types like `Pair<String, String>` are exposed to Swift with properties named `first` and `second`, which are `NSString?` type and need proper handling.
