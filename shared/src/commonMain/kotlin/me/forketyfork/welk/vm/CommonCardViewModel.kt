@@ -18,6 +18,7 @@ interface CardViewModel {
     val editCardContent: StateFlow<Pair<String, String>>
     val currentDeck: StateFlow<Deck?>
     val availableDecks: StateFlow<List<Deck>>
+    val isNewCard: StateFlow<Boolean>
 
     fun flipCard()
     suspend fun nextCard()
@@ -27,6 +28,8 @@ interface CardViewModel {
     suspend fun nextCardOnAnimationCompletion()
     fun updateEditContent(front: String, back: String)
     suspend fun saveCardEdit()
+    suspend fun createNewCard(deckId: String)
+    suspend fun cancelNewCard()
 }
 
 open class CommonCardViewModel(
@@ -59,6 +62,9 @@ open class CommonCardViewModel(
 
     private val _currentCard = MutableStateFlow(Card())
     override val currentCard: StateFlow<Card> = _currentCard.asStateFlow()
+
+    private val _isNewCard = MutableStateFlow(false)
+    override val isNewCard: StateFlow<Boolean> = _isNewCard.asStateFlow()
 
     init {
         // Use coroutine scope from the platform
@@ -222,17 +228,122 @@ open class CommonCardViewModel(
 
             CardAction.SaveEdit -> {
                 _isEditing.value = false
+                // Clear the new card flag when saved
+                if (_isNewCard.value) {
+                    _isNewCard.value = false
+                }
                 true
             }
 
             CardAction.CancelEdit -> {
                 _isEditing.value = false
-                // Reset edit content to current card values to ensure next edit shows current values
-                _editCardContent.value = Pair(_currentCard.value.front, _currentCard.value.back)
+
+                // If this is a new card being canceled, perform special handling
+                if (_isNewCard.value) {
+                    kotlinx.coroutines.MainScope().launch {
+                        cancelNewCard()
+                    }
+                } else {
+                    // Otherwise just reset edit content
+                    _editCardContent.value = Pair(_currentCard.value.front, _currentCard.value.back)
+                }
+                true
+            }
+
+            is CardAction.CreateNewCard -> {
+                kotlinx.coroutines.MainScope().launch {
+                    createNewCard(action.deckId)
+                }
                 true
             }
 
             CardAction.NoAction -> false
+        }
+    }
+
+    /**
+     * Creates a new empty card in the specified deck and switches to it in edit mode
+     */
+    override suspend fun createNewCard(deckId: String) {
+        // First select the deck if it's not already selected
+        if (_currentDeck.value?.id != deckId) {
+            selectDeck(deckId)
+        }
+
+        // Create a new card in the repository
+        val newCard = cardRepository.createCard(deckId, "", "")
+
+        // Set new card state
+        _isNewCard.value = true
+
+        // Update the current deck with increased card count
+        val currentDeck = _currentDeck.value
+        if (currentDeck != null) {
+            val updatedDeck = currentDeck.copy(cardCount = currentDeck.cardCount + 1)
+            _currentDeck.value = updatedDeck
+
+            // Also update this deck in the available decks list
+            val updatedDecks = _availableDecks.value.toMutableList()
+            val deckIndex = updatedDecks.indexOfFirst { it.id == deckId }
+            if (deckIndex != -1) {
+                updatedDecks[deckIndex] = updatedDeck
+                _availableDecks.value = updatedDecks
+            }
+        }
+
+        // Update card list and position
+        val updatedCards = _currentDeckCards.value.toMutableList()
+        updatedCards.add(newCard)
+        _currentDeckCards.value = updatedCards
+        _currentCardPosition.value = updatedCards.size - 1
+        _currentCard.value = newCard
+
+        // Enter edit mode
+        _editCardContent.value = Pair("", "")
+        _isEditing.value = true
+    }
+
+    /**
+     * Cancels a new card, removing it from the repository
+     */
+    override suspend fun cancelNewCard() {
+        if (_isNewCard.value) {
+            val card = _currentCard.value
+
+            // Delete the card from the repository
+            cardRepository.deleteCard(card.id, card.deckId)
+
+            // Reset UI state
+            _isNewCard.value = false
+            _isEditing.value = false
+
+            // Update the deck card count
+            val currentDeck = _currentDeck.value
+            if (currentDeck != null) {
+                val updatedDeck = currentDeck.copy(cardCount = currentDeck.cardCount - 1)
+                _currentDeck.value = updatedDeck
+
+                // Also update this deck in the available decks list
+                val updatedDecks = _availableDecks.value.toMutableList()
+                val deckIndex = updatedDecks.indexOfFirst { it.id == card.deckId }
+                if (deckIndex != -1) {
+                    updatedDecks[deckIndex] = updatedDeck
+                    _availableDecks.value = updatedDecks
+                }
+            }
+
+            // Remove from local card list
+            val updatedCards = _currentDeckCards.value.toMutableList()
+            updatedCards.removeAt(_currentCardPosition.value)
+            _currentDeckCards.value = updatedCards
+
+            // Set position to the first card if available
+            if (updatedCards.isNotEmpty()) {
+                _currentCardPosition.value = 0
+                _currentCard.value = updatedCards[0]
+            } else {
+                _currentCard.value = Card(deckId = card.deckId)
+            }
         }
     }
 }

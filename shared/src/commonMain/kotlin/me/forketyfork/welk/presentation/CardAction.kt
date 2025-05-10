@@ -8,4 +8,5 @@ sealed class CardAction {
     data object SaveEdit : CardAction()
     data object CancelEdit : CardAction()
     data object NoAction : CardAction()
+    data class CreateNewCard(val deckId: String) : CardAction()
 }
