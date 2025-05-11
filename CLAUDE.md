@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Welk is a Kotlin Multiplatform project targeting iOS and Desktop platforms. It's a flashcard application that allows users to view cards, flip them, and swipe right (mark as learned) or left (mark as not learned). The app uses Firebase Firestore for storing card data.
 
+Users can also create, edit, and delete cards. The application provides feedback when a deck has no cards and offers a simple way to create new cards.
+
 ## Build and Run Commands
 
 ### Desktop
@@ -46,15 +48,20 @@ open iosApp/iosApp.xcodeproj
    - `Card` - Data class representing a flashcard with front and back text
    - `CardRepository` - Interface for fetching and updating card data
    - `FirestoreRepository` - Implementation that uses Firebase Firestore
+   - `Deck` - Data class representing a collection of cards
+   - `DeckRepository` - Interface for fetching and updating deck data
 
 2. **ViewModel Layer**
-   - `CardViewModel` - Interface for card-related operations 
+   - `CardViewModel` - Interface for card-related operations
    - `CommonCardViewModel` - Shared implementation of card operations
    - `CardAnimationManager` - Interface for handling card animations
+   - State flows for tracking UI state (editing, deletion confirmation, etc.)
 
 3. **UI Layer**
    - Platform-specific implementations of the UI
    - Animation logic for card interactions
+   - Card panel with edit/delete functionality
+   - Confirmation dialogs for destructive actions
 
 ## Development Prerequisites
 
@@ -78,8 +85,15 @@ The main workflow of the application:
 2. User can flip cards to see front/back
 3. User can swipe right (learned) or left (not learned)
 4. User can edit card content by tapping the edit button (pencil icon)
-5. Card status and content are updated in Firestore
-6. Next card is displayed
+5. User can delete cards by tapping the delete button and confirming
+6. User can create new cards when a deck is empty or by clicking "Add Card"
+7. Card status and content are updated in Firestore
+8. Next card is displayed
+
+For new card creation:
+1. A temporary card is created in memory (not in the database)
+2. The card is only saved to Firestore when the user clicks "Save"
+3. If the user clicks "Cancel", no database write occurs
 
 ## Dependencies
 
@@ -89,12 +103,35 @@ The main workflow of the application:
 - Ktor
 - Firebase Kotlin SDK
 - SKIE for iOS interop
+- Kermit for logging
+
+### Logging
+
+The application uses Kermit for multiplatform logging. The Logger instance is available throughout the codebase via:
+
+```kotlin
+private val logger = Logger.withTag("ClassName")
+```
+
+Available log levels:
+- `logger.v { "Verbose message" }` - Verbose
+- `logger.d { "Debug message" }` - Debug
+- `logger.i { "Info message" }` - Info
+- `logger.w { "Warning message" }` - Warning
+- `logger.e { "Error message" }` - Error (also accepts Exception as a parameter)
 
 ## Development Flow
 
 - Try to reuse as much code as possible between the iOS and Desktop by placing it into the `shared` module.
 - Implement the reactive code using Kotlin's `StateFlow`, do not rely on the Android specific reactive features.
 - After implementing changes to the shared or desktop code, check that the application builds by executing `./gradlew :composeApp:build`
+- Use proper logging with Kermit instead of println statements for better debugging.
+- When adding new UI functionality:
+  - First implement the data model in the domain layer
+  - Then update the ViewModel layer with necessary state handling
+  - Finally implement the UI components for each platform
+- When implementing destructive actions (like delete), always provide confirmation dialogs
+- Delay database operations as much as possible to avoid unnecessary writes
 - When making changes to iOS code:
   - First build the shared module with `./gradlew :shared:build`
   - Test the Swift compilation by running `xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.4' build`
@@ -109,3 +146,21 @@ The main workflow of the application:
   2. Then reference the library in build files using the `libs.some.library` syntax
   3. For version references, use `version.ref = "some-version"` format
 - This approach ensures consistent dependency management across the project
+
+## Common Patterns
+
+### Card Creation
+- Create new cards as temporary objects in memory
+- Only save to Firestore when user explicitly saves
+- Clear form fields when canceling or after successful save
+
+### Empty State Handling
+- When a deck has no cards, show appropriate empty state UI
+- Provide direct actions for users to add content
+- Update the hasCards state flow to properly trigger UI changes
+
+### Error Handling
+- Use try-catch blocks around repository operations
+- Log errors using appropriate Kermit log levels
+- Provide fallback behavior when operations fail
+- Show appropriate UI feedback for error states

@@ -1,5 +1,6 @@
 package me.forketyfork.welk.domain
 
+import co.touchlab.kermit.Logger
 import dev.gitlive.firebase.firestore.FirebaseFirestore
 import kotlinx.datetime.Clock
 import me.forketyfork.welk.getPlatform
@@ -50,6 +51,8 @@ class FirestoreRepository : CardRepository, DeckRepository {
     private val firestore: FirebaseFirestore = getPlatform().initializeFirestore()
     private val rootCollection = firestore.collection("welk_data")
     private val decksCollection = rootCollection.document("collections").collection("decks")
+
+    private val logger = Logger.withTag("FirestoreRepository")
 
     // DECK REPOSITORY IMPLEMENTATION
 
@@ -204,6 +207,12 @@ class FirestoreRepository : CardRepository, DeckRepository {
     }
 
     override suspend fun getCardById(deckId: String, cardId: String): Card {
+        // If either ID is empty, return an empty card rather than throwing an exception
+        if (cardId.isEmpty() || deckId.isEmpty()) {
+            logger.w { "Empty card ID or deck ID provided to getCardById" }
+            return Card(deckId = deckId)
+        }
+
         val cardsCollection = decksCollection.document(deckId).collection("cards")
         return cardsCollection.document(cardId).get().data<Card>()
     }
@@ -230,6 +239,11 @@ class FirestoreRepository : CardRepository, DeckRepository {
     }
 
     override suspend fun createCard(deckId: String, front: String, back: String): Card {
+        if (deckId.isEmpty()) {
+            logger.e { "Error: Cannot create card with empty deckId" }
+            return Card()
+        }
+
         val cardsCollection = decksCollection.document(deckId).collection("cards")
 
         // Get current card count to determine position
@@ -243,7 +257,14 @@ class FirestoreRepository : CardRepository, DeckRepository {
             position = cardCount // Position it at the end of the deck
         )
 
+        // Add the card to Firestore and get the generated document reference
         val docRef = cardsCollection.add(newCard)
+
+        // Create a copy of the card with the Firestore-generated ID
+        val cardWithId = newCard.copy(id = docRef.id)
+
+        // Update the card in Firestore with its ID to ensure it's properly stored
+        cardsCollection.document(docRef.id).set(cardWithId)
 
         // Update the deck's card count
         val deck = getDeckById(deckId)
@@ -253,21 +274,29 @@ class FirestoreRepository : CardRepository, DeckRepository {
         )
         decksCollection.document(deckId).set(updatedDeck)
 
-        return newCard.copy(id = docRef.id)
+        // Return the card with the proper ID
+        return cardWithId
     }
 
     override suspend fun updateCardLearnedStatus(cardId: String, deckId: String, learned: Boolean) {
+        // Check if card ID or deck ID are invalid
+        if (cardId.isEmpty() || deckId.isEmpty()) {
+            logger.e { "Error: Cannot update card with empty ID or deckId" }
+            return
+        }
+
         val cardsCollection = decksCollection.document(deckId).collection("cards")
         val card = getCardById(deckId, cardId)
         val updatedCard = card.copy()
         updatedCard.learned = learned
 
-        cardsCollection.document(cardId).update(updatedCard)
+        // Use set instead of update to ensure the operation works for all cards
+        cardsCollection.document(cardId).set(updatedCard)
 
         // Update the deck's last modified timestamp
         val deck = getDeckById(deckId)
         val updatedDeck = deck.copy(lastModified = Clock.System.now().toEpochMilliseconds())
-        decksCollection.document(deckId).update(updatedDeck)
+        decksCollection.document(deckId).set(updatedDeck)
     }
 
     override suspend fun updateCardContent(
@@ -276,19 +305,32 @@ class FirestoreRepository : CardRepository, DeckRepository {
         front: String,
         back: String
     ) {
+        // Check if card ID or deck ID are invalid
+        if (cardId.isEmpty() || deckId.isEmpty()) {
+            logger.e { "Cannot update card with empty ID or deckId" }
+            return
+        }
+
         val cardsCollection = decksCollection.document(deckId).collection("cards")
         val card = getCardById(deckId, cardId)
         val updatedCard = card.copy(front = front, back = back)
 
-        cardsCollection.document(cardId).update(updatedCard)
+        // Use set instead of update to ensure the operation works for all cards
+        cardsCollection.document(cardId).set(updatedCard)
 
         // Update the deck's last modified timestamp
         val deck = getDeckById(deckId)
         val updatedDeck = deck.copy(lastModified = Clock.System.now().toEpochMilliseconds())
-        decksCollection.document(deckId).update(updatedDeck)
+        decksCollection.document(deckId).set(updatedDeck)
     }
 
     override suspend fun deleteCard(cardId: String, deckId: String) {
+        // Check if card ID or deck ID are invalid
+        if (cardId.isEmpty() || deckId.isEmpty()) {
+            logger.e { "Cannot delete card with empty ID or deckId" }
+            return
+        }
+
         val cardsCollection = decksCollection.document(deckId).collection("cards")
         cardsCollection.document(cardId).delete()
 
@@ -299,6 +341,6 @@ class FirestoreRepository : CardRepository, DeckRepository {
             cardCount = cardCount,
             lastModified = Clock.System.now().toEpochMilliseconds()
         )
-        decksCollection.document(deckId).update(updatedDeck)
+        decksCollection.document(deckId).set(updatedDeck)
     }
 }

@@ -17,12 +17,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,8 +41,11 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import co.touchlab.kermit.Logger
 import kotlinx.coroutines.launch
 import me.forketyfork.welk.CardInteractionManager
 import me.forketyfork.welk.MainViewModel
@@ -55,32 +61,91 @@ fun CardPanel(
     val isFlipped = mainViewModel.isFlipped.collectAsStateWithLifecycle()
     val isEditing = mainViewModel.isEditing.collectAsStateWithLifecycle()
     val editCardContent = mainViewModel.editCardContent.collectAsStateWithLifecycle()
+    val isDeleteConfirmationShowing =
+        mainViewModel.isDeleteConfirmationShowing.collectAsStateWithLifecycle()
+    val hasCards = mainViewModel.hasCards.collectAsStateWithLifecycle()
 
     var frontText by remember { mutableStateOf("") }
     var backText by remember { mutableStateOf("") }
 
     val coroutineScope = rememberCoroutineScope()
 
-    // Update local state when edit mode is activated
-    androidx.compose.runtime.LaunchedEffect(editCardContent.value) {
-        val (front, back) = editCardContent.value
-        frontText = front
-        backText = back
+    val logger = Logger.withTag("CardPanel")
+
+    // Update local state when edit mode is activated or when creating a new card
+    androidx.compose.runtime.LaunchedEffect(
+        editCardContent.value,
+        isEditing.value,
+        mainViewModel.isNewCard.value
+    ) {
+        // Only update the text values if we're in edit mode
+        if (isEditing.value) {
+            val (front, back) = editCardContent.value
+            frontText = front
+            backText = back
+        } else {
+            // Clear the fields when exiting edit mode
+            frontText = ""
+            backText = ""
+        }
     }
 
     val focusRequester = remember { FocusRequester() }
 
     // Request focus after UI is rendered and whenever card changes
-    androidx.compose.runtime.LaunchedEffect(Unit, currentCard.value) {
-        // Delay focus request slightly to ensure it takes precedence
-        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
-            kotlinx.coroutines.delay(100)
+    val currentDeck = mainViewModel.currentDeck.collectAsStateWithLifecycle()
+
+    // Only request focus when we have cards or there's a deck selected
+    androidx.compose.runtime.LaunchedEffect(
+        Unit,
+        currentCard.value,
+        currentDeck.value,
+        hasCards.value
+    ) {
+        // Check if we have a deck and either have cards or are in edit mode
+        if (currentDeck.value != null && (hasCards.value || isEditing.value)) {
+            // Delay focus request slightly to ensure it takes precedence
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+                kotlinx.coroutines.delay(100)
+            }
+            try {
+                focusRequester.requestFocus()
+            } catch (e: IllegalStateException) {
+                // Ignore focus errors during initialization
+                logger.e(e) { "Focus request failed, UI might not be ready" }
+            }
         }
-        focusRequester.requestFocus()
     }
 
     val animatedOffset by mainViewModel.cardAnimationManager.animateOffset()
     val animatedColor by mainViewModel.cardAnimationManager.animateColor()
+
+    // Delete confirmation dialog
+    if (isDeleteConfirmationShowing.value) {
+        AlertDialog(
+            onDismissRequest = { mainViewModel.processAction(CardAction.CancelDelete) },
+            title = { Text("Delete Card") },
+            text = { Text("Are you sure you want to delete this card? This action cannot be undone.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            mainViewModel.processAction(CardAction.ConfirmDelete)
+                        }
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { mainViewModel.processAction(CardAction.CancelDelete) }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 
     Box(
         // Make sure this panel can gain focus and receives keyboard events
@@ -90,95 +155,153 @@ fun CardPanel(
                 interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                 indication = null // No visual indication
             ) {
-                // Request focus when clicked
-                focusRequester.requestFocus()
+                // Request focus when clicked - safely
+                try {
+                    focusRequester.requestFocus()
+                } catch (e: IllegalStateException) {
+                    // Ignore focus errors during initialization
+                    logger.e(e) { "Focus request on click failed" }
+                }
             },
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            modifier = Modifier
-                .width(315.dp)
-                .height(440.dp)
-                .offset { animatedOffset }
-                .rotate(animatedOffset.x / 80.0f)
-                .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(10.dp))
-                .background(color = animatedColor)
-                .padding(all = 20.dp)
-                .onKeyEvent { event: KeyEvent ->
-                    val action = cardInteractionManager.handleKeyEvent(event)
-                    mainViewModel.processAction(action)
-                }
-                .focusRequester(focusRequester)
-                .focusable(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            if (isEditing.value) {
-                // Edit mode UI
-                OutlinedTextField(
-                    value = frontText,
-                    onValueChange = { frontText = it },
-                    label = { Text("Front") },
-                    modifier = Modifier.fillMaxWidth().weight(1f)
+        if (!hasCards.value && !isEditing.value) {
+            // Show a message when there are no cards in the deck
+            Column(
+                modifier = Modifier
+                    .width(315.dp)
+                    .height(440.dp)
+                    .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(10.dp))
+                    .background(color = Color.White)
+                    .padding(all = 20.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    "No cards in this deck",
+                    style = androidx.compose.ui.text.TextStyle(fontSize = 18.sp),
+                    textAlign = TextAlign.Center
                 )
-                Divider()
-                OutlinedTextField(
-                    value = backText,
-                    onValueChange = { backText = it },
-                    label = { Text("Back") },
-                    modifier = Modifier.fillMaxWidth().weight(1f)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                Spacer(modifier = Modifier.height(20.dp))
+                Button(
+                    onClick = {
+                        val currentDeck = mainViewModel.currentDeck.value
+                        if (currentDeck != null) {
+                            mainViewModel.processAction(CardAction.CreateNewCard(currentDeck.id))
+                        }
+                    }
                 ) {
-                    Button(
-                        onClick = {
-                            mainViewModel.updateEditContent(frontText, backText)
-                            coroutineScope.launch {
-                                // First save the edits to update the card content
-                                mainViewModel.saveCardEdit()
-                                // Then exit edit mode
-                                mainViewModel.processAction(CardAction.SaveEdit)
-                                // Return focus to the card for keyboard navigation
-                                focusRequester.requestFocus()
-                            }
-                        }
-                    ) {
-                        Text("Save")
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(
-                        onClick = {
-                            // Cancel without saving changes and reset to original values
-                            mainViewModel.processAction(CardAction.CancelEdit)
-                            // Return focus to the card for keyboard navigation
-                            focusRequester.requestFocus()
-                        }
-                    ) {
-                        Text("Cancel")
-                    }
+                    Text("Create a Card")
                 }
-            } else {
-                // Normal view mode UI
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(currentCard.value.front, modifier = Modifier.weight(1f))
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit",
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clickable {
-                                mainViewModel.processAction(CardAction.Edit)
-                            }
+            }
+        } else {
+            // Show the card
+            Column(
+                modifier = Modifier
+                    .width(315.dp)
+                    .height(440.dp)
+                    .offset { animatedOffset }
+                    .rotate(animatedOffset.x / 80.0f)
+                    .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(10.dp))
+                    .background(color = animatedColor)
+                    .padding(all = 20.dp)
+                    .onKeyEvent { event: KeyEvent ->
+                        val action = cardInteractionManager.handleKeyEvent(event)
+                        mainViewModel.processAction(action)
+                    }
+                    .focusRequester(focusRequester)
+                    .focusable(),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                if (isEditing.value) {
+                    // Edit mode UI
+                    OutlinedTextField(
+                        value = frontText,
+                        onValueChange = { frontText = it },
+                        label = { Text("Front") },
+                        modifier = Modifier.fillMaxWidth().weight(1f)
                     )
-                }
-                Divider()
-                if (isFlipped.value) {
-                    Text(currentCard.value.back)
+                    Divider()
+                    OutlinedTextField(
+                        value = backText,
+                        onValueChange = { backText = it },
+                        label = { Text("Back") },
+                        modifier = Modifier.fillMaxWidth().weight(1f)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Button(
+                            onClick = {
+                                mainViewModel.updateEditContent(frontText, backText)
+                                coroutineScope.launch {
+                                    // First save the edits to update the card content
+                                    mainViewModel.saveCardEdit()
+                                    // Then exit edit mode
+                                    mainViewModel.processAction(CardAction.SaveEdit)
+                                    // Return focus to the card for keyboard navigation - safely
+                                    try {
+                                        focusRequester.requestFocus()
+                                    } catch (e: IllegalStateException) {
+                                        logger.e(e) { "Focus request after save failed" }
+                                    }
+                                }
+                            }
+                        ) {
+                            Text("Save")
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = {
+                                // Cancel without saving changes and reset to original values
+                                mainViewModel.processAction(CardAction.CancelEdit)
+                                // Return focus to the card for keyboard navigation - safely
+                                try {
+                                    focusRequester.requestFocus()
+                                } catch (e: IllegalStateException) {
+                                    logger.i { "Focus request after cancel failed: ${e.message}" }
+                                }
+                            }
+                        ) {
+                            Text("Cancel")
+                        }
+                    }
+                } else {
+                    // Normal view mode UI
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(currentCard.value.front, modifier = Modifier.weight(1f))
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit",
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable {
+                                        mainViewModel.processAction(CardAction.Edit)
+                                    }
+                            )
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete",
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable {
+                                        mainViewModel.processAction(CardAction.Delete)
+                                    }
+                            )
+                        }
+                    }
+                    Divider()
+                    if (isFlipped.value) {
+                        Text(currentCard.value.back)
+                    }
                 }
             }
         }

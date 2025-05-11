@@ -29,6 +29,7 @@ kotlin {
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.firebase.auth)
             implementation(libs.firebase.firestore)
+            implementation(libs.kermit)
         }
         jvmMain.dependencies {
             implementation(libs.ktor.client.cio)

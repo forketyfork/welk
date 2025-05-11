@@ -1,6 +1,7 @@
 package me.forketyfork.welk
 
 import android.app.Application
+import co.touchlab.kermit.Logger
 import com.google.firebase.FirebasePlatform
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseOptions
@@ -14,6 +15,8 @@ class JVMPlatform : Platform {
 
     override fun initializeFirestore(): FirebaseFirestore {
 
+        val logger = Logger.withTag("FirebaseFirestore")
+
         FirebasePlatform.initializeFirebasePlatform(object : FirebasePlatform() {
             val storage = mutableMapOf<String, String>()
             override fun store(key: String, value: String) = storage.set(key, value)
@@ -22,7 +25,7 @@ class JVMPlatform : Platform {
                 storage.remove(key)
             }
 
-            override fun log(msg: String) = println(msg)
+            override fun log(msg: String) = logger.d(msg)
         })
         // Access the keys
         val firebaseProperties = loadApiKeys()

@@ -24,8 +24,8 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.androidx.lifecycle.viewmodel.compose)
             implementation(projects.shared)
-            // Google Fonts integration for nicer UI
             implementation(libs.compose.material.ripple)
+            implementation(libs.kermit)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
@@ -43,6 +43,9 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "me.forketyfork.welk"
             packageVersion = "1.0.0"
+            macOS {
+                iconFile.set(project.file("welk_icon.icns"))
+            }
         }
     }
 }
