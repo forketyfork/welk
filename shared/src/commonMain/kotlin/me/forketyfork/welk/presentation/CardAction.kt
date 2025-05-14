@@ -12,4 +12,5 @@ sealed class CardAction {
     data object CancelDelete : CardAction()
     data object NoAction : CardAction()
     data class CreateNewCard(val deckId: String) : CardAction()
+    data object CreateNewCardInCurrentDeck : CardAction()
 }

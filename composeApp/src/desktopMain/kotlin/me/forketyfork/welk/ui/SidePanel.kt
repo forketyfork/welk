@@ -30,14 +30,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import me.forketyfork.welk.presentation.CardAction
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import me.forketyfork.welk.MainViewModel
 import me.forketyfork.welk.domain.Deck
+import me.forketyfork.welk.presentation.CardAction
+
+object SidePanelTestTags {
+    const val APP_TITLE = "app_title"
+}
 
 @Composable
 fun SidePanel(
     mainViewModel: MainViewModel,
-    onDeckSelected: (Deck) -> Unit,
     width: Int = 250,
     modifier: Modifier = Modifier
 ) {
@@ -57,7 +62,7 @@ fun SidePanel(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp)
-                .testTag("app_title"),
+                .testTag(SidePanelTestTags.APP_TITLE),
             style = MaterialTheme.typography.h1,
             color = MaterialTheme.colors.primary,
             textAlign = TextAlign.Center
@@ -80,89 +85,15 @@ fun SidePanel(
             DeckItem(
                 deck = deck,
                 isSelected = currentDeck?.id == deck.id,
-                onClick = { onDeckSelected(deck) },
+                onClick = {
+                    mainViewModel.viewModelScope.launch {
+                        mainViewModel.selectDeck(deck.id)
+                    }
+                },
                 onAddCard = { deckId ->
                     mainViewModel.processAction(CardAction.CreateNewCard(deckId))
                 }
             )
-        }
-    }
-}
-
-@Composable
-private fun DeckItem(
-    deck: Deck,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    onAddCard: ((String) -> Unit)? = null
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(if (isSelected) MaterialTheme.colors.primary.copy(alpha = 0.1f) else Color.Transparent)
-            .clickable { onClick() }
-            .padding(12.dp)
-    ) {
-        // Right-side controls column
-        Column(
-            modifier = Modifier.align(Alignment.TopEnd),
-            horizontalAlignment = Alignment.End
-        ) {
-            // Card count
-            Text(
-                text = "${deck.cardCount} cards",
-                style = MaterialTheme.typography.caption,
-                color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
-            )
-
-            // Spacer between count and add button
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Add card button
-            if (onAddCard != null) {
-                TextButton(
-                    onClick = { onAddCard(deck.id) },
-                    contentPadding = PaddingValues(
-                        horizontal = 8.dp,
-                        vertical = 2.dp
-                    ),
-                    modifier = Modifier.height(24.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Add Card",
-                        modifier = Modifier.size(14.dp)
-                    )
-                    Spacer(modifier = Modifier.width(2.dp))
-                    Text(
-                        "Add Card",
-                        style = MaterialTheme.typography.caption
-                    )
-                }
-            }
-        }
-
-        // Column for deck main content with right padding to avoid overlapping the controls
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = 90.dp) // Make space for the controls
-        ) {
-            Text(
-                text = deck.name,
-                style = MaterialTheme.typography.body1,
-                color = if (isSelected) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface
-            )
-            if (deck.description.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = deck.description,
-                    style = MaterialTheme.typography.body2,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
-                )
-            }
         }
     }
 }

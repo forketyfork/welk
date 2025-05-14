@@ -14,7 +14,7 @@ interface CardInteractionManager {
     fun handleKeyEvent(keyEvent: KeyEvent): CardAction
 }
 
-open class DefaultCardInteractionManager : CardInteractionManager {
+class DefaultCardInteractionManager : CardInteractionManager {
 
     override fun handleKeyEvent(keyEvent: KeyEvent): CardAction {
         if (keyEvent.type != KeyEventType.KeyUp) {
@@ -27,6 +27,7 @@ open class DefaultCardInteractionManager : CardInteractionManager {
             Key.E -> CardAction.Edit
             Key.Enter -> CardAction.SaveEdit
             Key.Escape -> CardAction.CancelEdit
+            Key.N -> CardAction.CreateNewCardInCurrentDeck
             else -> CardAction.NoAction
         }
     }

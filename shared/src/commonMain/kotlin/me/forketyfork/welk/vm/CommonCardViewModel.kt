@@ -1,6 +1,7 @@
 package me.forketyfork.welk.vm
 
 import co.touchlab.kermit.Logger
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,7 +29,6 @@ interface CardViewModel {
     suspend fun loadDecks()
     suspend fun selectDeck(deckId: String)
     fun processAction(action: CardAction): Boolean
-    suspend fun nextCardOnAnimationCompletion()
     fun updateEditContent(front: String, back: String)
     suspend fun saveCardEdit()
     suspend fun createNewCard(deckId: String)
@@ -36,6 +36,12 @@ interface CardViewModel {
     suspend fun deleteCurrentCard()
     fun showDeleteConfirmation()
     fun hideDeleteConfirmation()
+
+    /**
+     * Installs the collectors for various UI state changes in the proper coroutine scope.
+     * Call this during the model initialization.
+     */
+    fun installCollectors(coroutineScope: CoroutineScope)
 }
 
 open class CommonCardViewModel(
@@ -81,26 +87,27 @@ open class CommonCardViewModel(
 
     private val logger = Logger.withTag("CommonCardViewModel")
 
-    init {
-        // Use coroutine scope from the platform
-        kotlinx.coroutines.MainScope().launch {
-            // Load all decks initially
-            loadDecks()
-
-            // When deck changes, load its cards
-            _currentDeck.collect { deck ->
-                if (deck != null) {
-                    _currentDeckCards.value = cardRepository.getCardsByDeckId(deck.id)
-                    // Reset to the first card in the deck
-                    _currentCardPosition.value = 0
-                    updateCurrentCardFromPosition()
-                }
-            }
+    /**
+     * Starts collection of card position change events, e.g., when we select a new deck,
+     * and the position resets to 0. Updates the UI accordingly.
+     */
+    private suspend fun collectCurrentCardPositionChanges() {
+        _currentCardPosition.collect { position ->
+            updateCurrentCardFromPosition()
         }
+    }
 
-        // Observe position changes and load the card
-        kotlinx.coroutines.MainScope().launch {
-            _currentCardPosition.collect { position ->
+    /**
+     * Starts the collection of current deck changes, e.g., when the user clicks on a different
+     * deck, and we need to switch the card view.
+     */
+    private suspend fun collectCurrentDeckChanges() {
+        // When deck changes, load its cards
+        _currentDeck.collect { deck ->
+            if (deck != null) {
+                _currentDeckCards.value = cardRepository.getCardsByDeckId(deck.id)
+                // Reset to the first card in the deck
+                _currentCardPosition.value = 0
                 updateCurrentCardFromPosition()
             }
         }
@@ -187,7 +194,12 @@ open class CommonCardViewModel(
         }
     }
 
-    override suspend fun nextCardOnAnimationCompletion() {
+    /**
+     * Starts the collection of the card animation completion events, when the user swipes the card
+     * to the left or to the right. When the animation completed, we update the card learned status
+     * and the UI accordingly.
+     */
+    private suspend fun collectCardAnimationCompletion() {
         cardAnimationManager.animationCompleteTrigger
             .filter { it.idx != -1 } // skipping initial value
             .collect {
@@ -385,6 +397,15 @@ open class CommonCardViewModel(
                 true
             }
 
+            is CardAction.CreateNewCardInCurrentDeck -> {
+                currentDeck.value?.let { deck ->
+                    kotlinx.coroutines.MainScope().launch {
+                        createNewCard(deck.id)
+                    }
+                } ?: logger.w { "No current deck selected" }
+                true
+            }
+
             CardAction.NoAction -> false
         }
     }
@@ -497,6 +518,21 @@ open class CommonCardViewModel(
 
     override fun hideDeleteConfirmation() {
         _isDeleteConfirmationShowing.value = false
+    }
+
+    override fun installCollectors(coroutineScope: CoroutineScope) {
+        coroutineScope.launch {
+            // update the card when the swipe left/right animation completes
+            collectCardAnimationCompletion()
+        }
+        coroutineScope.launch {
+            // update the UI when the current card position changes
+            collectCurrentCardPositionChanges()
+        }
+        coroutineScope.launch {
+            // update the UI when the current deck changes
+            collectCurrentDeckChanges()
+        }
     }
 
     override suspend fun deleteCurrentCard() {

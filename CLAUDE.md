@@ -1,8 +1,10 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this
+repository.
 
 ## Behavioral Guidelines
+
 - You are a professional developer specializing in Kotlin Multiplatform
 - Do not write stub comments instead of the actual implementation
 - Always verify that your changes do not break the application build
@@ -11,9 +13,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Welk is a Kotlin Multiplatform project targeting iOS and Desktop platforms. It's a flashcard application that allows users to view cards, flip them, and swipe right (mark as learned) or left (mark as not learned). The app uses Firebase Firestore for storing card data.
+Welk is a Kotlin Multiplatform project targeting iOS and Desktop platforms. It's a flashcard
+application that allows users to view cards, flip them, and swipe right (mark as learned) or left (
+mark as not learned). The app uses Firebase Firestore for storing card data.
 
-Users can also create, edit, and delete cards. The application provides feedback when a deck has no cards and offers a simple way to create new cards.
+Users can also create, edit, and delete cards. The application provides feedback when a deck has no
+cards and offers a simple way to create new cards.
 
 ## Build Commands
 
@@ -34,41 +39,41 @@ xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -destination 'platfor
 ## Project Structure
 
 - `/shared` - Common code shared between all platforms
-  - Contains domain models, view models, and repository interfaces
-  - Platform-specific implementations are in respective source sets
+    - Contains domain models, view models, and repository interfaces
+    - Platform-specific implementations are in respective source sets
 
-- `/composeApp` - Compose Multiplatform UI code for desktop 
-  - Contains UI components, animations, and desktop-specific implementation
+- `/composeApp` - Compose Multiplatform UI code for desktop
+    - Contains UI components, animations, and desktop-specific implementation
 
 - `/iosApp` - iOS application code
-  - Contains Swift code for iOS integration
+    - Contains Swift code for iOS integration
 
 ## Key Architecture Components
 
 1. **Domain Layer**
-   - `Card` - Data class representing a flashcard with front and back text
-   - `CardRepository` - Interface for fetching and updating card data
-   - `FirestoreRepository` - Implementation that uses Firebase Firestore
-   - `Deck` - Data class representing a collection of cards
-   - `DeckRepository` - Interface for fetching and updating deck data
+    - `Card` - Data class representing a flashcard with front and back text
+    - `CardRepository` - Interface for fetching and updating card data
+    - `FirestoreRepository` - Implementation that uses Firebase Firestore
+    - `Deck` - Data class representing a collection of cards
+    - `DeckRepository` - Interface for fetching and updating deck data
 
 2. **ViewModel Layer**
-   - `CardViewModel` - Interface for card-related operations
-   - `CommonCardViewModel` - Shared implementation of card operations
-   - `CardAnimationManager` - Interface for handling card animations
-   - State flows for tracking UI state (editing, deletion confirmation, etc.)
+    - `CardViewModel` - Interface for card-related operations
+    - `CommonCardViewModel` - Shared implementation of card operations
+    - `CardAnimationManager` - Interface for handling card animations
+    - State flows for tracking UI state (editing, deletion confirmation, etc.)
 
 3. **UI Layer**
-   - Platform-specific implementations of the UI
-   - Animation logic for card interactions
-   - Card panel with edit/delete functionality
-   - Confirmation dialogs for destructive actions
+    - Platform-specific implementations of the UI
+    - Animation logic for card interactions
+    - Card panel with edit/delete functionality
+    - Confirmation dialogs for destructive actions
 
 ## Development Prerequisites
 
 1. **Firebase Configuration**
-   - Place `GoogleService-Info.plist` in `iosApp/iosApp/` directory
-   - Create `firebase.properties` file in `shared/src/jvmMain/resources/` with the following:
+    - Place `GoogleService-Info.plist` in `iosApp/iosApp/` directory
+    - Create `firebase.properties` file in `shared/src/jvmMain/resources/` with the following:
    ```properties
    # Firebase configuration
    firebase.apiKey=
@@ -82,6 +87,7 @@ xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -destination 'platfor
 ## Workflow
 
 The main workflow of the application:
+
 1. Cards are fetched from Firestore
 2. User can flip cards to see front/back
 3. User can swipe right (learned) or left (not learned)
@@ -92,6 +98,7 @@ The main workflow of the application:
 8. Next card is displayed
 
 For new card creation:
+
 1. A temporary card is created in memory (not in the database)
 2. The card is only saved to Firestore when the user clicks "Save"
 3. If the user clicks "Cancel", no database write occurs
@@ -108,13 +115,15 @@ For new card creation:
 
 ## Logging
 
-The application uses Kermit for multiplatform logging. The Logger instance is available throughout the codebase via:
+The application uses Kermit for multiplatform logging. The Logger instance is available throughout
+the codebase via:
 
 ```kotlin
 private val logger = Logger.withTag("ClassName")
 ```
 
 Available log levels:
+
 - `logger.v { "Verbose message" }` - Verbose
 - `logger.d { "Debug message" }` - Debug
 - `logger.i { "Info message" }` - Info
@@ -123,52 +132,68 @@ Available log levels:
 
 ## Testing
 
-- It is okay to write unit tests, however, make sure you're testing the important logic of the unit under test that may be changed or broken; otherwise, go with an integration test.
+- It is okay to write unit tests, however, make sure you're testing the important logic of the unit
+  under test that may be changed or broken; otherwise, go with an integration test.
 - Do not write tests that simply mirror the code under test, this is a bad pattern.
 
 ## Development Flow
 
-- Try to reuse as much code as possible between the iOS and Desktop by placing it into the `shared` module.
-- Implement the reactive code using Kotlin's `StateFlow`, do not rely on the Android specific reactive features.
-- After implementing changes to the shared or desktop code, check that the application builds by executing `./gradlew :composeApp:build`
+- Try to reuse as much code as possible between the iOS and Desktop by placing it into the `shared`
+  module.
+- After implementing changes to the shared or desktop code, check that the application builds by
+  executing `./gradlew :composeApp:build`
 - Use proper logging with Kermit instead of println statements for better debugging.
 - When adding new UI functionality:
-  - First implement the data model in the domain layer
-  - Then update the ViewModel layer with necessary state handling
-  - Finally implement the UI components for each platform
+    - First implement the data model in the domain layer
+    - Then update the ViewModel layer with necessary state handling
+    - Finally implement the UI components for each platform
 - When implementing destructive actions (like delete), always provide confirmation dialogs
 - Delay database operations as much as possible to avoid unnecessary writes
 - When making changes to iOS code:
-  - First build the shared module with `./gradlew :shared:build`
-  - Test the Swift compilation by running `xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.4' build`
-  - When working with Kotlin-Swift interop, be careful with type conversions. Use optional casting with `as?` and null checks for Kotlin types exposed to Swift.
-  - Remember that Kotlin types like `Pair<String, String>` are exposed to Swift with properties named `first` and `second`, which are `NSString?` type and need proper handling.
+    - First build the shared module with `./gradlew :shared:build`
+    - Test the Swift compilation by running
+      `xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.4' build`
+    - When working with Kotlin-Swift interop, be careful with type conversions. Use optional casting
+      with `as?` and null checks for Kotlin types exposed to Swift.
+    - Remember that Kotlin types like `Pair<String, String>` are exposed to Swift with properties
+      named `first` and `second`, which are `NSString?` type and need proper handling.
 
 ## Library Management
 
 - All dependencies must be defined in `gradle/libs.versions.toml` file
 - When adding new libraries:
-  1. First add the library details to `libs.versions.toml` under the appropriate section
-  2. Then reference the library in build files using the `libs.some.library` syntax
-  3. For version references, use `version.ref = "some-version"` format
+    1. First add the library details to `libs.versions.toml` under the appropriate section
+    2. Then reference the library in build files using the `libs.some.library` syntax
+    3. For version references, use `version.ref = "some-version"` format
 
 ## Common Patterns
 
 ### Entity Creation
+
 - Create new entity as a temporary object in memory
 - Only save to Firestore when user explicitly saves
 - Clear form fields when canceling or after successful save
 
 ### Empty State Handling
+
 - When a deck has no cards, show appropriate empty state UI
 - Provide direct actions for users to add content
 - Update the hasCards state flow to properly trigger UI changes
 
 ### Error Handling
+
 - Use try-catch blocks around repository operations
 - Log errors using appropriate Kermit log levels
 - Provide fallback behavior when operations fail
 - Show appropriate UI feedback for error states
 
 ### Kotlin
+
 - If you need to add any Kotlin opt-ins, use file-level annotations
+
+### Concurrency
+
+- Implement the reactive code using Kotlin's `StateFlow`, do not rely on the Android specific
+  reactive features.
+- Avoid using delays to wait for obscure racy conditions, always implement proper reactive patterns
+  to react on the exact condition

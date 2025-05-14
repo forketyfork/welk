@@ -7,6 +7,9 @@ import me.forketyfork.welk.domain.FirestoreRepository
 import me.forketyfork.welk.vm.CardViewModel
 import me.forketyfork.welk.vm.CommonCardViewModel
 
+/**
+ * The desktop implementation of the main view model.
+ */
 class MainViewModel(
     val cardAnimationManager: AndroidCardAnimationManager = AndroidCardAnimationManager(),
     private val firestoreRepository: FirestoreRepository = FirestoreRepository()
@@ -17,8 +20,9 @@ class MainViewModel(
 ) {
 
     init {
+        installCollectors(viewModelScope)
         viewModelScope.launch {
-            nextCardOnAnimationCompletion()
+            // initially load the available decks
             loadDecks()
         }
     }

@@ -43,6 +43,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -53,6 +54,16 @@ import kotlinx.coroutines.launch
 import me.forketyfork.welk.CardInteractionManager
 import me.forketyfork.welk.MainViewModel
 import me.forketyfork.welk.presentation.CardAction
+
+
+object CardPanelTestTags {
+    const val VIEW_FRONT = "card_view_front"
+    const val VIEW_BACK = "card_view_back"
+    const val EDIT_FRONT = "card_edit_front"
+    const val EDIT_BACK = "card_edit_back"
+    const val EDIT_SAVE = "card_edit_save_button"
+    const val EDIT_CANCEL = "card_edit_cancel_button"
+}
 
 @Composable
 fun CardPanel(
@@ -100,23 +111,13 @@ fun CardPanel(
 
     // Only request focus when we have cards or there's a deck selected
     LaunchedEffect(
-        Unit,
         currentCard.value,
         currentDeck.value,
         hasCards.value
     ) {
         // Check if we have a deck and either have cards or are in edit mode
         if (currentDeck.value != null && (hasCards.value || isEditing.value)) {
-            // Delay focus request slightly to ensure it takes precedence
-            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
-                kotlinx.coroutines.delay(100)
-            }
-            try {
-                focusRequester.requestFocus()
-            } catch (e: IllegalStateException) {
-                // Ignore focus errors during initialization
-                logger.e(e) { "Focus request failed, UI might not be ready" }
-            }
+            focusRequester.requestFocus()
         }
     }
 
@@ -190,7 +191,7 @@ fun CardPanel(
                     onClick = {
                         val currentDeck = mainViewModel.currentDeck.value
                         if (currentDeck != null) {
-                            mainViewModel.processAction(CardAction.CreateNewCard(currentDeck.id))
+                            mainViewModel.processAction(CardAction.CreateNewCardInCurrentDeck)
                         }
                     }
                 ) {
@@ -209,6 +210,7 @@ fun CardPanel(
                     .background(color = animatedColor)
                     .padding(all = 20.dp)
                     .onKeyEvent { event: KeyEvent ->
+                        logger.d { "Card got key event: $event" }
                         val action = cardInteractionManager.handleKeyEvent(event)
                         mainViewModel.processAction(action)
                     }
@@ -223,6 +225,7 @@ fun CardPanel(
                         onValueChange = { frontText = it },
                         label = { Text("Front") },
                         modifier = Modifier.fillMaxWidth().weight(1f)
+                            .testTag(CardPanelTestTags.EDIT_FRONT)
                     )
                     Divider()
                     OutlinedTextField(
@@ -230,6 +233,7 @@ fun CardPanel(
                         onValueChange = { backText = it },
                         label = { Text("Back") },
                         modifier = Modifier.fillMaxWidth().weight(1f)
+                            .testTag(CardPanelTestTags.EDIT_BACK)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
@@ -251,7 +255,8 @@ fun CardPanel(
                                         logger.e(e) { "Focus request after save failed" }
                                     }
                                 }
-                            }
+                            },
+                            modifier = Modifier.testTag(CardPanelTestTags.EDIT_SAVE)
                         ) {
                             Text("Save")
                         }
@@ -266,7 +271,8 @@ fun CardPanel(
                                 } catch (e: IllegalStateException) {
                                     logger.i { "Focus request after cancel failed: ${e.message}" }
                                 }
-                            }
+                            },
+                            modifier = Modifier.testTag(CardPanelTestTags.EDIT_CANCEL)
                         ) {
                             Text("Cancel")
                         }
@@ -277,7 +283,11 @@ fun CardPanel(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(currentCard.value.front, modifier = Modifier.weight(1f))
+                        Text(
+                            currentCard.value.front,
+                            modifier = Modifier.weight(1f)
+                                .testTag(CardPanelTestTags.VIEW_FRONT)
+                        )
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
@@ -303,7 +313,10 @@ fun CardPanel(
                     }
                     Divider()
                     if (isFlipped.value) {
-                        Text(currentCard.value.back)
+                        Text(
+                            text = currentCard.value.back,
+                            modifier = Modifier.testTag(CardPanelTestTags.VIEW_BACK)
+                        )
                     }
                 }
             }
