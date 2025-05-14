@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +43,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -73,7 +76,7 @@ fun CardPanel(
     val logger = Logger.withTag("CardPanel")
 
     // Update local state when edit mode is activated or when creating a new card
-    androidx.compose.runtime.LaunchedEffect(
+    LaunchedEffect(
         editCardContent.value,
         isEditing.value,
         mainViewModel.isNewCard.value
@@ -96,7 +99,7 @@ fun CardPanel(
     val currentDeck = mainViewModel.currentDeck.collectAsStateWithLifecycle()
 
     // Only request focus when we have cards or there's a deck selected
-    androidx.compose.runtime.LaunchedEffect(
+    LaunchedEffect(
         Unit,
         currentCard.value,
         currentDeck.value,
@@ -152,7 +155,7 @@ fun CardPanel(
         modifier = modifier
             .fillMaxSize()
             .clickable(
-                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                interactionSource = remember { MutableInteractionSource() },
                 indication = null // No visual indication
             ) {
                 // Request focus when clicked - safely
@@ -179,7 +182,7 @@ fun CardPanel(
             ) {
                 Text(
                     "No cards in this deck",
-                    style = androidx.compose.ui.text.TextStyle(fontSize = 18.sp),
+                    style = TextStyle(fontSize = 18.sp),
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(20.dp))

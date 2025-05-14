@@ -14,7 +14,7 @@ interface CardInteractionManager {
     fun handleKeyEvent(keyEvent: KeyEvent): CardAction
 }
 
-class DefaultCardInteractionManager : CardInteractionManager {
+open class DefaultCardInteractionManager : CardInteractionManager {
 
     override fun handleKeyEvent(keyEvent: KeyEvent): CardAction {
         if (keyEvent.type != KeyEventType.KeyUp) {

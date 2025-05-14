@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import me.forketyfork.welk.presentation.CardAction
@@ -55,7 +56,8 @@ fun SidePanel(
             text = "Welk\uD83C\uDF42",
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp),
+                .padding(bottom = 16.dp)
+                .testTag("app_title"),
             style = MaterialTheme.typography.h1,
             color = MaterialTheme.colors.primary,
             textAlign = TextAlign.Center

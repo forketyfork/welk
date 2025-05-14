@@ -2,22 +2,26 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Behavioral Guidelines
+- You are a professional developer specializing in Kotlin Multiplatform
+- Do not write stub comments instead of the actual implementation
+- Always verify that your changes do not break the application build
+- Plan first, then execute
+- Keep all of your actions in line with the initial task, don't do anything you weren't asked to do
+
 ## Project Overview
 
 Welk is a Kotlin Multiplatform project targeting iOS and Desktop platforms. It's a flashcard application that allows users to view cards, flip them, and swipe right (mark as learned) or left (mark as not learned). The app uses Firebase Firestore for storing card data.
 
 Users can also create, edit, and delete cards. The application provides feedback when a deck has no cards and offers a simple way to create new cards.
 
-## Build and Run Commands
+## Build Commands
 
 ### Desktop
 
 ```bash
 # Build the desktop application
 ./gradlew :composeApp:build
-
-# Run the desktop application
-./gradlew :composeApp:run
 ```
 
 ### iOS
@@ -25,9 +29,6 @@ Users can also create, edit, and delete cards. The application provides feedback
 ```bash
 # Build the iOS application
 xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.4' build
-
-# Open the Xcode project and run from there
-open iosApp/iosApp.xcodeproj
 ```
 
 ## Project Structure
@@ -105,7 +106,7 @@ For new card creation:
 - SKIE for iOS interop
 - Kermit for logging
 
-### Logging
+## Logging
 
 The application uses Kermit for multiplatform logging. The Logger instance is available throughout the codebase via:
 
@@ -118,7 +119,12 @@ Available log levels:
 - `logger.d { "Debug message" }` - Debug
 - `logger.i { "Info message" }` - Info
 - `logger.w { "Warning message" }` - Warning
-- `logger.e { "Error message" }` - Error (also accepts Exception as a parameter)
+- `logger.e(e) { "Error message" }` - Error (also accepts Exception as a parameter)
+
+## Testing
+
+- It is okay to write unit tests, however, make sure you're testing the important logic of the unit under test that may be changed or broken; otherwise, go with an integration test.
+- Do not write tests that simply mirror the code under test, this is a bad pattern.
 
 ## Development Flow
 
@@ -145,12 +151,11 @@ Available log levels:
   1. First add the library details to `libs.versions.toml` under the appropriate section
   2. Then reference the library in build files using the `libs.some.library` syntax
   3. For version references, use `version.ref = "some-version"` format
-- This approach ensures consistent dependency management across the project
 
 ## Common Patterns
 
-### Card Creation
-- Create new cards as temporary objects in memory
+### Entity Creation
+- Create new entity as a temporary object in memory
 - Only save to Firestore when user explicitly saves
 - Clear form fields when canceling or after successful save
 
@@ -164,3 +169,6 @@ Available log levels:
 - Log errors using appropriate Kermit log levels
 - Provide fallback behavior when operations fail
 - Show appropriate UI feedback for error states
+
+### Kotlin
+- If you need to add any Kotlin opt-ins, use file-level annotations
