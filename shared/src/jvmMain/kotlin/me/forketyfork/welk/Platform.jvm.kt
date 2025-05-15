@@ -13,48 +13,59 @@ import java.util.Properties
 class JVMPlatform : Platform {
     override val name: String = "Java ${System.getProperty("java.version")}"
 
-    override fun initializeFirestore(): FirebaseFirestore {
+    companion object {
+        private val firestore = lazy {
+            lazyInitializeFirestore()
+        }
 
-        val logger = Logger.withTag("FirebaseFirestore")
+        private fun lazyInitializeFirestore(): FirebaseFirestore {
+            val logger = Logger.withTag("FirebaseFirestore")
 
-        FirebasePlatform.initializeFirebasePlatform(object : FirebasePlatform() {
-            val storage = mutableMapOf<String, String>()
-            override fun store(key: String, value: String) = storage.set(key, value)
-            override fun retrieve(key: String) = storage[key]
-            override fun clear(key: String) {
-                storage.remove(key)
-            }
+            FirebasePlatform.initializeFirebasePlatform(object : FirebasePlatform() {
+                val storage = mutableMapOf<String, String>()
+                override fun store(key: String, value: String) = storage.set(key, value)
+                override fun retrieve(key: String) = storage[key]
+                override fun clear(key: String) {
+                    storage.remove(key)
+                }
 
-            override fun log(msg: String) = logger.d(msg)
-        })
-        // Access the keys
-        val firebaseProperties = loadApiKeys()
+                override fun log(msg: String) = logger.d(msg)
+            })
+            // Access the keys
+            val firebaseProperties = loadApiKeys()
 
-        return Firebase.firestore(
-            Firebase.initialize(
-                Application(),
-                options = FirebaseOptions(
-                    apiKey = firebaseProperties.getProperty("firebase.apiKey"),
-                    authDomain = firebaseProperties.getProperty("firebase.authDomain"),
-                    projectId = firebaseProperties.getProperty("firebase.projectId"),
-                    storageBucket = firebaseProperties.getProperty("firebase.storageBucket"),
-                    gcmSenderId = firebaseProperties.getProperty("firebase.messagingSenderId"),
-                    applicationId = firebaseProperties.getProperty("firebase.appId")
+            return Firebase.firestore(
+                Firebase.initialize(
+                    Application(),
+                    options = FirebaseOptions(
+                        apiKey = firebaseProperties.getProperty("firebase.apiKey"),
+                        authDomain = firebaseProperties.getProperty("firebase.authDomain"),
+                        projectId = firebaseProperties.getProperty("firebase.projectId"),
+                        storageBucket = firebaseProperties.getProperty("firebase.storageBucket"),
+                        gcmSenderId = firebaseProperties.getProperty("firebase.messagingSenderId"),
+                        applicationId = firebaseProperties.getProperty("firebase.appId")
+                    )
                 )
             )
-        )
+        }
+
+        private fun loadApiKeys(): Properties {
+            val firebasePropertiesFile = "firebase.properties"
+            val properties = Properties()
+            val inputStream =
+                this::class.java.classLoader.getResourceAsStream(firebasePropertiesFile)
+            if (inputStream != null) {
+                inputStream.use(properties::load)
+            } else {
+                error("Failed to load the $firebasePropertiesFile file")
+            }
+            return properties
+        }
+
     }
 
-    private fun loadApiKeys(): Properties {
-        val firebasePropertiesFile = "firebase.properties"
-        val properties = Properties()
-        val inputStream = this.javaClass.classLoader.getResourceAsStream(firebasePropertiesFile)
-        if (inputStream != null) {
-            inputStream.use(properties::load)
-        } else {
-            error("Failed to load the $firebasePropertiesFile file")
-        }
-        return properties
+    override fun initializeFirestore(): FirebaseFirestore {
+        return firestore.value
     }
 
 }

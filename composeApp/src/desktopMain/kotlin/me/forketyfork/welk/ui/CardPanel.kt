@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -57,12 +56,15 @@ import me.forketyfork.welk.presentation.CardAction
 
 
 object CardPanelTestTags {
-    const val VIEW_FRONT = "card_view_front"
     const val VIEW_BACK = "card_view_back"
     const val EDIT_FRONT = "card_edit_front"
     const val EDIT_BACK = "card_edit_back"
     const val EDIT_SAVE = "card_edit_save_button"
     const val EDIT_CANCEL = "card_edit_cancel_button"
+    const val EDIT_BUTTON = "card_edit_button"
+    const val DELETE_BUTTON = "card_delete_button"
+    const val CREATE_FIRST_CARD_BUTTON = "create_first_card_button"
+    const val CARD_PANEL = "card_panel"
 }
 
 @Composable
@@ -155,18 +157,14 @@ fun CardPanel(
         // Make sure this panel can gain focus and receives keyboard events
         modifier = modifier
             .fillMaxSize()
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null // No visual indication
-            ) {
-                // Request focus when clicked - safely
-                try {
-                    focusRequester.requestFocus()
-                } catch (e: IllegalStateException) {
-                    // Ignore focus errors during initialization
-                    logger.e(e) { "Focus request on click failed" }
-                }
-            },
+            .testTag(CardPanelTestTags.CARD_PANEL)
+            .onKeyEvent { event: KeyEvent ->
+                logger.d { "Card got key event: $event" }
+                val action = cardInteractionManager.handleKeyEvent(event)
+                mainViewModel.processAction(action)
+            }
+            .focusRequester(focusRequester)
+            .focusable(),
         contentAlignment = Alignment.Center
     ) {
         if (!hasCards.value && !isEditing.value) {
@@ -179,12 +177,12 @@ fun CardPanel(
                     .background(color = Color.White)
                     .padding(all = 20.dp),
                 verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     "No cards in this deck",
                     style = TextStyle(fontSize = 18.sp),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
                 )
                 Spacer(modifier = Modifier.height(20.dp))
                 Button(
@@ -193,7 +191,8 @@ fun CardPanel(
                         if (currentDeck != null) {
                             mainViewModel.processAction(CardAction.CreateNewCardInCurrentDeck)
                         }
-                    }
+                    },
+                    modifier = Modifier.testTag(CardPanelTestTags.CREATE_FIRST_CARD_BUTTON)
                 ) {
                     Text("Create a Card")
                 }
@@ -208,14 +207,7 @@ fun CardPanel(
                     .rotate(animatedOffset.x / 80.0f)
                     .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(10.dp))
                     .background(color = animatedColor)
-                    .padding(all = 20.dp)
-                    .onKeyEvent { event: KeyEvent ->
-                        logger.d { "Card got key event: $event" }
-                        val action = cardInteractionManager.handleKeyEvent(event)
-                        mainViewModel.processAction(action)
-                    }
-                    .focusRequester(focusRequester)
-                    .focusable(),
+                    .padding(all = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 if (isEditing.value) {
@@ -248,12 +240,8 @@ fun CardPanel(
                                     mainViewModel.saveCardEdit()
                                     // Then exit edit mode
                                     mainViewModel.processAction(CardAction.SaveEdit)
-                                    // Return focus to the card for keyboard navigation - safely
-                                    try {
-                                        focusRequester.requestFocus()
-                                    } catch (e: IllegalStateException) {
-                                        logger.e(e) { "Focus request after save failed" }
-                                    }
+                                    // Return focus to the card for keyboard navigation
+                                    focusRequester.requestFocus()
                                 }
                             },
                             modifier = Modifier.testTag(CardPanelTestTags.EDIT_SAVE)
@@ -265,12 +253,8 @@ fun CardPanel(
                             onClick = {
                                 // Cancel without saving changes and reset to original values
                                 mainViewModel.processAction(CardAction.CancelEdit)
-                                // Return focus to the card for keyboard navigation - safely
-                                try {
-                                    focusRequester.requestFocus()
-                                } catch (e: IllegalStateException) {
-                                    logger.i { "Focus request after cancel failed: ${e.message}" }
-                                }
+                                // Return focus to the card for keyboard navigation
+                                focusRequester.requestFocus()
                             },
                             modifier = Modifier.testTag(CardPanelTestTags.EDIT_CANCEL)
                         ) {
@@ -281,12 +265,12 @@ fun CardPanel(
                     // Normal view mode UI
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
+                        horizontalArrangement = Arrangement.SpaceBetween,
+
+                        ) {
                         Text(
                             currentCard.value.front,
                             modifier = Modifier.weight(1f)
-                                .testTag(CardPanelTestTags.VIEW_FRONT)
                         )
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -299,6 +283,7 @@ fun CardPanel(
                                     .clickable {
                                         mainViewModel.processAction(CardAction.Edit)
                                     }
+                                    .testTag(CardPanelTestTags.EDIT_BUTTON)
                             )
                             Icon(
                                 imageVector = Icons.Default.Delete,
@@ -308,6 +293,7 @@ fun CardPanel(
                                     .clickable {
                                         mainViewModel.processAction(CardAction.Delete)
                                     }
+                                    .testTag(CardPanelTestTags.DELETE_BUTTON)
                             )
                         }
                     }

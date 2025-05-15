@@ -1,20 +1,8 @@
-This is a Kotlin Multiplatform project targeting iOS, Desktop.
+# welk
 
-* `/composeApp` is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - `commonMain` is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    `iosMain` would be the right folder for such calls.
+## About
 
-* `/iosApp` contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform, 
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
-
-* `/shared` is for the code that will be shared between all targets in the project.
-  The most important subfolder is `commonMain`. If preferred, you can add code to the platform-specific folders here too.
-
-
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+welk is a flashcard application, currently in development. 
 
 ## Development prerequisites
 
@@ -30,3 +18,24 @@ For local development:
   firebase.messagingSenderId=
   firebase.appId=
   ```
+
+## TODO
+
+### Current focus
+
+- [ ] End-to-end tests for the main functionality
+- [ ] Test instance of Firestore
+
+### Targeted features
+
+- [ ] Filesystem-like deck management, arbitrarily nested decks, joining and duplicating decks
+- [ ] Ability to select multiple decks for a learning session
+- [ ] Spaced repetition
+- [ ] Search for duplicates across decks
+- [ ] Easily highlight parts of the text in the flashcards
+- [ ] Apps for iOS, iPadOS and macOS
+- [ ] Search and insert images (both as links and as files)
+- [ ] Generate definition and short example sentences
+- [ ] Audio (TTS), transcription
+- [ ] Spelling / writing modes
+- [ ] Import from other similar tools (Anki, Mochi...)

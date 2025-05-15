@@ -30,6 +30,7 @@ import me.forketyfork.welk.domain.Deck
 
 object DeckItemTestTags {
     const val DECK_NAME_TEMPLATE = "deck_name_%s"
+    const val ADD_CARD_BUTTON_TEMPLATE = "add_card_%s"
 }
 
 private val logger = co.touchlab.kermit.Logger.withTag("DeckItem")
@@ -49,6 +50,7 @@ fun DeckItem(
             .background(if (isSelected) MaterialTheme.colors.primary.copy(alpha = 0.1f) else Color.Transparent)
             .clickable { onClick() }
             .padding(12.dp)
+            .testTag(DeckItemTestTags.DECK_NAME_TEMPLATE.format(deck.id))
     ) {
         // Right-side controls column
         Column(
@@ -73,7 +75,9 @@ fun DeckItem(
                         horizontal = 8.dp,
                         vertical = 2.dp
                     ),
-                    modifier = Modifier.height(24.dp)
+                    modifier = Modifier
+                        .height(24.dp)
+                        .testTag(DeckItemTestTags.ADD_CARD_BUTTON_TEMPLATE.format(deck.id))
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
@@ -94,14 +98,12 @@ fun DeckItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(end = 90.dp) // Make space for the controls
+
         ) {
             Text(
                 text = deck.name,
                 style = MaterialTheme.typography.body1,
                 color = if (isSelected) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface,
-                modifier = Modifier.testTag(
-                    DeckItemTestTags.DECK_NAME_TEMPLATE.format(deck.id)
-                        .also { testTag -> logger.i { "added deck with testTag = $testTag" } })
             )
             if (deck.description.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(4.dp))

@@ -5,7 +5,6 @@ repository.
 
 ## Behavioral Guidelines
 
-- You are a professional developer specializing in Kotlin Multiplatform
 - Do not write stub comments instead of the actual implementation
 - Always verify that your changes do not break the application build
 - Plan first, then execute
@@ -14,8 +13,8 @@ repository.
 ## Project Overview
 
 Welk is a Kotlin Multiplatform project targeting iOS and Desktop platforms. It's a flashcard
-application that allows users to view cards, flip them, and swipe right (mark as learned) or left (
-mark as not learned). The app uses Firebase Firestore for storing card data.
+application that allows users to view and edit cards, manage card decks, flip and swipe cards
+(mark as learned or not learned). The app uses Firebase Firestore for storing card data.
 
 Users can also create, edit, and delete cards. The application provides feedback when a deck has no
 cards and offers a simple way to create new cards.
@@ -195,5 +194,5 @@ Available log levels:
 
 - Implement the reactive code using Kotlin's `StateFlow`, do not rely on the Android specific
   reactive features.
-- Avoid using delays to wait for obscure racy conditions, always implement proper reactive patterns
-  to react on the exact condition
+- Avoid calling `delay()` or `Thread.sleep()` to wait for obscure racy conditions, even in tests.
+  Always implement proper reactive patterns to react on the exact condition.
