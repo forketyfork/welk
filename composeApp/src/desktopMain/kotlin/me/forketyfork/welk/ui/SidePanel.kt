@@ -23,11 +23,6 @@ import kotlinx.coroutines.launch
 import me.forketyfork.welk.DesktopCardViewModel
 import me.forketyfork.welk.presentation.CardAction
 
-object SidePanelTestTags {
-    const val APP_TITLE = "app_title"
-    const val DECK_LIST_TITLE = "deck_list_title"
-}
-
 @Composable
 fun SidePanel(
     cardViewModel: DesktopCardViewModel,
@@ -85,4 +80,9 @@ fun SidePanel(
             )
         }
     }
+}
+
+object SidePanelTestTags {
+    const val APP_TITLE = "app_title"
+    const val DECK_LIST_TITLE = "deck_list_title"
 }

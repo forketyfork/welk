@@ -27,14 +27,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import me.forketyfork.welk.domain.Deck
 
-
-object DeckItemTestTags {
-    const val DECK_NAME_TEMPLATE = "deck_name_%s"
-    const val ADD_CARD_BUTTON_TEMPLATE = "add_card_%s"
-}
-
-private val logger = co.touchlab.kermit.Logger.withTag("DeckItem")
-
 @Composable
 fun DeckItem(
     deck: Deck,
@@ -115,4 +107,9 @@ fun DeckItem(
             }
         }
     }
+}
+
+object DeckItemTestTags {
+    const val DECK_NAME_TEMPLATE = "deck_name_%s"
+    const val ADD_CARD_BUTTON_TEMPLATE = "add_card_%s"
 }
