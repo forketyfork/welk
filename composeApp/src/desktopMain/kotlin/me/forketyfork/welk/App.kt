@@ -17,7 +17,7 @@ import me.forketyfork.welk.ui.theme.AppTheme
 
 @Composable
 fun App(
-    mainViewModel: MainViewModel = viewModel(),
+    cardViewModel: DesktopCardViewModel = viewModel(),
     loginViewModel: DesktopLoginViewModel = viewModel(),
     cardInteractionManager: CardInteractionManager = DefaultCardInteractionManager()
 ) {
@@ -39,7 +39,7 @@ fun App(
                 Row(modifier = Modifier.fillMaxSize()) {
                     // Left panel with the app name and deck list with fixed width
                     SidePanel(
-                        mainViewModel = mainViewModel,
+                        cardViewModel = cardViewModel,
                         // Fixed width instead of weight
                         modifier = Modifier.zIndex(10f) // Higher z-index to stay on top
                     )
@@ -49,7 +49,7 @@ fun App(
 
                     // Main content area with the card - should get default focus
                     CardPanel(
-                        mainViewModel = mainViewModel,
+                        cardViewModel = cardViewModel,
                         cardInteractionManager = cardInteractionManager,
                         // Use weight to center it
                         modifier = Modifier.weight(2f)

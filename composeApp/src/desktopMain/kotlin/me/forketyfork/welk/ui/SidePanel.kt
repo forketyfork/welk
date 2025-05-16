@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import me.forketyfork.welk.MainViewModel
+import me.forketyfork.welk.DesktopCardViewModel
 import me.forketyfork.welk.presentation.CardAction
 
 object SidePanelTestTags {
@@ -30,12 +30,12 @@ object SidePanelTestTags {
 
 @Composable
 fun SidePanel(
-    mainViewModel: MainViewModel,
+    cardViewModel: DesktopCardViewModel,
     width: Int = 250,
     modifier: Modifier = Modifier
 ) {
-    val decks by mainViewModel.availableDecks.collectAsState()
-    val currentDeck by mainViewModel.currentDeck.collectAsState()
+    val decks by cardViewModel.availableDecks.collectAsState()
+    val currentDeck by cardViewModel.currentDeck.collectAsState()
 
     Column(
         modifier = modifier
@@ -75,12 +75,12 @@ fun SidePanel(
                 deck = deck,
                 isSelected = currentDeck?.id == deck.id,
                 onClick = {
-                    mainViewModel.viewModelScope.launch {
-                        mainViewModel.selectDeck(deck.id)
+                    cardViewModel.viewModelScope.launch {
+                        cardViewModel.selectDeck(deck.id)
                     }
                 },
                 onAddCard = { deckId ->
-                    mainViewModel.processAction(CardAction.CreateNewCard(deckId))
+                    cardViewModel.processAction(CardAction.CreateNewCard(deckId))
                 }
             )
         }

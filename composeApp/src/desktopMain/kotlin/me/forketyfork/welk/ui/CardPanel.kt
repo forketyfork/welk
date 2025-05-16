@@ -51,7 +51,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.launch
 import me.forketyfork.welk.CardInteractionManager
-import me.forketyfork.welk.MainViewModel
+import me.forketyfork.welk.DesktopCardViewModel
 import me.forketyfork.welk.presentation.CardAction
 
 
@@ -69,17 +69,17 @@ object CardPanelTestTags {
 
 @Composable
 fun CardPanel(
-    mainViewModel: MainViewModel,
+    cardViewModel: DesktopCardViewModel,
     cardInteractionManager: CardInteractionManager,
     modifier: Modifier = Modifier
 ) {
-    val currentCard = mainViewModel.currentCard.collectAsStateWithLifecycle()
-    val isFlipped = mainViewModel.isFlipped.collectAsStateWithLifecycle()
-    val isEditing = mainViewModel.isEditing.collectAsStateWithLifecycle()
-    val editCardContent = mainViewModel.editCardContent.collectAsStateWithLifecycle()
+    val currentCard = cardViewModel.currentCard.collectAsStateWithLifecycle()
+    val isFlipped = cardViewModel.isFlipped.collectAsStateWithLifecycle()
+    val isEditing = cardViewModel.isEditing.collectAsStateWithLifecycle()
+    val editCardContent = cardViewModel.editCardContent.collectAsStateWithLifecycle()
     val isDeleteConfirmationShowing =
-        mainViewModel.isDeleteConfirmationShowing.collectAsStateWithLifecycle()
-    val hasCards = mainViewModel.hasCards.collectAsStateWithLifecycle()
+        cardViewModel.isDeleteConfirmationShowing.collectAsStateWithLifecycle()
+    val hasCards = cardViewModel.hasCards.collectAsStateWithLifecycle()
 
     var frontText by remember { mutableStateOf("") }
     var backText by remember { mutableStateOf("") }
@@ -92,7 +92,7 @@ fun CardPanel(
     LaunchedEffect(
         editCardContent.value,
         isEditing.value,
-        mainViewModel.isNewCard.value
+        cardViewModel.isNewCard.value
     ) {
         // Only update the text values if we're in edit mode
         if (isEditing.value) {
@@ -109,7 +109,7 @@ fun CardPanel(
     val focusRequester = remember { FocusRequester() }
 
     // Request focus after UI is rendered and whenever card changes
-    val currentDeck = mainViewModel.currentDeck.collectAsStateWithLifecycle()
+    val currentDeck = cardViewModel.currentDeck.collectAsStateWithLifecycle()
 
     // Only request focus when we have cards or there's a deck selected
     LaunchedEffect(
@@ -123,20 +123,20 @@ fun CardPanel(
         }
     }
 
-    val animatedOffset by mainViewModel.cardAnimationManager.animateOffset()
-    val animatedColor by mainViewModel.cardAnimationManager.animateColor()
+    val animatedOffset by cardViewModel.cardAnimationManager.animateOffset()
+    val animatedColor by cardViewModel.cardAnimationManager.animateColor()
 
     // Delete confirmation dialog
     if (isDeleteConfirmationShowing.value) {
         AlertDialog(
-            onDismissRequest = { mainViewModel.processAction(CardAction.CancelDelete) },
+            onDismissRequest = { cardViewModel.processAction(CardAction.CancelDelete) },
             title = { Text("Delete Card") },
             text = { Text("Are you sure you want to delete this card? This action cannot be undone.") },
             confirmButton = {
                 TextButton(
                     onClick = {
                         coroutineScope.launch {
-                            mainViewModel.processAction(CardAction.ConfirmDelete)
+                            cardViewModel.processAction(CardAction.ConfirmDelete)
                         }
                     }
                 ) {
@@ -145,7 +145,7 @@ fun CardPanel(
             },
             dismissButton = {
                 TextButton(
-                    onClick = { mainViewModel.processAction(CardAction.CancelDelete) }
+                    onClick = { cardViewModel.processAction(CardAction.CancelDelete) }
                 ) {
                     Text("Cancel")
                 }
@@ -161,7 +161,7 @@ fun CardPanel(
             .onKeyEvent { event: KeyEvent ->
                 logger.d { "Card got key event: $event" }
                 val action = cardInteractionManager.handleKeyEvent(event)
-                mainViewModel.processAction(action)
+                cardViewModel.processAction(action)
             }
             .focusRequester(focusRequester)
             .focusable(),
@@ -187,9 +187,9 @@ fun CardPanel(
                 Spacer(modifier = Modifier.height(20.dp))
                 Button(
                     onClick = {
-                        val currentDeck = mainViewModel.currentDeck.value
+                        val currentDeck = cardViewModel.currentDeck.value
                         if (currentDeck != null) {
-                            mainViewModel.processAction(CardAction.CreateNewCardInCurrentDeck)
+                            cardViewModel.processAction(CardAction.CreateNewCardInCurrentDeck)
                         }
                     },
                     modifier = Modifier.testTag(CardPanelTestTags.CREATE_FIRST_CARD_BUTTON)
@@ -234,12 +234,12 @@ fun CardPanel(
                     ) {
                         Button(
                             onClick = {
-                                mainViewModel.updateEditContent(frontText, backText)
+                                cardViewModel.updateEditContent(frontText, backText)
                                 coroutineScope.launch {
                                     // First save the edits to update the card content
-                                    mainViewModel.saveCardEdit()
+                                    cardViewModel.saveCardEdit()
                                     // Then exit edit mode
-                                    mainViewModel.processAction(CardAction.SaveEdit)
+                                    cardViewModel.processAction(CardAction.SaveEdit)
                                     // Return focus to the card for keyboard navigation
                                     focusRequester.requestFocus()
                                 }
@@ -252,7 +252,7 @@ fun CardPanel(
                         Button(
                             onClick = {
                                 // Cancel without saving changes and reset to original values
-                                mainViewModel.processAction(CardAction.CancelEdit)
+                                cardViewModel.processAction(CardAction.CancelEdit)
                                 // Return focus to the card for keyboard navigation
                                 focusRequester.requestFocus()
                             },
@@ -281,7 +281,7 @@ fun CardPanel(
                                 modifier = Modifier
                                     .size(24.dp)
                                     .clickable {
-                                        mainViewModel.processAction(CardAction.Edit)
+                                        cardViewModel.processAction(CardAction.Edit)
                                     }
                                     .testTag(CardPanelTestTags.EDIT_BUTTON)
                             )
@@ -291,7 +291,7 @@ fun CardPanel(
                                 modifier = Modifier
                                     .size(24.dp)
                                     .clickable {
-                                        mainViewModel.processAction(CardAction.Delete)
+                                        cardViewModel.processAction(CardAction.Delete)
                                     }
                                     .testTag(CardPanelTestTags.DELETE_BUTTON)
                             )

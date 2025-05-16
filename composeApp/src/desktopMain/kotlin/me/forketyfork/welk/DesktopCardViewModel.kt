@@ -10,7 +10,7 @@ import me.forketyfork.welk.vm.SharedCardViewModel
 /**
  * The desktop implementation of the main view model.
  */
-class MainViewModel(
+class DesktopCardViewModel(
     val cardAnimationManager: AndroidCardAnimationManager = AndroidCardAnimationManager(),
     private val firestoreRepository: FirestoreRepository = FirestoreRepository(),
 ) : ViewModel(), CardViewModel by SharedCardViewModel(

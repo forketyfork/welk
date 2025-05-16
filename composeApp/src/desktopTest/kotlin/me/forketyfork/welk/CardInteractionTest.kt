@@ -44,13 +44,13 @@ class CardInteractionTest {
             repo.getAllDecks().forEach { deck -> repo.deleteDeck(deck.id) }
         }
 
-        val mainViewModel = MainViewModel()
+        val cardViewModel = DesktopCardViewModel()
 
         setContent {
             CompositionLocalProvider(
                 LocalLifecycleOwner provides LocalLifecycleOwnerFake(),
             ) {
-                App(mainViewModel = mainViewModel)
+                App(cardViewModel = cardViewModel)
             }
         }
 
