@@ -24,6 +24,10 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
+      - name: Create firebase.properties file
+        run: |
+          echo "${{ secrets.FIREBASE_PROPERTIES_CONTENT }}" > shared/src/jvmMain/resources/firebase.properties
+
       - name: Assemble Desktop App
         run: ./gradlew :composeApp:assemble
 
