@@ -22,9 +22,11 @@ For local development:
 ## TODO
 
 ### Current focus
-
-- [ ] End-to-end tests for the main functionality
 - [ ] Test instance of Firestore
+- [ ] GitHub Actions for testing
+- [ ] End-to-end tests for the main functionality
+- [ ] Per-user storage and authentication
+- [ ] Use proper coroutine dispatchers for Firestore access
 
 ### Targeted features
 

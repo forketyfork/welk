@@ -2,6 +2,7 @@ package me.forketyfork.welk.vm
 
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,38 +14,7 @@ import me.forketyfork.welk.domain.Deck
 import me.forketyfork.welk.domain.DeckRepository
 import me.forketyfork.welk.presentation.CardAction
 
-interface CardViewModel {
-    val isFlipped: StateFlow<Boolean>
-    val isEditing: StateFlow<Boolean>
-    val currentCard: StateFlow<Card>
-    val editCardContent: StateFlow<Pair<String, String>>
-    val currentDeck: StateFlow<Deck?>
-    val availableDecks: StateFlow<List<Deck>>
-    val isNewCard: StateFlow<Boolean>
-    val isDeleteConfirmationShowing: StateFlow<Boolean>
-    val hasCards: StateFlow<Boolean>
-
-    fun flipCard()
-    suspend fun nextCard()
-    suspend fun loadDecks()
-    suspend fun selectDeck(deckId: String)
-    fun processAction(action: CardAction): Boolean
-    fun updateEditContent(front: String, back: String)
-    suspend fun saveCardEdit()
-    suspend fun createNewCard(deckId: String)
-    suspend fun cancelNewCard()
-    suspend fun deleteCurrentCard()
-    fun showDeleteConfirmation()
-    fun hideDeleteConfirmation()
-
-    /**
-     * Installs the collectors for various UI state changes in the proper coroutine scope.
-     * Call this during the model initialization.
-     */
-    fun installCollectors(coroutineScope: CoroutineScope)
-}
-
-open class CommonCardViewModel(
+open class SharedCardViewModel(
     private val cardRepository: CardRepository,
     private val deckRepository: DeckRepository,
     private val cardAnimationManager: CardAnimationManager
@@ -86,6 +56,9 @@ open class CommonCardViewModel(
     override val hasCards: StateFlow<Boolean> = _hasCards.asStateFlow()
 
     private val logger = Logger.withTag("CommonCardViewModel")
+
+    // TODO use the model scope instead of the main scope
+    private val mainScope = MainScope()
 
     /**
      * Starts collection of card position change events, e.g., when we select a new deck,
@@ -355,7 +328,7 @@ open class CommonCardViewModel(
 
                 // If this is a new card being canceled, perform special handling
                 if (_isNewCard.value) {
-                    kotlinx.coroutines.MainScope().launch {
+                    mainScope.launch {
                         cancelNewCard()
                     }
                 } else {
@@ -376,7 +349,7 @@ open class CommonCardViewModel(
             CardAction.ConfirmDelete -> {
                 if (_isDeleteConfirmationShowing.value) {
                     hideDeleteConfirmation()
-                    kotlinx.coroutines.MainScope().launch {
+                    mainScope.launch {
                         deleteCurrentCard()
                     }
                     true
@@ -391,7 +364,7 @@ open class CommonCardViewModel(
             }
 
             is CardAction.CreateNewCard -> {
-                kotlinx.coroutines.MainScope().launch {
+                mainScope.launch {
                     createNewCard(action.deckId)
                 }
                 true
@@ -399,7 +372,7 @@ open class CommonCardViewModel(
 
             is CardAction.CreateNewCardInCurrentDeck -> {
                 currentDeck.value?.let { deck ->
-                    kotlinx.coroutines.MainScope().launch {
+                    mainScope.launch {
                         createNewCard(deck.id)
                     }
                 } ?: logger.w { "No current deck selected" }
