@@ -30,9 +30,6 @@ jobs:
         run: |
           echo "$FIREBASE_PROPERTIES_CONTENT" > ./shared/src/jvmMain/resources/firebase.properties
 
-      - name: Create firebase.properties file
-        run: |
-
       - name: Assemble Desktop App
         run: ./gradlew :composeApp:assemble
 
