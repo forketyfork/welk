@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -44,20 +45,23 @@ fun LoginView(viewModel: LoginViewModel) {
             onValueChange = { username = it },
             label = { Text("Username") },
             singleLine = true,
-            modifier = Modifier.width(300.dp),
+            modifier = Modifier.width(300.dp)
+                .testTag(LoginViewTestTags.USERNAME_INPUT),
         )
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text("Password") },
             singleLine = true,
-            modifier = Modifier.width(300.dp),
+            modifier = Modifier.width(300.dp)
+                .testTag(LoginViewTestTags.PASSWORD_INPUT),
             visualTransformation = PasswordVisualTransformation()
         )
         TextButton(
             onClick = {
                 viewModel.signIn(username, password)
-            }
+            },
+            modifier = Modifier.testTag(LoginViewTestTags.SIGN_IN_BUTTON)
         ) {
             Text("Sign in")
         }
@@ -67,4 +71,10 @@ fun LoginView(viewModel: LoginViewModel) {
             modifier = Modifier.padding(vertical = 16.dp)
         )
     }
+}
+
+object LoginViewTestTags {
+    const val USERNAME_INPUT = "login_username_input"
+    const val PASSWORD_INPUT = "login_password_input"
+    const val SIGN_IN_BUTTON = "login_sign_in_button"
 }

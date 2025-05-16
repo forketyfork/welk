@@ -16,7 +16,9 @@ import androidx.compose.ui.test.hasTextExactly
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.test.waitUntilDoesNotExist
@@ -29,8 +31,10 @@ import kotlinx.coroutines.runBlocking
 import me.forketyfork.welk.domain.FirestoreRepository
 import me.forketyfork.welk.ui.CardPanelTestTags
 import me.forketyfork.welk.ui.DeckItemTestTags
+import me.forketyfork.welk.ui.LoginViewTestTags
 import me.forketyfork.welk.ui.SidePanelTestTags
 import org.junit.Test
+import kotlin.test.fail
 
 class CardInteractionTest {
 
@@ -38,28 +42,43 @@ class CardInteractionTest {
     @Test
     fun canViewAndFlipCards() = runComposeUiTest {
 
+        val testUsername = System.getenv("WELK_TEST_USERNAME")
+        val testPassword = System.getenv("WELK_TEST_PASSWORD")
+
+        if (testUsername.isNullOrBlank() || testPassword.isNullOrBlank()) {
+            fail("WELK_TEST_USERNAME and WELK_TEST_PASSWORD environment variables must be set")
+        }
+
         // database cleanup
         runBlocking {
             val repo = FirestoreRepository()
             repo.getAllDecks().forEach { deck -> repo.deleteDeck(deck.id) }
         }
 
+        // TODO ViewModelStoreOwner is required to initialize the models using `viewModel()`,
+        // maybe it's possible to provide such setup to avoid this?
         val cardViewModel = DesktopCardViewModel()
+        val loginViewModel = DesktopLoginViewModel()
 
         setContent {
             CompositionLocalProvider(
                 LocalLifecycleOwner provides LocalLifecycleOwnerFake(),
             ) {
-                App(cardViewModel = cardViewModel)
+                App(cardViewModel, loginViewModel)
             }
         }
 
+        // log in as a test user
+        onNodeWithTag(LoginViewTestTags.USERNAME_INPUT).performTextInput(testUsername)
+        onNodeWithTag(LoginViewTestTags.PASSWORD_INPUT).performTextInput(testPassword)
+        onNodeWithTag(LoginViewTestTags.SIGN_IN_BUTTON).performClick()
+
         // check basic UI elements are visible
+        waitUntilExactlyOneExists(hasTestTag(SidePanelTestTags.APP_TITLE), timeoutMillis = 10000)
         onNodeWithTag(SidePanelTestTags.APP_TITLE).assertTextEquals("Welk\uD83C\uDF42")
         onNodeWithTag(SidePanelTestTags.DECK_LIST_TITLE).assertTextEquals("Decks")
 
         // wait until the decks are loaded, verify their expected contents
-
         val preloadedDeckIdsAndTexts = mapOf(
             "deck1" to arrayOf("3 cards", "Basic Vocabulary", "Essential words for beginners"),
             "deck2" to arrayOf("2 cards", "Grammar Rules", "Key grammar concepts"),
