@@ -24,12 +24,11 @@ For local development:
 ### Done
 - [x] User email/password authentication
 - [x] Use koin for dependency injection
+- [x] GitHub Actions for testing
+- [x] Per-user storage
 
 ### Current focus
-- [ ] Test instance of Firestore
-- [ ] GitHub Actions for testing
 - [ ] End-to-end tests for the main functionality
-- [ ] Per-user storage
 - [ ] Use proper coroutine dispatchers for Firestore access
 - [ ] User email/password authentication in iOS
 - [ ] Break down the main view model

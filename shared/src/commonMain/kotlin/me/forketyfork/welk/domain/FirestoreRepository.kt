@@ -1,16 +1,23 @@
 package me.forketyfork.welk.domain
 
 import co.touchlab.kermit.Logger
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.firestore.FirebaseFirestore
 import kotlinx.datetime.Clock
 import me.forketyfork.welk.Platform
 
 class FirestoreRepository(val platform: Platform) : CardRepository, DeckRepository {
     private val firestore: FirebaseFirestore = platform.initializeFirestore()
-    private val rootCollection = firestore.collection("welk_data")
-    private val decksCollection = rootCollection.document("collections").collection("decks")
-
     private val logger = Logger.Companion.withTag("FirestoreRepository")
+    
+    private val userCollection
+        get() = Firebase.auth.currentUser?.uid?.let { userId ->
+            firestore.collection(userId)
+        } ?: throw IllegalStateException("User must be logged in to access data")
+    
+    private val decksCollection
+        get() = userCollection.document("collections").collection("decks")
 
     // DECK REPOSITORY IMPLEMENTATION
 

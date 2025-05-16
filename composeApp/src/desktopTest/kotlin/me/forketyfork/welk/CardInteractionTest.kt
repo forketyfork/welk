@@ -53,12 +53,6 @@ class CardInteractionTest : KoinTest {
             fail("WELK_TEST_USERNAME and WELK_TEST_PASSWORD environment variables must be set")
         }
 
-        // database cleanup
-        runBlocking {
-            val repo = FirestoreRepository(getPlatform())
-            repo.getAllDecks().forEach { deck -> repo.deleteDeck(deck.id) }
-        }
-
         setContent {
             CompositionLocalProvider(
                 LocalLifecycleOwner provides LocalLifecycleOwnerFake(),
