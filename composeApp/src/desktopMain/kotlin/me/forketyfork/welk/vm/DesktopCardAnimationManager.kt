@@ -1,4 +1,4 @@
-package me.forketyfork.welk
+package me.forketyfork.welk.vm
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
@@ -13,12 +13,10 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import me.forketyfork.welk.vm.AnimationCompleteOutcome
-import me.forketyfork.welk.vm.CommonCardAnimationManager
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
-class AndroidCardAnimationManager : CommonCardAnimationManager() {
+class DesktopCardAnimationManager : CommonCardAnimationManager() {
 
     private val _cardAnimationState = MutableStateFlow(CardAnimationState())
     private val cardAnimationState = _cardAnimationState.asStateFlow()

@@ -10,10 +10,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import me.forketyfork.welk.ui.CardPanel
-import me.forketyfork.welk.ui.LoginView
-import me.forketyfork.welk.ui.SidePanel
-import me.forketyfork.welk.ui.theme.AppTheme
+import me.forketyfork.welk.components.CardPanel
+import me.forketyfork.welk.components.LoginView
+import me.forketyfork.welk.components.SidePanel
+import me.forketyfork.welk.theme.AppTheme
+import me.forketyfork.welk.vm.CardInteractionManager
+import me.forketyfork.welk.vm.DefaultCardInteractionManager
+import me.forketyfork.welk.vm.DesktopCardViewModel
+import me.forketyfork.welk.vm.DesktopLoginViewModel
 
 @Composable
 fun App(
@@ -40,6 +44,7 @@ fun App(
                     // Left panel with the app name and deck list with fixed width
                     SidePanel(
                         cardViewModel = cardViewModel,
+                        loginViewModel = loginViewModel,
                         // Fixed width instead of weight
                         modifier = Modifier.zIndex(10f) // Higher z-index to stay on top
                     )

@@ -5,8 +5,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import me.forketyfork.welk.auth.AuthService
-import me.forketyfork.welk.auth.FirestoreAuthService
+import me.forketyfork.welk.service.auth.AuthService
+import me.forketyfork.welk.service.auth.FirestoreAuthService
 
 /**
  * Implementation of the LoginViewModel shared across Desktop and Mobile.
@@ -29,6 +29,13 @@ class SharedLoginViewModel(
             val userId = authService.signIn(username, password)
             _userId.value = userId
             _loginError.value = userId == null
+        }
+    }
+
+    override fun signOut() {
+        mainScope.launch {
+            authService.signOut()
+            _userId.value = null
         }
     }
 

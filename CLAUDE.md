@@ -57,8 +57,10 @@ xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -destination 'platfor
     - `DeckRepository` - Interface for fetching and updating deck data
 
 2. **ViewModel Layer**
-    - `CardViewModel` - Interface for card-related operations
-    - `CommonCardViewModel` - Shared implementation of card operations
+    - `CardViewModel` - Interface for card-related operations including logout functionality
+    - `SharedCardViewModel` - Shared implementation of card operations
+    - `LoginViewModel` - Interface for login-related operations
+    - `SharedLoginViewModel` - Shared implementation of login operations
     - `CardAnimationManager` - Interface for handling card animations
     - State flows for tracking UI state (editing, deletion confirmation, etc.)
 
@@ -66,7 +68,12 @@ xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -destination 'platfor
     - Platform-specific implementations of the UI
     - Animation logic for card interactions
     - Card panel with edit/delete functionality
+    - Side panel with deck listing and user actions
     - Confirmation dialogs for destructive actions
+    - Bottom panel in side panel with application-wide actions like logout
+
+4. **Service Layer**
+    - `AuthService` - Interface for authentication operations
 
 ## Development Prerequisites
 
@@ -87,14 +94,16 @@ xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -destination 'platfor
 
 The main workflow of the application:
 
-1. Cards are fetched from Firestore
-2. User can flip cards to see front/back
-3. User can swipe right (learned) or left (not learned)
-4. User can edit card content by tapping the edit button (pencil icon)
-5. User can delete cards by tapping the delete button and confirming
-6. User can create new cards when a deck is empty or by clicking "Add Card"
-7. Card status and content are updated in Firestore
-8. Next card is displayed
+1. Users authenticate through the login screen
+2. After successful login, cards are fetched from Firestore
+3. User can flip cards to see front/back
+4. User can swipe right (learned) or left (not learned)
+5. User can edit card content by tapping the edit button (pencil icon)
+6. User can delete cards by tapping the delete button and confirming
+7. User can create new cards when a deck is empty or by clicking "Add Card"
+8. Card status and content are updated in Firestore
+9. Next card is displayed
+10. User can log out at any time using the logout button in the side panel
 
 For new card creation:
 
@@ -108,7 +117,7 @@ For new card creation:
 - Compose Multiplatform
 - Kotlinx Coroutines
 - Ktor
-- Firebase Kotlin SDK
+- GitLiveApp firebase-kotlin-sdk
 - SKIE for iOS interop
 - Kermit for logging
 
@@ -178,6 +187,13 @@ Available log levels:
 - When a deck has no cards, show appropriate empty state UI
 - Provide direct actions for users to add content
 - Update the hasCards state flow to properly trigger UI changes
+
+### User Authentication
+
+- Login screen is shown when the user is not authenticated
+- Authentication state is managed by the LoginViewModel
+- Logout functionality is accessible from the side panel
+- After logout, users are redirected back to the login screen
 
 ### Error Handling
 

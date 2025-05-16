@@ -1,4 +1,4 @@
-package me.forketyfork.welk.ui.fonts
+package me.forketyfork.welk.fonts
 
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle

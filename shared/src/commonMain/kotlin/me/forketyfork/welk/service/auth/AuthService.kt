@@ -1,4 +1,4 @@
-package me.forketyfork.welk.auth
+package me.forketyfork.welk.service.auth
 
 /**
  * Authentication and authorization service
@@ -9,4 +9,9 @@ interface AuthService {
      * @return userId or null if authentication has failed
      */
     suspend fun signIn(username: String, password: String): String?
+    
+    /**
+     * Sign out the current user
+     */
+    suspend fun signOut()
 }

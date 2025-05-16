@@ -1,4 +1,4 @@
-package me.forketyfork.welk
+package me.forketyfork.welk.vm
 
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent

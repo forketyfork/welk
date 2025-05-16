@@ -1,4 +1,4 @@
-package me.forketyfork.welk.ui.theme
+package me.forketyfork.welk.theme
 
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Typography
@@ -9,7 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import me.forketyfork.welk.ui.fonts.AppFonts
+import me.forketyfork.welk.fonts.AppFonts
 
 // Colors for the application
 private val primaryColor = Color(0xFF6200EE)

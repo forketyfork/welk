@@ -1,4 +1,4 @@
-package me.forketyfork.welk.ui
+package me.forketyfork.welk.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding

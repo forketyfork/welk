@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
+import me.forketyfork.welk.service.auth.AuthService
+import me.forketyfork.welk.service.auth.FirestoreAuthService
 import me.forketyfork.welk.domain.Card
 import me.forketyfork.welk.domain.CardRepository
 import me.forketyfork.welk.domain.Deck
@@ -17,7 +19,8 @@ import me.forketyfork.welk.presentation.CardAction
 open class SharedCardViewModel(
     private val cardRepository: CardRepository,
     private val deckRepository: DeckRepository,
-    private val cardAnimationManager: CardAnimationManager
+    private val cardAnimationManager: CardAnimationManager,
+    private val authService: AuthService = FirestoreAuthService()
 ) : CardViewModel {
     // Current position within the deck
     private val _currentCardPosition = MutableStateFlow(0)
@@ -492,7 +495,7 @@ open class SharedCardViewModel(
     override fun hideDeleteConfirmation() {
         _isDeleteConfirmationShowing.value = false
     }
-
+    
     override fun installCollectors(coroutineScope: CoroutineScope) {
         coroutineScope.launch {
             // update the card when the swipe left/right animation completes

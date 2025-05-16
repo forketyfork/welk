@@ -1,4 +1,4 @@
-package me.forketyfork.welk.auth
+package me.forketyfork.welk.service.auth
 
 import co.touchlab.kermit.Logger
 import dev.gitlive.firebase.Firebase
@@ -30,6 +30,20 @@ class FirestoreAuthService : AuthService {
         } catch (e: FirebaseAuthException) {
             logger.e(e) { "Sign-in failed: ${e.message}" }
             null
+        }
+    }
+    
+    /**
+     * Sign out the current user
+     */
+    override suspend fun signOut() {
+        try {
+            withContext(Dispatchers.IO) {
+                Firebase.auth.signOut()
+            }
+            logger.d { "Successfully signed out" }
+        } catch (e: Exception) {
+            logger.e(e) { "Sign-out failed: ${e.message}" }
         }
     }
 }

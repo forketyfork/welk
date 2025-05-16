@@ -29,10 +29,12 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.runBlocking
 import me.forketyfork.welk.domain.FirestoreRepository
-import me.forketyfork.welk.ui.CardPanelTestTags
-import me.forketyfork.welk.ui.DeckItemTestTags
-import me.forketyfork.welk.ui.LoginViewTestTags
-import me.forketyfork.welk.ui.SidePanelTestTags
+import me.forketyfork.welk.components.CardPanelTestTags
+import me.forketyfork.welk.components.DeckItemTestTags
+import me.forketyfork.welk.components.LoginViewTestTags
+import me.forketyfork.welk.components.SidePanelTestTags
+import me.forketyfork.welk.vm.DesktopCardViewModel
+import me.forketyfork.welk.vm.DesktopLoginViewModel
 import org.junit.Test
 import kotlin.test.fail
 
@@ -77,6 +79,7 @@ class CardInteractionTest {
         waitUntilExactlyOneExists(hasTestTag(SidePanelTestTags.APP_TITLE), timeoutMillis = 10000)
         onNodeWithTag(SidePanelTestTags.APP_TITLE).assertTextEquals("Welk\uD83C\uDF42")
         onNodeWithTag(SidePanelTestTags.DECK_LIST_TITLE).assertTextEquals("Decks")
+        onNodeWithTag(SidePanelTestTags.LOGOUT_BUTTON).assertExists()
 
         // wait until the decks are loaded, verify their expected contents
         val preloadedDeckIdsAndTexts = mapOf(
@@ -121,6 +124,9 @@ class CardInteractionTest {
 
         // verify that the back of the card is hidden
         waitUntilDoesNotExist(hasTextExactly("Hola"))
+
+        onNodeWithTag(SidePanelTestTags.LOGOUT_BUTTON).performClick()
+        waitUntilExactlyOneExists(hasTestTag(LoginViewTestTags.USERNAME_INPUT))
     }
 }
 

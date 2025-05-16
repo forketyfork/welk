@@ -20,4 +20,9 @@ interface LoginViewModel {
      * Log in with username and password.
      */
     fun signIn(username: String, password: String)
+    
+    /**
+     * Sign out the current user.
+     */
+    fun signOut()
 }

@@ -1,4 +1,4 @@
-package me.forketyfork.welk.ui
+package me.forketyfork.welk.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -50,8 +50,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.launch
-import me.forketyfork.welk.CardInteractionManager
-import me.forketyfork.welk.DesktopCardViewModel
+import me.forketyfork.welk.vm.CardInteractionManager
+import me.forketyfork.welk.vm.DesktopCardViewModel
 import me.forketyfork.welk.presentation.CardAction
 
 
