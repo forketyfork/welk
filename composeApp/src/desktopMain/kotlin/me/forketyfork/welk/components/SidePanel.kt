@@ -27,17 +27,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import me.forketyfork.welk.vm.DesktopCardViewModel
 import me.forketyfork.welk.presentation.CardAction
-import me.forketyfork.welk.vm.LoginViewModel
+import me.forketyfork.welk.vm.DesktopCardViewModel
+import me.forketyfork.welk.vm.DesktopLoginViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun SidePanel(
-    cardViewModel: DesktopCardViewModel,
-    loginViewModel: LoginViewModel,
     width: Int = 250,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
+
+    val loginViewModel = koinViewModel<DesktopLoginViewModel>()
+    val cardViewModel = koinViewModel<DesktopCardViewModel>()
+
     val decks by cardViewModel.availableDecks.collectAsState()
     val currentDeck by cardViewModel.currentDeck.collectAsState()
 
@@ -92,28 +95,28 @@ fun SidePanel(
                     }
                 )
             }
-            
+
             // Spacer that pushes the bottom panel to the bottom
             Spacer(modifier = Modifier.weight(1f))
-            
+
             // Bottom panel with actions
             Divider()
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             // Logout action
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
-                    .testTag(SidePanelTestTags.LOGOUT_BUTTON)
             ) {
                 IconButton(
                     onClick = {
                         cardViewModel.viewModelScope.launch {
                             loginViewModel.signOut()
                         }
-                    }
+                    },
+                    modifier = Modifier.testTag(SidePanelTestTags.LOGOUT_BUTTON)
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ExitToApp,

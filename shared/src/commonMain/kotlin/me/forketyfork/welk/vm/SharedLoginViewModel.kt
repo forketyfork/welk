@@ -6,13 +6,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import me.forketyfork.welk.service.auth.AuthService
-import me.forketyfork.welk.service.auth.FirestoreAuthService
 
 /**
  * Implementation of the LoginViewModel shared across Desktop and Mobile.
  */
 class SharedLoginViewModel(
-    private val authService: AuthService = FirestoreAuthService(),
+    private val authService: AuthService,
 ) : LoginViewModel {
 
     // TODO use the model scope instead of the main scope

@@ -19,13 +19,17 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import me.forketyfork.welk.vm.DesktopLoginViewModel
 import me.forketyfork.welk.vm.LoginViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Login screen with username and password input.
  */
 @Composable
-fun LoginView(viewModel: LoginViewModel) {
+fun LoginView() {
+
+    val viewModel: LoginViewModel = koinViewModel<DesktopLoginViewModel>()
 
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }

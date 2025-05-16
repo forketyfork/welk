@@ -3,18 +3,20 @@ package me.forketyfork.welk.vm
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import me.forketyfork.welk.domain.FirestoreRepository
+import me.forketyfork.welk.domain.CardRepository
+import me.forketyfork.welk.domain.DeckRepository
 
 /**
  * The desktop implementation of the main view model.
  */
 class DesktopCardViewModel(
-    val cardAnimationManager: DesktopCardAnimationManager = DesktopCardAnimationManager(),
-    private val firestoreRepository: FirestoreRepository = FirestoreRepository(),
+    cardAnimationManager: CardAnimationManager,
+    cardRepository: CardRepository,
+    deckRepository: DeckRepository,
 ) : ViewModel(), CardViewModel by SharedCardViewModel(
-    cardRepository = firestoreRepository,
-    deckRepository = firestoreRepository,
-    cardAnimationManager = cardAnimationManager
+    cardAnimationManager = cardAnimationManager,
+    cardRepository = cardRepository,
+    deckRepository = deckRepository
 ) {
 
     init {

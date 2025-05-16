@@ -24,6 +24,9 @@ kotlin {
             implementation(projects.shared)
             implementation(libs.compose.material.ripple)
             implementation(libs.kermit)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
+            implementation(libs.koin.compose.viewmodel.navigation)
         }
 
         commonTest.dependencies {
@@ -43,6 +46,7 @@ kotlin {
         val desktopTest by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
+                implementation(libs.koin.test)
             }
         }
     }

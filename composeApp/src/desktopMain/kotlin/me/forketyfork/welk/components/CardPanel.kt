@@ -50,17 +50,22 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.launch
-import me.forketyfork.welk.vm.CardInteractionManager
-import me.forketyfork.welk.vm.DesktopCardViewModel
 import me.forketyfork.welk.presentation.CardAction
+import me.forketyfork.welk.vm.CardInteractionManager
+import me.forketyfork.welk.vm.DesktopCardAnimationManager
+import me.forketyfork.welk.vm.DesktopCardViewModel
+import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 
 
 @Composable
-fun CardPanel(
-    cardViewModel: DesktopCardViewModel,
-    cardInteractionManager: CardInteractionManager,
-    modifier: Modifier = Modifier
-) {
+fun CardPanel(modifier: Modifier = Modifier) {
+
+    val cardInteractionManager = koinInject<CardInteractionManager>()
+    val cardAnimationManager = koinInject<DesktopCardAnimationManager>()
+
+    val cardViewModel = koinViewModel<DesktopCardViewModel>()
+
     val currentCard = cardViewModel.currentCard.collectAsStateWithLifecycle()
     val isFlipped = cardViewModel.isFlipped.collectAsStateWithLifecycle()
     val isEditing = cardViewModel.isEditing.collectAsStateWithLifecycle()
@@ -111,8 +116,8 @@ fun CardPanel(
         }
     }
 
-    val animatedOffset by cardViewModel.cardAnimationManager.animateOffset()
-    val animatedColor by cardViewModel.cardAnimationManager.animateColor()
+    val animatedOffset by cardAnimationManager.animateOffset()
+    val animatedColor by cardAnimationManager.animateColor()
 
     // Delete confirmation dialog
     if (isDeleteConfirmationShowing.value) {

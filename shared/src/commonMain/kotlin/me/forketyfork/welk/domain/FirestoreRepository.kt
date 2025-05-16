@@ -3,10 +3,10 @@ package me.forketyfork.welk.domain
 import co.touchlab.kermit.Logger
 import dev.gitlive.firebase.firestore.FirebaseFirestore
 import kotlinx.datetime.Clock
-import me.forketyfork.welk.getPlatform
+import me.forketyfork.welk.Platform
 
-class FirestoreRepository : CardRepository, DeckRepository {
-    private val firestore: FirebaseFirestore = getPlatform().initializeFirestore()
+class FirestoreRepository(val platform: Platform) : CardRepository, DeckRepository {
+    private val firestore: FirebaseFirestore = platform.initializeFirestore()
     private val rootCollection = firestore.collection("welk_data")
     private val decksCollection = rootCollection.document("collections").collection("decks")
 

@@ -30,6 +30,7 @@ kotlin {
             implementation(libs.firebase.auth)
             implementation(libs.firebase.firestore)
             implementation(libs.kermit)
+            implementation(libs.koin.core)
         }
         jvmMain.dependencies {
             implementation(libs.ktor.client.cio)

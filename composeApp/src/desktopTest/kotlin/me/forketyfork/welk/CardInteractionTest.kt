@@ -26,19 +26,21 @@ import androidx.compose.ui.test.waitUntilExactlyOneExists
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import kotlinx.coroutines.runBlocking
-import me.forketyfork.welk.domain.FirestoreRepository
 import me.forketyfork.welk.components.CardPanelTestTags
 import me.forketyfork.welk.components.DeckItemTestTags
 import me.forketyfork.welk.components.LoginViewTestTags
 import me.forketyfork.welk.components.SidePanelTestTags
-import me.forketyfork.welk.vm.DesktopCardViewModel
-import me.forketyfork.welk.vm.DesktopLoginViewModel
+import me.forketyfork.welk.domain.FirestoreRepository
 import org.junit.Test
+import org.koin.test.KoinTest
 import kotlin.test.fail
 
-class CardInteractionTest {
+class CardInteractionTest : KoinTest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
@@ -53,20 +55,16 @@ class CardInteractionTest {
 
         // database cleanup
         runBlocking {
-            val repo = FirestoreRepository()
+            val repo = FirestoreRepository(getPlatform())
             repo.getAllDecks().forEach { deck -> repo.deleteDeck(deck.id) }
         }
-
-        // TODO ViewModelStoreOwner is required to initialize the models using `viewModel()`,
-        // maybe it's possible to provide such setup to avoid this?
-        val cardViewModel = DesktopCardViewModel()
-        val loginViewModel = DesktopLoginViewModel()
 
         setContent {
             CompositionLocalProvider(
                 LocalLifecycleOwner provides LocalLifecycleOwnerFake(),
+                LocalViewModelStoreOwner provides ComposeViewModelStoreOwner()
             ) {
-                App(cardViewModel, loginViewModel)
+                App()
             }
         }
 
@@ -126,7 +124,7 @@ class CardInteractionTest {
         waitUntilDoesNotExist(hasTextExactly("Hola"))
 
         onNodeWithTag(SidePanelTestTags.LOGOUT_BUTTON).performClick()
-        waitUntilExactlyOneExists(hasTestTag(LoginViewTestTags.USERNAME_INPUT))
+        waitUntilExactlyOneExists(hasTestTag(LoginViewTestTags.USERNAME_INPUT), timeoutMillis = 10000)
     }
 }
 
@@ -137,6 +135,10 @@ private class LocalLifecycleOwnerFake : LifecycleOwner {
     override val lifecycle: Lifecycle = LifecycleRegistry(this).apply {
         currentState = Lifecycle.State.RESUMED
     }
+}
+
+private class ComposeViewModelStoreOwner : ViewModelStoreOwner {
+    override val viewModelStore: ViewModelStore = ViewModelStore()
 }
 
 @Suppress("unused") // a handy function for debugging

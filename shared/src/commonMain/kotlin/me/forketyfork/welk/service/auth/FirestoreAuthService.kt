@@ -7,11 +7,16 @@ import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
+import me.forketyfork.welk.Platform
 
 /**
  * Implementation of the auth service based on Firestore authentication.
  */
-class FirestoreAuthService : AuthService {
+class FirestoreAuthService(val platform: Platform) : AuthService {
+
+    init {
+        platform.initializeFirestore()
+    }
 
     private val logger = Logger.withTag("FirestoreAuthService")
 
@@ -32,7 +37,7 @@ class FirestoreAuthService : AuthService {
             null
         }
     }
-    
+
     /**
      * Sign out the current user
      */

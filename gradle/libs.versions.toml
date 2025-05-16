@@ -1,7 +1,6 @@
 [versions]
 androidx-lifecycle = "2.8.4" # https://central.sonatype.com/artifact/org.jetbrains.androidx.lifecycle/lifecycle-viewmodel/versions
 compose-multiplatform = "1.8.0" # https://github.com/JetBrains/compose-multiplatform
-junit = "4.13.2" # https://github.com/junit-team/junit4/releases
 kotlin = "2.1.20" # https://github.com/JetBrains/kotlin/releases
 kotlinx-coroutines = "1.10.2" # https://github.com/Kotlin/kotlinx.coroutines/releases
 kotlinx-datetime = "0.6.2" # https://github.com/Kotlin/kotlinx-datetime/releases
@@ -12,18 +11,15 @@ kotlinx-serialization-json = "1.8.1" # https://github.com/Kotlin/kotlinx.seriali
 firebase-kotlin-sdk = "2.1.0" # https://github.com/GitLiveApp/firebase-kotlin-sdk/releases
 compose-material = "1.8.0" # https://search.maven.org/artifact/org.jetbrains.compose.material/material
 kermit = "2.0.5" # https://github.com/touchlab/Kermit/releases/
+koin = "4.0.4" # https://github.com/InsertKoinIO/koin/releases
 
 [libraries]
-kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
-kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
-junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-viewmodel-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
-kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor-version" }
 ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor-version" }
@@ -35,6 +31,11 @@ firebase-auth = { group = "dev.gitlive", name = "firebase-auth", version.ref = "
 firebase-firestore = { group = "dev.gitlive", name = "firebase-firestore", version.ref = "firebase-kotlin-sdk" }
 compose-material-ripple = { group = "org.jetbrains.compose.material", name = "material-ripple", version.ref = "compose-material" }
 kermit = { group = "co.touchlab", name = "kermit", version.ref = "kermit" }
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
+koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
+koin-compose-viewmodel-navigation = { module = "io.insert-koin:koin-compose-viewmodel-navigation", version.ref = "koin" }
+koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
 
 [plugins]
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }

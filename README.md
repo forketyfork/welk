@@ -23,6 +23,7 @@ For local development:
 
 ### Done
 - [x] User email/password authentication
+- [x] Use koin for dependency injection
 
 ### Current focus
 - [ ] Test instance of Firestore
@@ -32,7 +33,7 @@ For local development:
 - [ ] Use proper coroutine dispatchers for Firestore access
 - [ ] User email/password authentication in iOS
 - [ ] Break down the main view model
-- [ ] Add koin dependency injection
+- [ ] add `@Preview`s to the components
 
 ### Targeted features
 - [ ] Other auth mechanisms (Google, Apple)
