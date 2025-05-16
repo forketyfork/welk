@@ -1,0 +1,34 @@
+name: Build and Test Desktop App
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-test-desktop:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v3
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Assemble Desktop App
+        run: ./gradlew :composeApp:assemble
+
+      - name: Run Desktop Tests
+        env:
+          WELK_TEST_USERNAME: ${{ secrets.WELK_TEST_USERNAME }}
+          WELK_TEST_PASSWORD: ${{ secrets.WELK_TEST_PASSWORD }}
+        run: ./gradlew :composeApp:desktopTest

@@ -120,6 +120,7 @@ For new card creation:
 - GitLiveApp firebase-kotlin-sdk
 - SKIE for iOS interop
 - Kermit for logging
+- Koin for dependency injection
 
 ## Logging
 
