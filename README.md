@@ -31,6 +31,8 @@ For local development:
 - [ ] Per-user storage
 - [ ] Use proper coroutine dispatchers for Firestore access
 - [ ] User email/password authentication in iOS
+- [ ] Break down the main view model
+- [ ] Add koin dependency injection
 
 ### Targeted features
 - [ ] Other auth mechanisms (Google, Apple)
