@@ -19,17 +19,21 @@ For local development:
   firebase.appId=
   ```
 
-## TODO
+## Roadmap
+
+### Done
+- [x] User email/password authentication
 
 ### Current focus
 - [ ] Test instance of Firestore
 - [ ] GitHub Actions for testing
 - [ ] End-to-end tests for the main functionality
-- [ ] Per-user storage and authentication
+- [ ] Per-user storage
 - [ ] Use proper coroutine dispatchers for Firestore access
+- [ ] User email/password authentication in iOS
 
 ### Targeted features
-
+- [ ] Other auth mechanisms (Google, Apple)
 - [ ] Filesystem-like deck management, arbitrarily nested decks, joining and duplicating decks
 - [ ] Ability to select multiple decks for a learning session
 - [ ] Spaced repetition
