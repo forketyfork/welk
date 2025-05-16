@@ -26,7 +26,7 @@ jobs:
 
       - name: Create firebase.properties file
         run: |
-          echo "${{ secrets.FIREBASE_PROPERTIES_CONTENT }}" > shared/src/jvmMain/resources/firebase.properties
+          echo "${{ secrets.FIREBASE_PROPERTIES_CONTENT }}" > ./shared/src/jvmMain/resources/firebase.properties
 
       - name: Assemble Desktop App
         run: ./gradlew :composeApp:assemble
