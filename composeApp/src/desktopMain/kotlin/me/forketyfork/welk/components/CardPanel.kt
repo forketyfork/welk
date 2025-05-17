@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -73,7 +74,6 @@ fun CardPanel(modifier: Modifier = Modifier) {
     val editCardContent = cardViewModel.editCardContent.collectAsStateWithLifecycle()
     val isDeleteConfirmationShowing =
         cardViewModel.isDeleteConfirmationShowing.collectAsStateWithLifecycle()
-    val hasCards = cardViewModel.hasCards.collectAsStateWithLifecycle()
 
     var frontText by remember { mutableStateOf("") }
     var backText by remember { mutableStateOf("") }
@@ -100,8 +100,12 @@ fun CardPanel(modifier: Modifier = Modifier) {
 
     val focusRequester = remember { FocusRequester() }
 
-    // Request focus after UI is rendered and whenever card changes
     val currentDeck = cardViewModel.currentDeck.collectAsStateWithLifecycle()
+    val hasCards = remember(currentDeck.value?.value) {
+        derivedStateOf {
+            (currentDeck.value?.value?.cardCount ?: 0) > 0
+        }
+    }
 
     // Only request focus when we have cards or there's a deck selected
     LaunchedEffect(

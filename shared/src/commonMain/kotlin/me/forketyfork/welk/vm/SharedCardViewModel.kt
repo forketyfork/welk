@@ -29,8 +29,8 @@ open class SharedCardViewModel(
     private val _currentCardPosition = MutableStateFlow(0)
 
     // Current selected deck
-    private val _currentDeck = MutableStateFlow<Deck?>(null)
-    override val currentDeck: StateFlow<Deck?> = _currentDeck.asStateFlow()
+    private val _currentDeck = MutableStateFlow<StateFlow<Deck>?>(null)
+    override val currentDeck: StateFlow<StateFlow<Deck>?> = _currentDeck.asStateFlow()
 
     // List of available decks
     private val _availableDecks = MutableStateFlow<List<StateFlow<Deck>>>(emptyList())
@@ -58,9 +58,6 @@ open class SharedCardViewModel(
     override val isDeleteConfirmationShowing: StateFlow<Boolean> =
         _isDeleteConfirmationShowing.asStateFlow()
 
-    private val _hasCards = MutableStateFlow(false)
-    override val hasCards: StateFlow<Boolean> = _hasCards.asStateFlow()
-
     // TODO use the model scope instead of the main scope
     private val mainScope = MainScope()
 
@@ -81,9 +78,9 @@ open class SharedCardViewModel(
     private suspend fun collectCurrentDeckChanges() {
         // When deck changes, load its cards
         _currentDeck.collect { deck ->
-            logger.d { "Current deck changed to ${deck?.name}" }
+            logger.d { "Current deck changed to ${deck?.value?.name}" }
             if (deck != null) {
-                _currentDeckCards.value = cardRepository.getCardsByDeckId(deck.id)
+                _currentDeckCards.value = cardRepository.getCardsByDeckId(deck.value.id)
                 // Reset to the first card in the deck
                 _currentCardPosition.value = 0
                 updateCurrentCardFromPosition()
@@ -95,11 +92,8 @@ open class SharedCardViewModel(
      * Fetches the current card based on position in the current deck
      */
     private fun updateCurrentCardFromPosition() {
-        val deck = _currentDeck.value ?: return
+        val deck = _currentDeck.value?.value ?: return
         val cards = _currentDeckCards.value
-
-        // Update the hasCards state
-        _hasCards.value = cards.isNotEmpty()
 
         if (cards.isEmpty()) {
             _currentCard.value = Card(deckId = deck.id)
@@ -136,7 +130,7 @@ open class SharedCardViewModel(
     override suspend fun selectDeck(deckId: String) {
         try {
             logger.d { "Selecting deck with ID: $deckId" }
-            val deck = deckRepository.getDeckById(deckId)
+            val deck = deckRepository.flowDeck(deckId).stateIn(mainScope)
             _currentDeck.value = deck
 
             // Load cards for this deck
@@ -150,10 +144,7 @@ open class SharedCardViewModel(
             _currentCardPosition.value = 0
             _isFlipped.value = false
 
-            // Update hasCards state
-            _hasCards.value = cards.isNotEmpty()
-
-            logger.i { "Deck selected: ${deck.name}, card count: ${cards.size}" }
+            logger.i { "Deck selected: ${deck.value.name}, card count: ${cards.size}" }
         } catch (e: Exception) {
             // If there's an error selecting a deck, keep the current deck
             logger.e(e) { "Error selecting deck: ${e.message}" }
@@ -220,7 +211,7 @@ open class SharedCardViewModel(
                 logger.i("Creating a new card in the database")
 
                 // Get the deck ID
-                val deckId = currentCard.deckId.ifEmpty { _currentDeck.value?.id ?: return }
+                val deckId = currentCard.deckId.ifEmpty { _currentDeck.value?.value?.id ?: return }
 
                 // Create a new card in the repository with the edited content
                 val newCard = cardRepository.createCard(
@@ -243,9 +234,6 @@ open class SharedCardViewModel(
                 updatedCards.add(newCard)
                 _currentDeckCards.value = updatedCards
                 _currentCardPosition.value = updatedCards.size - 1
-
-                // Update hasCards state
-                _hasCards.value = true
 
                 // Mark as no longer a new card since it's been saved
                 _isNewCard.value = false
@@ -363,7 +351,7 @@ open class SharedCardViewModel(
             is CardAction.CreateNewCardInCurrentDeck -> {
                 currentDeck.value?.let { deck ->
                     mainScope.launch {
-                        createNewCard(deck.id)
+                        createNewCard(deck.value.id)
                     }
                 } ?: logger.w { "No current deck selected" }
                 true
@@ -378,11 +366,11 @@ open class SharedCardViewModel(
      */
     override suspend fun createNewCard(deckId: String) {
         logger.d { "Creating new card for deck ID: $deckId" }
-        val originalDeckId = _currentDeck.value?.id
+        val originalDeckId = _currentDeck.value?.value?.id
         val wasAlreadySelectedDeck = originalDeckId == deckId
 
         // Store the original deck for reference
-        val originalDeck = _currentDeck.value
+        val originalDeck = _currentDeck.value?.value
         logger.d { "Original deck: ${originalDeck?.name} (ID: ${originalDeckId})" }
 
         // If we're creating a card for a different deck, save the original deck ID
@@ -440,7 +428,7 @@ open class SharedCardViewModel(
             _editCardContent.value = Pair("", "")
 
             // Simply reload the current deck's data
-            val currentDeck = _currentDeck.value
+            val currentDeck = _currentDeck.value?.value
             if (currentDeck != null) {
                 logger.d { "Reloading cards for current deck ${currentDeck.id}" }
 
@@ -451,9 +439,6 @@ open class SharedCardViewModel(
 
                     // Update the cards list
                     _currentDeckCards.value = freshCards
-
-                    // Update hasCards state
-                    _hasCards.value = freshCards.isNotEmpty()
 
                     // Set position to the first card if available
                     if (freshCards.isNotEmpty()) {
@@ -517,9 +502,6 @@ open class SharedCardViewModel(
             val updatedCards = _currentDeckCards.value.toMutableList()
             updatedCards.removeAt(currentPosition)
             _currentDeckCards.value = updatedCards
-
-            // Update hasCards state
-            _hasCards.value = updatedCards.isNotEmpty()
 
             // Set position to the next card or first card if we're at the end
             if (updatedCards.isNotEmpty()) {

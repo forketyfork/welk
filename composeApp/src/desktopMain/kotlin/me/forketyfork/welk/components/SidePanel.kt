@@ -84,7 +84,7 @@ fun SidePanel(
             decks.forEach { deck ->
                 DeckItem(
                     deck = deck,
-                    isSelected = currentDeck?.id == deck.value.id,
+                    isSelected = currentDeck?.value?.id == deck.value.id,
                     onClick = {
                         cardViewModel.viewModelScope.launch {
                             cardViewModel.selectDeck(deck.value.id)

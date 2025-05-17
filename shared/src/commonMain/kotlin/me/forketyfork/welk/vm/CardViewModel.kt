@@ -11,11 +11,10 @@ interface CardViewModel {
     val isEditing: StateFlow<Boolean>
     val currentCard: StateFlow<Card>
     val editCardContent: StateFlow<Pair<String, String>>
-    val currentDeck: StateFlow<Deck?>
+    val currentDeck: StateFlow<StateFlow<Deck>?>
     val availableDecks: StateFlow<List<StateFlow<Deck>>>
     val isNewCard: StateFlow<Boolean>
     val isDeleteConfirmationShowing: StateFlow<Boolean>
-    val hasCards: StateFlow<Boolean>
 
     fun flipCard()
     suspend fun nextCard()
