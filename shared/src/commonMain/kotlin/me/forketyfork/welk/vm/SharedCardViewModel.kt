@@ -18,13 +18,11 @@ open class SharedCardViewModel(
     private val cardAnimationManager: CardAnimationManager,
     private val cardRepository: CardRepository,
     private val deckRepository: DeckRepository,
-) : CardViewModel {
+) : CardViewModel, BaseInitializableViewModel() {
 
     companion object {
         private val logger = Logger.withTag("CommonCardViewModel")
     }
-
-    private lateinit var viewModelScope: CoroutineScope
 
     // Current position within the deck
     private val _currentCardPosition = MutableStateFlow(0)
@@ -483,8 +481,7 @@ open class SharedCardViewModel(
     }
 
     override fun initialize(viewModelScope: CoroutineScope) {
-        this.viewModelScope = viewModelScope
-
+        super.initialize(viewModelScope)
         installCollectors(viewModelScope)
     }
 

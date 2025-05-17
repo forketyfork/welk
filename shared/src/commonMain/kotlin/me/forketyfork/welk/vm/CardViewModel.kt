@@ -6,7 +6,7 @@ import me.forketyfork.welk.domain.Card
 import me.forketyfork.welk.domain.Deck
 import me.forketyfork.welk.presentation.CardAction
 
-interface CardViewModel {
+interface CardViewModel : InitializableViewModel {
     val isFlipped: StateFlow<Boolean>
     val isEditing: StateFlow<Boolean>
     val currentCard: StateFlow<Card>
@@ -27,6 +27,4 @@ interface CardViewModel {
     suspend fun deleteCurrentCard()
     fun showDeleteConfirmation()
     fun hideDeleteConfirmation()
-
-    fun initialize(viewModelScope: CoroutineScope)
 }

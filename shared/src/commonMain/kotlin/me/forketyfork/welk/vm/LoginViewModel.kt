@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 /**
  * VM for the login screen.
  */
-interface LoginViewModel {
+interface LoginViewModel : InitializableViewModel {
     /**
      * User ID or null if the user is not logged in.
      */
@@ -26,6 +26,4 @@ interface LoginViewModel {
      * Sign out the current user.
      */
     fun signOut()
-
-    fun initialize(viewModelScope: CoroutineScope)
 }
