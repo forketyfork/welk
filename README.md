@@ -30,9 +30,11 @@ For local development:
 ### Current focus
 - [ ] End-to-end tests for the main functionality
 - [ ] Use proper coroutine dispatchers for Firestore access
-- [ ] User email/password authentication in iOS
+- [ ] Catching up with the desktop functionality on iOS
 - [ ] Break down the main view model
-- [ ] add `@Preview`s to the components
+- [ ] Add `@Preview`s to the components
+- [ ] Better Kermit log formatting
+- [ ] Rewrite database interaction on flows
 
 ### Targeted features
 - [ ] Other auth mechanisms (Google, Apple)

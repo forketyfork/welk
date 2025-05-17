@@ -4,6 +4,8 @@ import co.touchlab.kermit.Logger
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import me.forketyfork.welk.Platform
 
@@ -21,19 +23,21 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
 
     // DECK REPOSITORY IMPLEMENTATION
 
-    override suspend fun getAllDecks(): List<Deck> {
-        // Create some sample decks if none exist yet
-        val documents = decksCollection.get().documents
+    override suspend fun getAllDecks(): List<Flow<Deck>> {
+        var documents = decksCollection.get().documents
         if (documents.isEmpty()) {
+            // Create some sample decks if none exist yet
             createSampleDecks()
-            return decksCollection.get().documents.map { it.data<Deck>() }
+            documents = decksCollection.get().documents
         }
-        return documents.map { it.data<Deck>() }
+        return documents.map { it.reference.snapshots.map { it -> it.data() } }
     }
 
     override suspend fun getDeckById(deckId: String): Deck {
         return decksCollection.document(deckId).get().data<Deck>()
     }
+
+    override fun flowDeck(deckId: String): Flow<Deck> = decksCollection.document(deckId).snapshots.map { it.data() }
 
     private suspend fun createSampleDecks() {
         // Create some sample decks

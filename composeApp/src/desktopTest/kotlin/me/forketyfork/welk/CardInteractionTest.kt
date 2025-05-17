@@ -30,12 +30,10 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import kotlinx.coroutines.runBlocking
 import me.forketyfork.welk.components.CardPanelTestTags
 import me.forketyfork.welk.components.DeckItemTestTags
 import me.forketyfork.welk.components.LoginViewTestTags
 import me.forketyfork.welk.components.SidePanelTestTags
-import me.forketyfork.welk.domain.FirestoreRepository
 import org.junit.Test
 import org.koin.test.KoinTest
 import kotlin.test.fail
@@ -118,7 +116,10 @@ class CardInteractionTest : KoinTest {
         waitUntilDoesNotExist(hasTextExactly("Hola"))
 
         onNodeWithTag(SidePanelTestTags.LOGOUT_BUTTON).performClick()
-        waitUntilExactlyOneExists(hasTestTag(LoginViewTestTags.USERNAME_INPUT), timeoutMillis = 10000)
+        waitUntilExactlyOneExists(
+            hasTestTag(LoginViewTestTags.USERNAME_INPUT),
+            timeoutMillis = 10000
+        )
     }
 }
 

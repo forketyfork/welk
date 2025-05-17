@@ -12,7 +12,7 @@ interface CardViewModel {
     val currentCard: StateFlow<Card>
     val editCardContent: StateFlow<Pair<String, String>>
     val currentDeck: StateFlow<Deck?>
-    val availableDecks: StateFlow<List<Deck>>
+    val availableDecks: StateFlow<List<StateFlow<Deck>>>
     val isNewCard: StateFlow<Boolean>
     val isDeleteConfirmationShowing: StateFlow<Boolean>
     val hasCards: StateFlow<Boolean>

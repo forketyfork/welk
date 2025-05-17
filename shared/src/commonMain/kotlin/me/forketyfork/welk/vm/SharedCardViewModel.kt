@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import me.forketyfork.welk.domain.Card
 import me.forketyfork.welk.domain.CardRepository
@@ -27,8 +28,8 @@ open class SharedCardViewModel(
     override val currentDeck: StateFlow<Deck?> = _currentDeck.asStateFlow()
 
     // List of available decks
-    private val _availableDecks = MutableStateFlow<List<Deck>>(emptyList())
-    override val availableDecks: StateFlow<List<Deck>> = _availableDecks.asStateFlow()
+    private val _availableDecks = MutableStateFlow<List<StateFlow<Deck>>>(emptyList())
+    override val availableDecks: StateFlow<List<StateFlow<Deck>>> = _availableDecks.asStateFlow()
 
     // List of cards in the current deck (cached to avoid repeated Firestore queries)
     private val _currentDeckCards = MutableStateFlow<List<Card>>(emptyList())
@@ -112,11 +113,11 @@ open class SharedCardViewModel(
     override suspend fun loadDecks() {
         try {
             val decks = deckRepository.getAllDecks()
-            _availableDecks.value = decks
+            _availableDecks.value = decks.map { it.stateIn(mainScope) }
 
             // If we don't have a selected deck yet but decks exist, select the first one
             if (_currentDeck.value == null && decks.isNotEmpty()) {
-                selectDeck(decks.first().id)
+                selectDeck(_availableDecks.value.first().value.id)
             }
         } catch (e: Exception) {
             // If there's an error loading decks, set to empty list but don't crash
@@ -245,21 +246,6 @@ open class SharedCardViewModel(
 
                 // Mark as no longer a new card since it's been saved
                 _isNewCard.value = false
-
-                // Update the deck card count in the UI
-                val currentDeck = _currentDeck.value
-                if (currentDeck != null) {
-                    val updatedDeck = currentDeck.copy(cardCount = updatedCards.size)
-                    _currentDeck.value = updatedDeck
-
-                    // Also update this deck in the available decks list
-                    val updatedDecks = _availableDecks.value.toMutableList()
-                    val deckIndex = updatedDecks.indexOfFirst { it.id == deckId }
-                    if (deckIndex != -1) {
-                        updatedDecks[deckIndex] = updatedDeck
-                        _availableDecks.value = updatedDecks
-                    }
-                }
 
                 return
             }
@@ -523,21 +509,6 @@ open class SharedCardViewModel(
         try {
             // Delete the card from the repository
             cardRepository.deleteCard(card.id, card.deckId)
-
-            // Update the deck card count
-            val currentDeck = _currentDeck.value
-            if (currentDeck != null) {
-                val updatedDeck = currentDeck.copy(cardCount = currentDeck.cardCount - 1)
-                _currentDeck.value = updatedDeck
-
-                // Also update this deck in the available decks list
-                val updatedDecks = _availableDecks.value.toMutableList()
-                val deckIndex = updatedDecks.indexOfFirst { it.id == card.deckId }
-                if (deckIndex != -1) {
-                    updatedDecks[deckIndex] = updatedDeck
-                    _availableDecks.value = updatedDecks
-                }
-            }
 
             // Remove from local card list
             val updatedCards = _currentDeckCards.value.toMutableList()

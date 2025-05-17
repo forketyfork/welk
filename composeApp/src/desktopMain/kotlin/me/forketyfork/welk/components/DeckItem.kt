@@ -19,21 +19,26 @@ import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.StateFlow
 import me.forketyfork.welk.domain.Deck
 
 @Composable
 fun DeckItem(
-    deck: Deck,
+    deck: StateFlow<Deck>,
     isSelected: Boolean,
     onClick: () -> Unit,
     onAddCard: ((String) -> Unit)? = null
 ) {
+    val deck by deck.collectAsState()
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
