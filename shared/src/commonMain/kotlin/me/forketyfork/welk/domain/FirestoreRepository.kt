@@ -10,9 +10,13 @@ import kotlinx.datetime.Clock
 import me.forketyfork.welk.Platform
 
 class FirestoreRepository(val platform: Platform) : CardRepository, DeckRepository {
+
+    companion object {
+        private val logger = Logger.Companion.withTag("FirestoreRepository")
+    }
+
     private val firestore: FirebaseFirestore = platform.initializeFirestore()
-    private val logger = Logger.Companion.withTag("FirestoreRepository")
-    
+
     private val userCollection
         get() = Firebase.auth.currentUser?.uid?.let { userId ->
             firestore.collection(userId)

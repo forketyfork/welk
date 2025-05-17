@@ -14,11 +14,14 @@ import me.forketyfork.welk.Platform
  */
 class FirestoreAuthService(val platform: Platform) : AuthService {
 
+    companion object {
+        private val logger = Logger.withTag("FirestoreAuthService")
+    }
+
+
     init {
         platform.initializeFirestore()
     }
-
-    private val logger = Logger.withTag("FirestoreAuthService")
 
     /**
      * Sign in with username (email) and password

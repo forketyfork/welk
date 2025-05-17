@@ -20,6 +20,11 @@ open class SharedCardViewModel(
     private val cardRepository: CardRepository,
     private val deckRepository: DeckRepository,
 ) : CardViewModel {
+
+    companion object {
+        private val logger = Logger.withTag("CommonCardViewModel")
+    }
+
     // Current position within the deck
     private val _currentCardPosition = MutableStateFlow(0)
 
@@ -55,8 +60,6 @@ open class SharedCardViewModel(
 
     private val _hasCards = MutableStateFlow(false)
     override val hasCards: StateFlow<Boolean> = _hasCards.asStateFlow()
-
-    private val logger = Logger.withTag("CommonCardViewModel")
 
     // TODO use the model scope instead of the main scope
     private val mainScope = MainScope()

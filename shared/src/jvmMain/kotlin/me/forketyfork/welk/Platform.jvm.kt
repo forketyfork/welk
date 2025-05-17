@@ -11,15 +11,17 @@ import dev.gitlive.firebase.initialize
 import java.util.Properties
 
 class JVMPlatform : Platform {
+
     override val name: String = "Java ${System.getProperty("java.version")}"
 
     companion object {
+        private val logger = Logger.withTag("JVMPlatform")
+
         private val firestore = lazy {
             lazyInitializeFirestore()
         }
 
         private fun lazyInitializeFirestore(): FirebaseFirestore {
-            val logger = Logger.withTag("FirebaseFirestore")
 
             FirebasePlatform.initializeFirebasePlatform(object : FirebasePlatform() {
                 val storage = mutableMapOf<String, String>()

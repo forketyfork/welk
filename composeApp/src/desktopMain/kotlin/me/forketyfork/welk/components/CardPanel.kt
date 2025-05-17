@@ -57,6 +57,7 @@ import me.forketyfork.welk.vm.DesktopCardViewModel
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
+private val logger = Logger.withTag("CardPanel")
 
 @Composable
 fun CardPanel(modifier: Modifier = Modifier) {
@@ -78,8 +79,6 @@ fun CardPanel(modifier: Modifier = Modifier) {
     var backText by remember { mutableStateOf("") }
 
     val coroutineScope = rememberCoroutineScope()
-
-    val logger = Logger.withTag("CardPanel")
 
     // Update local state when edit mode is activated or when creating a new card
     LaunchedEffect(
