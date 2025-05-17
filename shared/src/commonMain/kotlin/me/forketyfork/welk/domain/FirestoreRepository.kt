@@ -6,6 +6,7 @@ import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.datetime.Clock
 import me.forketyfork.welk.Platform
 
@@ -21,27 +22,31 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         get() = Firebase.auth.currentUser?.uid?.let { userId ->
             firestore.collection(userId)
         } ?: throw IllegalStateException("User must be logged in to access data")
-    
+
     private val decksCollection
         get() = userCollection.document("collections").collection("decks")
 
     // DECK REPOSITORY IMPLEMENTATION
 
-    override suspend fun getDeckFlows(): List<Flow<Deck>> {
-        var documents = decksCollection.get().documents
-        if (documents.isEmpty()) {
+    override suspend fun flowDeckFlows(): Flow<List<Flow<Deck>>> {
+        if (decksCollection.get().documents.isEmpty()) {
             // Create some sample decks if none exist yet
             createSampleDecks()
-            documents = decksCollection.get().documents
         }
-        return documents.map { it.reference.snapshots.map { it -> it.data() } }
+        return decksCollection.snapshots.map { it.documents }
+            .map { documentSnapshots ->
+                documentSnapshots.map { documentSnapshot ->
+                    documentSnapshot.reference.snapshots.mapNotNull { it -> it.data() }
+                }
+            }
     }
 
     suspend fun getDeckById(deckId: String): Deck {
         return decksCollection.document(deckId).get().data<Deck>()
     }
 
-    override fun flowDeck(deckId: String): Flow<Deck> = decksCollection.document(deckId).snapshots.map { it.data() }
+    override fun flowDeck(deckId: String): Flow<Deck> =
+        decksCollection.document(deckId).snapshots.map { it.data() }
 
     private suspend fun createSampleDecks() {
         // Create some sample decks

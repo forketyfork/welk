@@ -9,7 +9,7 @@ interface DeckRepository {
     /**
      * Get the list of flows all available decks.
      */
-    suspend fun getDeckFlows(): List<Flow<Deck>>
+    suspend fun flowDeckFlows(): Flow<List<Flow<Deck>>>
 
     /**
      * Get the flow of changes for a specific deck.

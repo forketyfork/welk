@@ -18,7 +18,6 @@ interface CardViewModel {
 
     fun flipCard()
     suspend fun nextCard()
-    suspend fun loadDecks()
     suspend fun selectDeck(deckId: String)
     fun processAction(action: CardAction): Boolean
     fun updateEditContent(front: String, back: String)

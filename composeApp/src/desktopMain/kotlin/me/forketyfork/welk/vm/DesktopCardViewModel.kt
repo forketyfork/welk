@@ -17,7 +17,6 @@ class DesktopCardViewModel(
     cardRepository = cardRepository,
     deckRepository = deckRepository
 ) {
-
     init {
         initialize(viewModelScope)
     }

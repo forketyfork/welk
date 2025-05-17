@@ -34,8 +34,8 @@ open class SharedCardViewModel(
     override val currentDeck: StateFlow<StateFlow<Deck>?> = _currentDeck.asStateFlow()
 
     // List of available decks
-    private val _availableDecks = MutableStateFlow<List<StateFlow<Deck>>>(emptyList())
-    override val availableDecks: StateFlow<List<StateFlow<Deck>>> = _availableDecks.asStateFlow()
+    override val availableDecks: MutableStateFlow<List<StateFlow<Deck>>> =
+        MutableStateFlow(emptyList())
 
     // List of cards in the current deck (cached to avoid repeated Firestore queries)
     private val _currentDeckCards = MutableStateFlow<List<Card>>(emptyList())
@@ -105,20 +105,13 @@ open class SharedCardViewModel(
     /**
      * Loads all available decks
      */
-    override suspend fun loadDecks() {
-        try {
-            val decks = deckRepository.getDeckFlows()
-            _availableDecks.value = decks.map { it.stateIn(viewModelScope) }
-
+    suspend fun collectDeckListChanges() {
+        deckRepository.flowDeckFlows().collect { decks ->
+            availableDecks.value = decks.map { it.stateIn(viewModelScope) }
             // If we don't have a selected deck yet but decks exist, select the first one
-            if (_currentDeck.value == null && decks.isNotEmpty()) {
-                selectDeck(_availableDecks.value.first().value.id)
+            if (_currentDeck.value == null && availableDecks.value.isNotEmpty()) {
+                selectDeck(availableDecks.value.first().value.id)
             }
-        } catch (e: Exception) {
-            // If there's an error loading decks, set to empty list but don't crash
-
-            logger.e(e) { "Error loading decks: ${e.message}" }
-            _availableDecks.value = emptyList()
         }
     }
 
@@ -484,16 +477,15 @@ open class SharedCardViewModel(
             // update the UI when the current deck changes
             collectCurrentDeckChanges()
         }
+        coroutineScope.launch {
+            collectDeckListChanges()
+        }
     }
 
     override fun initialize(viewModelScope: CoroutineScope) {
         this.viewModelScope = viewModelScope
 
         installCollectors(viewModelScope)
-        viewModelScope.launch {
-            // initially load the available decks
-            loadDecks()
-        }
     }
 
     override suspend fun deleteCurrentCard() {

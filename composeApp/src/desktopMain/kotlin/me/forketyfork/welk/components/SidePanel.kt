@@ -18,13 +18,13 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import me.forketyfork.welk.presentation.CardAction
@@ -41,8 +41,8 @@ fun SidePanel(
     val loginViewModel = koinViewModel<DesktopLoginViewModel>()
     val cardViewModel = koinViewModel<DesktopCardViewModel>()
 
-    val decks by cardViewModel.availableDecks.collectAsState()
-    val currentDeck by cardViewModel.currentDeck.collectAsState()
+    val decks by cardViewModel.availableDecks.collectAsStateWithLifecycle()
+    val currentDeck by cardViewModel.currentDeck.collectAsStateWithLifecycle()
 
     Box(
         modifier = modifier
