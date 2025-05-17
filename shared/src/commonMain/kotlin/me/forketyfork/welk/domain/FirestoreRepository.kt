@@ -27,7 +27,7 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
 
     // DECK REPOSITORY IMPLEMENTATION
 
-    override suspend fun getAllDecks(): List<Flow<Deck>> {
+    override suspend fun getDeckFlows(): List<Flow<Deck>> {
         var documents = decksCollection.get().documents
         if (documents.isEmpty()) {
             // Create some sample decks if none exist yet
@@ -37,7 +37,7 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         return documents.map { it.reference.snapshots.map { it -> it.data() } }
     }
 
-    override suspend fun getDeckById(deckId: String): Deck {
+    suspend fun getDeckById(deckId: String): Deck {
         return decksCollection.document(deckId).get().data<Deck>()
     }
 

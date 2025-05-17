@@ -1,5 +1,6 @@
 package me.forketyfork.welk.vm
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -25,4 +26,6 @@ interface LoginViewModel {
      * Sign out the current user.
      */
     fun signOut()
+
+    fun initialize(viewModelScope: CoroutineScope)
 }

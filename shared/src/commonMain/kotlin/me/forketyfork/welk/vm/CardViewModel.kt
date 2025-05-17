@@ -29,9 +29,5 @@ interface CardViewModel {
     fun showDeleteConfirmation()
     fun hideDeleteConfirmation()
 
-    /**
-     * Installs the collectors for various UI state changes in the proper coroutine scope.
-     * Call this during the model initialization.
-     */
-    fun installCollectors(coroutineScope: CoroutineScope)
+    fun initialize(viewModelScope: CoroutineScope)
 }

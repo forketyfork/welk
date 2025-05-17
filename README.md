@@ -26,6 +26,7 @@ For local development:
 - [x] Use koin for dependency injection
 - [x] GitHub Actions for testing
 - [x] Per-user storage
+- [x] Pass the proper coroutine scope to shared models
 
 ### Current focus
 - [ ] End-to-end tests for the main functionality

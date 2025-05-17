@@ -7,14 +7,14 @@ import kotlinx.coroutines.flow.Flow
  */
 interface DeckRepository {
     /**
-     * Gets all available decks.
+     * Get the list of flows all available decks.
      */
-    suspend fun getAllDecks(): List<Flow<Deck>>
+    suspend fun getDeckFlows(): List<Flow<Deck>>
 
     /**
-     * Gets a specific deck by its ID.
+     * Get the flow of changes for a specific deck.
      */
-    suspend fun getDeckById(deckId: String): Deck
+    fun flowDeck(deckId: String): Flow<Deck>
 
     /**
      * Creates a new deck.
@@ -31,8 +31,4 @@ interface DeckRepository {
      */
     suspend fun deleteDeck(deckId: String)
 
-    /**
-     * Get the flow of changes for a specific deck.
-     */
-    fun flowDeck(deckId: String): Flow<Deck>
 }

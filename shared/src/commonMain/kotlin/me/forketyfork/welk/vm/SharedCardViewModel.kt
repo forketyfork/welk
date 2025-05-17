@@ -2,7 +2,6 @@ package me.forketyfork.welk.vm
 
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +23,8 @@ open class SharedCardViewModel(
     companion object {
         private val logger = Logger.withTag("CommonCardViewModel")
     }
+
+    private lateinit var viewModelScope: CoroutineScope
 
     // Current position within the deck
     private val _currentCardPosition = MutableStateFlow(0)
@@ -57,9 +58,6 @@ open class SharedCardViewModel(
     private val _isDeleteConfirmationShowing = MutableStateFlow(false)
     override val isDeleteConfirmationShowing: StateFlow<Boolean> =
         _isDeleteConfirmationShowing.asStateFlow()
-
-    // TODO use the model scope instead of the main scope
-    private val mainScope = MainScope()
 
     /**
      * Starts collection of card position change events, e.g., when we select a new deck,
@@ -109,8 +107,8 @@ open class SharedCardViewModel(
      */
     override suspend fun loadDecks() {
         try {
-            val decks = deckRepository.getAllDecks()
-            _availableDecks.value = decks.map { it.stateIn(mainScope) }
+            val decks = deckRepository.getDeckFlows()
+            _availableDecks.value = decks.map { it.stateIn(viewModelScope) }
 
             // If we don't have a selected deck yet but decks exist, select the first one
             if (_currentDeck.value == null && decks.isNotEmpty()) {
@@ -130,7 +128,7 @@ open class SharedCardViewModel(
     override suspend fun selectDeck(deckId: String) {
         try {
             logger.d { "Selecting deck with ID: $deckId" }
-            val deck = deckRepository.flowDeck(deckId).stateIn(mainScope)
+            val deck = deckRepository.flowDeck(deckId).stateIn(viewModelScope)
             _currentDeck.value = deck
 
             // Load cards for this deck
@@ -306,7 +304,7 @@ open class SharedCardViewModel(
 
                 // If this is a new card being canceled, perform special handling
                 if (_isNewCard.value) {
-                    mainScope.launch {
+                    viewModelScope.launch {
                         cancelNewCard()
                     }
                 } else {
@@ -327,7 +325,7 @@ open class SharedCardViewModel(
             CardAction.ConfirmDelete -> {
                 if (_isDeleteConfirmationShowing.value) {
                     hideDeleteConfirmation()
-                    mainScope.launch {
+                    viewModelScope.launch {
                         deleteCurrentCard()
                     }
                     true
@@ -342,7 +340,7 @@ open class SharedCardViewModel(
             }
 
             is CardAction.CreateNewCard -> {
-                mainScope.launch {
+                viewModelScope.launch {
                     createNewCard(action.deckId)
                 }
                 true
@@ -350,7 +348,7 @@ open class SharedCardViewModel(
 
             is CardAction.CreateNewCardInCurrentDeck -> {
                 currentDeck.value?.let { deck ->
-                    mainScope.launch {
+                    viewModelScope.launch {
                         createNewCard(deck.value.id)
                     }
                 } ?: logger.w { "No current deck selected" }
@@ -468,7 +466,11 @@ open class SharedCardViewModel(
         _isDeleteConfirmationShowing.value = false
     }
 
-    override fun installCollectors(coroutineScope: CoroutineScope) {
+    /**
+     * Installs the collectors for various UI state changes in the proper coroutine scope.
+     * Call this during the model initialization.
+     */
+    private fun installCollectors(coroutineScope: CoroutineScope) {
         logger.d { "Installing card view model collectors" }
         coroutineScope.launch {
             // update the card when the swipe left/right animation completes
@@ -481,6 +483,16 @@ open class SharedCardViewModel(
         coroutineScope.launch {
             // update the UI when the current deck changes
             collectCurrentDeckChanges()
+        }
+    }
+
+    override fun initialize(viewModelScope: CoroutineScope) {
+        this.viewModelScope = viewModelScope
+
+        installCollectors(viewModelScope)
+        viewModelScope.launch {
+            // initially load the available decks
+            loadDecks()
         }
     }
 

@@ -2,7 +2,6 @@ package me.forketyfork.welk.vm
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
 import me.forketyfork.welk.domain.CardRepository
 import me.forketyfork.welk.domain.DeckRepository
 
@@ -20,10 +19,6 @@ class DesktopCardViewModel(
 ) {
 
     init {
-        installCollectors(viewModelScope)
-        viewModelScope.launch {
-            // initially load the available decks
-            loadDecks()
-        }
+        initialize(viewModelScope)
     }
 }

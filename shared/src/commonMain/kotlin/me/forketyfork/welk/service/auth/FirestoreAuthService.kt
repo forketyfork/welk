@@ -18,7 +18,6 @@ class FirestoreAuthService(val platform: Platform) : AuthService {
         private val logger = Logger.withTag("FirestoreAuthService")
     }
 
-
     init {
         platform.initializeFirestore()
     }
