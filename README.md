@@ -2,7 +2,7 @@
 
 ## About
 
-welk is a flashcard application, currently in development. 
+welk is a cross-platform flashcard application written in Compose Multiplatform, currently in development. 
 
 ## Development prerequisites
 
