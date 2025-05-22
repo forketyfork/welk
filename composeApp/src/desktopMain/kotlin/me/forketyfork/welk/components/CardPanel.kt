@@ -339,9 +339,11 @@ object CardPanelTestTags {
     const val EDIT_FRONT = "card_edit_front"
     const val EDIT_BACK = "card_edit_back"
     const val EDIT_SAVE = "card_edit_save_button"
+    const val SAVE_BUTTON = EDIT_SAVE  // Alias for EDIT_SAVE used in tests
     const val EDIT_CANCEL = "card_edit_cancel_button"
     const val EDIT_BUTTON = "card_edit_button"
     const val DELETE_BUTTON = "card_delete_button"
     const val CREATE_FIRST_CARD_BUTTON = "create_first_card_button"
+    const val ADD_CARD_BUTTON = CREATE_FIRST_CARD_BUTTON  // Alias for CREATE_FIRST_CARD_BUTTON used in tests
     const val CARD_PANEL = "card_panel"
 }
