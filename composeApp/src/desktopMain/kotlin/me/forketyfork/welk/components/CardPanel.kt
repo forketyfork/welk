@@ -21,6 +21,7 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
@@ -153,6 +154,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
         // Make sure this panel can gain focus and receives keyboard events
         modifier = modifier
             .fillMaxSize()
+            .background(MaterialTheme.colors.background)
             .testTag(CardPanelTestTags.CARD_PANEL)
             .onKeyEvent { event: KeyEvent ->
                 logger.d { "Card got key event: $event" }
@@ -169,8 +171,12 @@ fun CardPanel(modifier: Modifier = Modifier) {
                 modifier = Modifier
                     .width(315.dp)
                     .height(440.dp)
-                    .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(10.dp))
-                    .background(color = Color.White)
+                    .border(
+                        width = 2.dp,
+                        color = MaterialTheme.colors.primary,
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    .background(color = MaterialTheme.colors.surface)
                     .padding(all = 20.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -201,8 +207,18 @@ fun CardPanel(modifier: Modifier = Modifier) {
                     .height(440.dp)
                     .offset { animatedOffset }
                     .rotate(animatedOffset.x / 80.0f)
-                    .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(10.dp))
-                    .background(color = animatedColor)
+                    .border(
+                        width = 2.dp,
+                        color = MaterialTheme.colors.primary,
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    .background(
+                        color = if (animatedColor == Color.Transparent) {
+                            MaterialTheme.colors.surface
+                        } else {
+                            animatedColor
+                        }
+                    )
                     .padding(all = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
@@ -274,6 +290,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
                                 contentDescription = "Edit",
+                                tint = MaterialTheme.colors.primary,
                                 modifier = Modifier
                                     .size(24.dp)
                                     .clickable {
@@ -284,6 +301,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Delete",
+                                tint = MaterialTheme.colors.error,
                                 modifier = Modifier
                                     .size(24.dp)
                                     .clickable {

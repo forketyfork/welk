@@ -1,5 +1,6 @@
 package me.forketyfork.welk
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.forketyfork.welk.components.CardPanel
@@ -35,13 +37,22 @@ fun App(module: Module = appModule) {
         AppTheme {
             if (userId.value == null) {
                 // show the login screen
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colors.background),
+                    contentAlignment = Alignment.Center
+                ) {
                     LoginView()
                 }
             } else {
                 // show the main application screen
                 // Use Box as parent to manage z-index
-                Box(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colors.background)
+                ) {
                     // Use Row for the layout
                     Row(modifier = Modifier.fillMaxSize()) {
                         // Left panel with the app name and deck list with fixed width

@@ -79,7 +79,8 @@ fun DeckItem(
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Add Card",
-                        modifier = Modifier.size(14.dp)
+                        modifier = Modifier.size(14.dp),
+                        tint = MaterialTheme.colors.primary
                     )
                     Spacer(modifier = Modifier.width(2.dp))
                     Text(
