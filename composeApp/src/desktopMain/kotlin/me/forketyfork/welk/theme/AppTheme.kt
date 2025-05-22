@@ -1,6 +1,5 @@
 package me.forketyfork.welk.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Typography
 import androidx.compose.material.darkColors
@@ -10,7 +9,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.forketyfork.welk.fonts.AppFonts
+import me.forketyfork.welk.vm.ThemeViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 // Colors for the application
 // Updated colors with a violet-focused palette
@@ -105,7 +107,10 @@ private val appTypography = Typography(
 fun AppTheme(
     content: @Composable () -> Unit
 ) {
-    val darkTheme = isSystemInDarkTheme()
+    val themeViewModel = koinViewModel<ThemeViewModel>()
+    val themeMode = themeViewModel.themeMode.collectAsStateWithLifecycle()
+
+    val darkTheme = themeMode.value.isDarkTheme()
 
     MaterialTheme(
         colors = if (darkTheme) DarkColors else LightColors,

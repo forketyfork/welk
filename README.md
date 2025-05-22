@@ -27,6 +27,7 @@ For local development:
 - [x] GitHub Actions for testing
 - [x] Per-user storage
 - [x] Pass the proper coroutine scope to shared models
+- [x] Dark mode 🌚
 
 ### Current focus
 - [ ] End-to-end tests for the main functionality

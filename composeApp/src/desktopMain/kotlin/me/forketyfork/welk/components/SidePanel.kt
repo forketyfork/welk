@@ -1,20 +1,8 @@
 package me.forketyfork.welk.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.runtime.Composable
@@ -30,6 +18,7 @@ import kotlinx.coroutines.launch
 import me.forketyfork.welk.presentation.CardAction
 import me.forketyfork.welk.vm.DesktopCardViewModel
 import me.forketyfork.welk.vm.DesktopLoginViewModel
+import me.forketyfork.welk.vm.ThemeViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -40,9 +29,11 @@ fun SidePanel(
 
     val loginViewModel = koinViewModel<DesktopLoginViewModel>()
     val cardViewModel = koinViewModel<DesktopCardViewModel>()
+    val themeViewModel = koinViewModel<ThemeViewModel>()
 
     val decks by cardViewModel.availableDecks.collectAsStateWithLifecycle()
     val currentDeck by cardViewModel.currentDeck.collectAsStateWithLifecycle()
+    val themeMode by themeViewModel.themeMode.collectAsStateWithLifecycle()
 
     Box(
         modifier = modifier
@@ -103,13 +94,30 @@ fun SidePanel(
             Divider()
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Logout action
+            // Bottom action buttons panel with fixed height
             Row(
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(48.dp)
                     .padding(vertical = 8.dp)
             ) {
+                // Theme toggle button
+                IconButton(
+                    onClick = {
+                        themeViewModel.toggleThemeMode()
+                    },
+                    modifier = Modifier.testTag(SidePanelTestTags.THEME_TOGGLE_BUTTON)
+                ) {
+                    Icon(
+                        imageVector = themeMode.icon,
+                        contentDescription = themeMode.contentDescription,
+                        tint = MaterialTheme.colors.primary
+                    )
+                }
+
+                // Logout button
                 IconButton(
                     onClick = {
                         cardViewModel.viewModelScope.launch {
@@ -133,4 +141,5 @@ object SidePanelTestTags {
     const val APP_TITLE = "app_title"
     const val DECK_LIST_TITLE = "deck_list_title"
     const val LOGOUT_BUTTON = "logout_button"
+    const val THEME_TOGGLE_BUTTON = "theme_toggle_button"
 }
