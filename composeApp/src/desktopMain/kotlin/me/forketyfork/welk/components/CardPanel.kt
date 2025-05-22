@@ -169,7 +169,11 @@ fun CardPanel(modifier: Modifier = Modifier) {
                 modifier = Modifier
                     .width(315.dp)
                     .height(440.dp)
-                    .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(10.dp))
+                    .border(
+                        width = 2.dp,
+                        color = MaterialTheme.colors.primary,
+                        shape = RoundedCornerShape(10.dp)
+                    )
                     .background(color = Color.White)
                     .padding(all = 20.dp),
                 verticalArrangement = Arrangement.Center,
@@ -201,7 +205,11 @@ fun CardPanel(modifier: Modifier = Modifier) {
                     .height(440.dp)
                     .offset { animatedOffset }
                     .rotate(animatedOffset.x / 80.0f)
-                    .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(10.dp))
+                    .border(
+                        width = 2.dp,
+                        color = MaterialTheme.colors.primary,
+                        shape = RoundedCornerShape(10.dp)
+                    )
                     .background(color = animatedColor)
                     .padding(all = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -274,6 +282,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
                                 contentDescription = "Edit",
+                                tint = MaterialTheme.colors.primary,
                                 modifier = Modifier
                                     .size(24.dp)
                                     .clickable {
@@ -284,6 +293,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Delete",
+                                tint = MaterialTheme.colors.error,
                                 modifier = Modifier
                                     .size(24.dp)
                                     .clickable {
