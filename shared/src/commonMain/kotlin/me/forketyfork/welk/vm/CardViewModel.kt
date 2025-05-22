@@ -25,6 +25,7 @@ interface CardViewModel : InitializableViewModel {
     suspend fun createNewCard(deckId: String)
     suspend fun cancelNewCard()
     suspend fun createDeck(name: String, description: String)
+    suspend fun deleteDeck(deckId: String)
     suspend fun deleteCurrentCard()
     fun showDeleteConfirmation()
     fun hideDeleteConfirmation()
