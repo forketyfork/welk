@@ -7,6 +7,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,6 +47,9 @@ fun LoginView() {
         )
         OutlinedTextField(
             value = username,
+            colors = TextFieldDefaults.textFieldColors(
+                textColor = MaterialTheme.colors.onSurface
+            ),
             onValueChange = { username = it },
             label = { Text("Username") },
             singleLine = true,
@@ -54,6 +58,9 @@ fun LoginView() {
         )
         OutlinedTextField(
             value = password,
+            colors = TextFieldDefaults.textFieldColors(
+                textColor = MaterialTheme.colors.onSurface
+            ),
             onValueChange = { password = it },
             label = { Text("Password") },
             singleLine = true,

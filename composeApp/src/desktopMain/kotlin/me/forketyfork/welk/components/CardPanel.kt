@@ -25,6 +25,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
+import androidx.compose.material.TextFieldColors
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -185,6 +187,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                     "No cards in this deck",
                     style = TextStyle(fontSize = 18.sp),
                     textAlign = TextAlign.Center,
+                    color = MaterialTheme.colors.onSurface
                 )
                 Spacer(modifier = Modifier.height(20.dp))
                 Button(
@@ -226,6 +229,9 @@ fun CardPanel(modifier: Modifier = Modifier) {
                     // Edit mode UI
                     OutlinedTextField(
                         value = frontText,
+                        colors = TextFieldDefaults.textFieldColors(
+                            textColor = MaterialTheme.colors.onSurface
+                        ),
                         onValueChange = { frontText = it },
                         label = { Text("Front") },
                         modifier = Modifier.fillMaxWidth().weight(1f)
@@ -234,6 +240,9 @@ fun CardPanel(modifier: Modifier = Modifier) {
                     Divider()
                     OutlinedTextField(
                         value = backText,
+                        colors = TextFieldDefaults.textFieldColors(
+                            textColor = MaterialTheme.colors.onSurface
+                        ),
                         onValueChange = { backText = it },
                         label = { Text("Back") },
                         modifier = Modifier.fillMaxWidth().weight(1f)
@@ -282,7 +291,8 @@ fun CardPanel(modifier: Modifier = Modifier) {
                         ) {
                         Text(
                             currentCard.value.front,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            color = MaterialTheme.colors.onSurface
                         )
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -315,6 +325,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                     if (isFlipped.value) {
                         Text(
                             text = currentCard.value.back,
+                            color = MaterialTheme.colors.onSurface,
                             modifier = Modifier.testTag(CardPanelTestTags.VIEW_BACK)
                         )
                     }
