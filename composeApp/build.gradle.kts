@@ -62,6 +62,9 @@ compose.desktop {
             packageVersion = "1.0.0"
             macOS {
                 iconFile.set(project.file("welk_icon.icns"))
+                jvmArgs(
+                    "-Dapple.awt.application.appearance=system"
+                )
             }
         }
     }

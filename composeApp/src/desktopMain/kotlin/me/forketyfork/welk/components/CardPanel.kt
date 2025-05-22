@@ -21,9 +21,11 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -153,6 +155,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
         // Make sure this panel can gain focus and receives keyboard events
         modifier = modifier
             .fillMaxSize()
+            .background(MaterialTheme.colors.background)
             .testTag(CardPanelTestTags.CARD_PANEL)
             .onKeyEvent { event: KeyEvent ->
                 logger.d { "Card got key event: $event" }
@@ -169,8 +172,12 @@ fun CardPanel(modifier: Modifier = Modifier) {
                 modifier = Modifier
                     .width(315.dp)
                     .height(440.dp)
-                    .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(10.dp))
-                    .background(color = Color.White)
+                    .border(
+                        width = 2.dp,
+                        color = MaterialTheme.colors.primary,
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    .background(color = MaterialTheme.colors.surface)
                     .padding(all = 20.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -179,6 +186,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                     "No cards in this deck",
                     style = TextStyle(fontSize = 18.sp),
                     textAlign = TextAlign.Center,
+                    color = MaterialTheme.colors.onSurface
                 )
                 Spacer(modifier = Modifier.height(20.dp))
                 Button(
@@ -201,8 +209,18 @@ fun CardPanel(modifier: Modifier = Modifier) {
                     .height(440.dp)
                     .offset { animatedOffset }
                     .rotate(animatedOffset.x / 80.0f)
-                    .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(10.dp))
-                    .background(color = animatedColor)
+                    .border(
+                        width = 2.dp,
+                        color = MaterialTheme.colors.primary,
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    .background(
+                        color = if (animatedColor == Color.Transparent) {
+                            MaterialTheme.colors.surface
+                        } else {
+                            animatedColor
+                        }
+                    )
                     .padding(all = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
@@ -210,6 +228,9 @@ fun CardPanel(modifier: Modifier = Modifier) {
                     // Edit mode UI
                     OutlinedTextField(
                         value = frontText,
+                        colors = TextFieldDefaults.textFieldColors(
+                            textColor = MaterialTheme.colors.onSurface
+                        ),
                         onValueChange = { frontText = it },
                         label = { Text("Front") },
                         modifier = Modifier.fillMaxWidth().weight(1f)
@@ -218,6 +239,9 @@ fun CardPanel(modifier: Modifier = Modifier) {
                     Divider()
                     OutlinedTextField(
                         value = backText,
+                        colors = TextFieldDefaults.textFieldColors(
+                            textColor = MaterialTheme.colors.onSurface
+                        ),
                         onValueChange = { backText = it },
                         label = { Text("Back") },
                         modifier = Modifier.fillMaxWidth().weight(1f)
@@ -266,7 +290,8 @@ fun CardPanel(modifier: Modifier = Modifier) {
                         ) {
                         Text(
                             currentCard.value.front,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            color = MaterialTheme.colors.onSurface
                         )
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -274,6 +299,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
                                 contentDescription = "Edit",
+                                tint = MaterialTheme.colors.primary,
                                 modifier = Modifier
                                     .size(24.dp)
                                     .clickable {
@@ -284,6 +310,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Delete",
+                                tint = MaterialTheme.colors.error,
                                 modifier = Modifier
                                     .size(24.dp)
                                     .clickable {
@@ -297,6 +324,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                     if (isFlipped.value) {
                         Text(
                             text = currentCard.value.back,
+                            color = MaterialTheme.colors.onSurface,
                             modifier = Modifier.testTag(CardPanelTestTags.VIEW_BACK)
                         )
                     }

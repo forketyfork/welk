@@ -1,5 +1,6 @@
 package me.forketyfork.welk.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Typography
 import androidx.compose.material.darkColors
@@ -12,13 +13,18 @@ import androidx.compose.ui.unit.sp
 import me.forketyfork.welk.fonts.AppFonts
 
 // Colors for the application
-private val primaryColor = Color(0xFF6200EE)
-private val primaryVariant = Color(0xFF3700B3)
-private val secondaryColor = Color(0xFF03DAC5)
-private val secondaryVariant = Color(0xFF018786)
-private val backgroundColor = Color(0xFFF5F5F5)
-private val surfaceColor = Color.White
-private val onSurfaceColor = Color(0xFF121212)
+// Updated colors with a violet-focused palette
+private val primaryColor = Color(0xFF7C4DFF)
+private val primaryVariant = Color(0xFF651FFF)
+private val secondaryColor = Color(0xFFCE93D8)
+private val secondaryVariant = Color(0xFFAB47BC)
+private val backgroundColorLight = Color(0xFFF3E5F5)
+private val surfaceColorLight = Color.White
+private val onSurfaceColorLight = Color(0xFF121212)
+
+private val backgroundColorDark = Color(0xFF121212)
+private val surfaceColorDark = Color(0xFF1E1E1E)
+private val onSurfaceColorDark = Color.White
 
 // Light theme colors
 private val LightColors = lightColors(
@@ -26,17 +32,19 @@ private val LightColors = lightColors(
     primaryVariant = primaryVariant,
     secondary = secondaryColor,
     secondaryVariant = secondaryVariant,
-    background = backgroundColor,
-    surface = surfaceColor,
-    onSurface = onSurfaceColor
+    background = backgroundColorLight,
+    surface = surfaceColorLight,
+    onSurface = onSurfaceColorLight
 )
 
-// Dark theme colors - not used yet but prepared for future
 private val DarkColors = darkColors(
     primary = primaryColor,
     primaryVariant = primaryVariant,
     secondary = secondaryColor,
-    secondaryVariant = secondaryVariant
+    secondaryVariant = secondaryVariant,
+    background = backgroundColorDark,
+    surface = surfaceColorDark,
+    onSurface = onSurfaceColorDark
 )
 
 // Typography settings using our custom fonts
@@ -44,17 +52,17 @@ private val appTypography = Typography(
     h1 = TextStyle(
         fontFamily = AppFonts.openSans,
         fontWeight = FontWeight.Bold,
-        fontSize = 28.sp
+        fontSize = 32.sp
     ),
     h2 = TextStyle(
         fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.Bold,
-        fontSize = 24.sp
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 26.sp
     ),
     h3 = TextStyle(
         fontFamily = AppFonts.openSans,
         fontWeight = FontWeight.SemiBold,
-        fontSize = 20.sp
+        fontSize = 22.sp
     ),
     h4 = TextStyle(
         fontFamily = AppFonts.openSans,
@@ -72,19 +80,24 @@ private val appTypography = Typography(
         fontSize = 14.sp
     ),
     body1 = TextStyle(
-        fontFamily = AppFonts.roboto,
+        fontFamily = AppFonts.openSans,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp
     ),
     body2 = TextStyle(
-        fontFamily = AppFonts.roboto,
+        fontFamily = AppFonts.openSans,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp
     ),
     button = TextStyle(
-        fontFamily = AppFonts.roboto,
+        fontFamily = AppFonts.openSans,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp
+    ),
+    caption = TextStyle(
+        fontFamily = AppFonts.openSans,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp
     )
 )
 
@@ -92,8 +105,10 @@ private val appTypography = Typography(
 fun AppTheme(
     content: @Composable () -> Unit
 ) {
+    val darkTheme = isSystemInDarkTheme()
+
     MaterialTheme(
-        colors = LightColors,
+        colors = if (darkTheme) DarkColors else LightColors,
         typography = appTypography,
         content = content
     )
