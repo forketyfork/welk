@@ -1,17 +1,7 @@
 package me.forketyfork.welk
 
-import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.hasTestTag
-import androidx.compose.ui.test.hasTextExactly
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performKeyInput
-import androidx.compose.ui.test.performTextInput
-import androidx.compose.ui.test.pressKey
-import androidx.compose.ui.test.runComposeUiTest
-import androidx.compose.ui.test.waitUntilDoesNotExist
-import androidx.compose.ui.test.waitUntilExactlyOneExists
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.test.*
 import me.forketyfork.welk.components.CardPanelTestTags
 import me.forketyfork.welk.components.DeckItemTestTags
 import org.junit.Test
@@ -51,9 +41,8 @@ class CreateNewCardTest : KoinTest {
             waitUntilExactlyOneExists(hasTextExactly(*texts))
         }
 
-        // Select the first deck and add a new card
-        onNodeWithTag(DeckItemTestTags.DECK_NAME_TEMPLATE.format("deck1")).performClick()
-        onNodeWithTag(CardPanelTestTags.ADD_CARD_BUTTON).performClick()
+        // add a new card to the first deck
+        onNodeWithTag(DeckItemTestTags.ADD_CARD_BUTTON_TEMPLATE.format("deck1")).performClick()
 
         // Enter front text of the new card
         onNodeWithText("Front").performTextInput("New Front Text")
@@ -62,10 +51,26 @@ class CreateNewCardTest : KoinTest {
         onNodeWithText("Back").performTextInput("New Back Text")
 
         // Save the new card
-        onNodeWithTag(CardPanelTestTags.SAVE_BUTTON).performClick()
+        onNodeWithTag(CardPanelTestTags.EDIT_SAVE).performClick()
 
         // Verify that the new card is added and visible
         waitUntilExactlyOneExists(hasTextExactly("New Front Text"))
+
+        // press space
+        onRoot().performKeyInput { pressKey(Key.Spacebar) }
+
+        // the number of cards bumped to 4
+        waitUntilExactlyOneExists(hasTextExactly("4 cards", "Basic Vocabulary", "Essential words for beginners"))
+
+        // verify that the back of the card appeared
+        waitUntilExactlyOneExists(hasTextExactly("New Back Text"))
+
+        onNodeWithTag(CardPanelTestTags.DELETE_BUTTON).performClick()
+        waitUntilExactlyOneExists(hasTestTag(CardPanelTestTags.CONFIRM_DELETE_BUTTON))
+        onNodeWithTag(CardPanelTestTags.CONFIRM_DELETE_BUTTON).performClick()
+
+        // the number of cards is back to 3
+        waitUntilExactlyOneExists(hasTextExactly("3 cards", "Basic Vocabulary", "Essential words for beginners"))
 
         // Log out
         logout()
