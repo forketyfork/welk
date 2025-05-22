@@ -59,12 +59,13 @@ class CreateNewCardTest : KoinTest {
         // press space
         onRoot().performKeyInput { pressKey(Key.Spacebar) }
 
-        // the number of cards bumped to 4
-        waitUntilExactlyOneExists(hasTextExactly("4 cards", "Basic Vocabulary", "Essential words for beginners"))
-
         // verify that the back of the card appeared
         waitUntilExactlyOneExists(hasTextExactly("New Back Text"))
 
+        // verify that the number of cards bumped to 4
+        waitUntilExactlyOneExists(hasTextExactly("4 cards", "Basic Vocabulary", "Essential words for beginners"))
+
+        // delete the card
         onNodeWithTag(CardPanelTestTags.DELETE_BUTTON).performClick()
         waitUntilExactlyOneExists(hasTestTag(CardPanelTestTags.CONFIRM_DELETE_BUTTON))
         onNodeWithTag(CardPanelTestTags.CONFIRM_DELETE_BUTTON).performClick()
