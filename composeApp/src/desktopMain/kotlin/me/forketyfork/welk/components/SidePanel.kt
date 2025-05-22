@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -34,6 +34,10 @@ fun SidePanel(
     val decks by cardViewModel.availableDecks.collectAsStateWithLifecycle()
     val currentDeck by cardViewModel.currentDeck.collectAsStateWithLifecycle()
     val themeMode by themeViewModel.themeMode.collectAsStateWithLifecycle()
+
+    var showAddDeckDialog by remember { mutableStateOf(false) }
+    var newDeckName by remember { mutableStateOf("") }
+    var newDeckDescription by remember { mutableStateOf("") }
 
     Box(
         modifier = modifier
@@ -117,6 +121,18 @@ fun SidePanel(
                     )
                 }
 
+                // Add deck button
+                IconButton(
+                    onClick = { showAddDeckDialog = true },
+                    modifier = Modifier.testTag(SidePanelTestTags.ADD_DECK_BUTTON)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Deck",
+                        tint = MaterialTheme.colors.primary
+                    )
+                }
+
                 // Logout button
                 IconButton(
                     onClick = {
@@ -133,6 +149,45 @@ fun SidePanel(
                     )
                 }
             }
+
+            if (showAddDeckDialog) {
+                AlertDialog(
+                    onDismissRequest = { showAddDeckDialog = false },
+                    title = { Text("Add Deck") },
+                    text = {
+                        Column {
+                            OutlinedTextField(
+                                value = newDeckName,
+                                onValueChange = { newDeckName = it },
+                                label = { Text("Name") },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            OutlinedTextField(
+                                value = newDeckDescription,
+                                onValueChange = { newDeckDescription = it },
+                                label = { Text("Description") },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                cardViewModel.viewModelScope.launch {
+                                    cardViewModel.createDeck(newDeckName, newDeckDescription)
+                                }
+                                newDeckName = ""
+                                newDeckDescription = ""
+                                showAddDeckDialog = false
+                            }
+                        ) { Text("Save") }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showAddDeckDialog = false }) { Text("Cancel") }
+                    }
+                )
+            }
         }
     }
 }
@@ -142,4 +197,5 @@ object SidePanelTestTags {
     const val DECK_LIST_TITLE = "deck_list_title"
     const val LOGOUT_BUTTON = "logout_button"
     const val THEME_TOGGLE_BUTTON = "theme_toggle_button"
+    const val ADD_DECK_BUTTON = "add_deck_button"
 }
