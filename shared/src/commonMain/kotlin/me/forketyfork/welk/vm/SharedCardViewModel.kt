@@ -527,4 +527,20 @@ open class SharedCardViewModel(
             logger.e(e) { "Error creating deck" }
         }
     }
+
+    override suspend fun deleteDeck(deckId: String) {
+        try {
+            deckRepository.deleteDeck(deckId)
+
+            if (_currentDeck.value?.value?.id == deckId) {
+                _currentDeck.value = null
+                _currentDeckCards.value = emptyList()
+                _currentCard.value = Card()
+                _currentCardPosition.value = 0
+                _isFlipped.value = false
+            }
+        } catch (e: Exception) {
+            logger.e(e) { "Error deleting deck" }
+        }
+    }
 }

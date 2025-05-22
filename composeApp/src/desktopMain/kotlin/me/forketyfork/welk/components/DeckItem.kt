@@ -18,6 +18,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -35,7 +36,8 @@ fun DeckItem(
     deck: StateFlow<Deck>,
     isSelected: Boolean,
     onClick: () -> Unit,
-    onAddCard: ((String) -> Unit)? = null
+    onAddCard: ((String) -> Unit)? = null,
+    onDeleteDeck: ((String) -> Unit)? = null
 ) {
     val deck by deck.collectAsStateWithLifecycle()
 
@@ -89,13 +91,40 @@ fun DeckItem(
                     )
                 }
             }
+
+            if (onDeleteDeck != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+                TextButton(
+                    onClick = { onDeleteDeck(deck.id) },
+                    contentPadding = PaddingValues(
+                        horizontal = 8.dp,
+                        vertical = 2.dp
+                    ),
+                    modifier = Modifier
+                        .height(24.dp)
+                        .testTag(DeckItemTestTags.DELETE_DECK_BUTTON_TEMPLATE.format(deck.id))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete Deck",
+                        modifier = Modifier.size(14.dp),
+                        tint = MaterialTheme.colors.error
+                    )
+                    Spacer(modifier = Modifier.width(2.dp))
+                    Text(
+                        "Delete",
+                        style = MaterialTheme.typography.caption,
+                        color = MaterialTheme.colors.error
+                    )
+                }
+            }
         }
 
         // Column for deck main content with right padding to avoid overlapping the controls
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(end = 90.dp) // Make space for the controls
+                .padding(end = 120.dp) // Make space for the controls
 
         ) {
             Text(
@@ -118,4 +147,5 @@ fun DeckItem(
 object DeckItemTestTags {
     const val DECK_NAME_TEMPLATE = "deck_name_%s"
     const val ADD_CARD_BUTTON_TEMPLATE = "add_card_%s"
+    const val DELETE_DECK_BUTTON_TEMPLATE = "delete_deck_%s"
 }

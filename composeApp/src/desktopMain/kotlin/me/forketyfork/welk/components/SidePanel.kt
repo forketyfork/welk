@@ -38,6 +38,7 @@ fun SidePanel(
     var showAddDeckDialog by remember { mutableStateOf(false) }
     var newDeckName by remember { mutableStateOf("") }
     var newDeckDescription by remember { mutableStateOf("") }
+    var deckIdToDelete by remember { mutableStateOf<String?>(null) }
 
     Box(
         modifier = modifier
@@ -87,7 +88,8 @@ fun SidePanel(
                     },
                     onAddCard = { deckId ->
                         cardViewModel.processAction(CardAction.CreateNewCard(deckId))
-                    }
+                    },
+                    onDeleteDeck = { id -> deckIdToDelete = id }
                 )
             }
 
@@ -185,6 +187,30 @@ fun SidePanel(
                     },
                     dismissButton = {
                         TextButton(onClick = { showAddDeckDialog = false }) { Text("Cancel") }
+                    }
+                )
+            }
+
+            if (deckIdToDelete != null) {
+                AlertDialog(
+                    onDismissRequest = { deckIdToDelete = null },
+                    title = { Text("Delete Deck") },
+                    text = { Text("Are you sure you want to delete this deck? This action cannot be undone.") },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                val id = deckIdToDelete
+                                if (id != null) {
+                                    cardViewModel.viewModelScope.launch {
+                                        cardViewModel.deleteDeck(id)
+                                    }
+                                }
+                                deckIdToDelete = null
+                            }
+                        ) { Text("Delete") }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { deckIdToDelete = null }) { Text("Cancel") }
                     }
                 )
             }
