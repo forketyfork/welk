@@ -35,3 +35,11 @@ jobs:
           WELK_TEST_USERNAME: ${{ secrets.WELK_TEST_USERNAME }}
           WELK_TEST_PASSWORD: ${{ secrets.WELK_TEST_PASSWORD }}
         run: ./gradlew :composeApp:desktopTest
+
+      - name: Publish Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: desktop-test-results
+          path: composeApp/build/reports/tests/desktopTest/
+          retention-days: 7
