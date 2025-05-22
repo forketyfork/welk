@@ -519,4 +519,12 @@ open class SharedCardViewModel(
             hideDeleteConfirmation()
         }
     }
+
+    override suspend fun createDeck(name: String, description: String) {
+        try {
+            deckRepository.createDeck(name, description)
+        } catch (e: Exception) {
+            logger.e(e) { "Error creating deck" }
+        }
+    }
 }
