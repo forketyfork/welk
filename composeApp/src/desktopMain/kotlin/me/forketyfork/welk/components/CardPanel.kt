@@ -177,7 +177,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                         color = MaterialTheme.colors.primary,
                         shape = RoundedCornerShape(10.dp)
                     )
-                    .background(color = MaterialTheme.colors.surface)
+                    .background(color = MaterialTheme.colors.background)
                     .padding(all = 20.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -216,7 +216,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                     )
                     .background(
                         color = if (animatedColor == Color.Transparent) {
-                            MaterialTheme.colors.surface
+                            MaterialTheme.colors.background
                         } else {
                             animatedColor
                         }

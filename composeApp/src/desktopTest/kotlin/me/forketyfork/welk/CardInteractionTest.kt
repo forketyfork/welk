@@ -2,41 +2,23 @@
 
 package me.forketyfork.welk
 
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.semantics.SemanticsProperties
-import androidx.compose.ui.semantics.getOrNull
-import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.SemanticsMatcher
-import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasTextExactly
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
-import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.test.waitUntilDoesNotExist
 import androidx.compose.ui.test.waitUntilExactlyOneExists
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
-import androidx.lifecycle.ViewModelStore
-import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import me.forketyfork.welk.components.CardPanelTestTags
 import me.forketyfork.welk.components.DeckItemTestTags
-import me.forketyfork.welk.components.LoginViewTestTags
-import me.forketyfork.welk.components.SidePanelTestTags
 import org.junit.Test
 import org.koin.test.KoinTest
-import kotlin.test.fail
 
 class CardInteractionTest : KoinTest {
 
@@ -44,32 +26,13 @@ class CardInteractionTest : KoinTest {
     @Test
     fun canViewAndFlipCards() = runComposeUiTest {
 
-        val testUsername = System.getenv("WELK_TEST_USERNAME")
-        val testPassword = System.getenv("WELK_TEST_PASSWORD")
+        // Get test credentials and set up the app
+        val (testUsername, testPassword) = getTestCredentials()
+        setupApp()
 
-        if (testUsername.isNullOrBlank() || testPassword.isNullOrBlank()) {
-            fail("WELK_TEST_USERNAME and WELK_TEST_PASSWORD environment variables must be set")
-        }
-
-        setContent {
-            CompositionLocalProvider(
-                LocalLifecycleOwner provides LocalLifecycleOwnerFake(),
-                LocalViewModelStoreOwner provides ComposeViewModelStoreOwner()
-            ) {
-                App()
-            }
-        }
-
-        // log in as a test user
-        onNodeWithTag(LoginViewTestTags.USERNAME_INPUT).performTextInput(testUsername)
-        onNodeWithTag(LoginViewTestTags.PASSWORD_INPUT).performTextInput(testPassword)
-        onNodeWithTag(LoginViewTestTags.SIGN_IN_BUTTON).performClick()
-
-        // check basic UI elements are visible
-        waitUntilExactlyOneExists(hasTestTag(SidePanelTestTags.APP_TITLE), timeoutMillis = 10000)
-        onNodeWithTag(SidePanelTestTags.APP_TITLE).assertTextEquals("Welk\uD83C\uDF42")
-        onNodeWithTag(SidePanelTestTags.DECK_LIST_TITLE).assertTextEquals("Decks")
-        onNodeWithTag(SidePanelTestTags.LOGOUT_BUTTON).assertExists()
+        // Log in and verify basic UI elements
+        login(testUsername, testPassword)
+        verifyBasicUiElements()
 
         // wait until the decks are loaded, verify their expected contents
         val preloadedDeckIdsAndTexts = mapOf(
@@ -115,38 +78,7 @@ class CardInteractionTest : KoinTest {
         // verify that the back of the card is hidden
         waitUntilDoesNotExist(hasTextExactly("Hola"))
 
-        onNodeWithTag(SidePanelTestTags.LOGOUT_BUTTON).performClick()
-        waitUntilExactlyOneExists(
-            hasTestTag(LoginViewTestTags.USERNAME_INPUT),
-            timeoutMillis = 10000
-        )
-    }
-}
-
-/**
- * Fake implementation of [LifecycleOwner] to be used in the tests
- */
-private class LocalLifecycleOwnerFake : LifecycleOwner {
-    override val lifecycle: Lifecycle = LifecycleRegistry(this).apply {
-        currentState = Lifecycle.State.RESUMED
-    }
-}
-
-private class ComposeViewModelStoreOwner : ViewModelStoreOwner {
-    override val viewModelStore: ViewModelStore = ViewModelStore()
-}
-
-@Suppress("unused") // a handy function for debugging
-@OptIn(ExperimentalTestApi::class)
-private fun ComposeUiTest.printSemanticNodeState() {
-    println()
-    onAllNodes(SemanticsMatcher("all nodes") { true }).fetchSemanticsNodes().forEach { node ->
-        println(
-            "Node: Text = ${node.config.getOrNull(SemanticsProperties.Text)}, " +
-                    "Tag = ${node.config.getOrNull(SemanticsProperties.TestTag)}, " +
-                    "Role = ${node.config.getOrNull(SemanticsProperties.Role)}, " +
-                    "Description = ${node.config.getOrNull(SemanticsProperties.ContentDescription)}, " +
-                    "Focused = ${node.config.getOrNull(SemanticsProperties.Focused)}"
-        )
+        // Log out
+        logout()
     }
 }
