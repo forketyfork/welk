@@ -136,7 +136,8 @@ fun CardPanel(modifier: Modifier = Modifier) {
                         coroutineScope.launch {
                             cardViewModel.processAction(CardAction.ConfirmDelete)
                         }
-                    }
+                    },
+                    modifier = Modifier.testTag(CardPanelTestTags.CONFIRM_DELETE_BUTTON)
                 ) {
                     Text("Delete")
                 }
@@ -344,4 +345,5 @@ object CardPanelTestTags {
     const val DELETE_BUTTON = "card_delete_button"
     const val CREATE_FIRST_CARD_BUTTON = "create_first_card_button"
     const val CARD_PANEL = "card_panel"
+    const val CONFIRM_DELETE_BUTTON = "confirm_delete_button"
 }
