@@ -160,14 +160,16 @@ fun SidePanel(
                                 value = newDeckName,
                                 onValueChange = { newDeckName = it },
                                 label = { Text("Name") },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true,
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             OutlinedTextField(
                                 value = newDeckDescription,
                                 onValueChange = { newDeckDescription = it },
                                 label = { Text("Description") },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true,
                             )
                         }
                     },

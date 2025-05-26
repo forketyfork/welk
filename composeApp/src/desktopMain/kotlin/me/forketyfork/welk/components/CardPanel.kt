@@ -4,47 +4,24 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Button
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.KeyEvent
-import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.*
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -236,6 +213,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                         label = { Text("Front") },
                         modifier = Modifier.fillMaxWidth().weight(1f)
                             .testTag(CardPanelTestTags.EDIT_FRONT)
+                            .moveFocusOnTab()
                     )
                     Divider()
                     OutlinedTextField(
@@ -247,6 +225,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                         label = { Text("Back") },
                         modifier = Modifier.fillMaxWidth().weight(1f)
                             .testTag(CardPanelTestTags.EDIT_BACK)
+                            .moveFocusOnTab()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
@@ -346,4 +325,21 @@ object CardPanelTestTags {
     const val CREATE_FIRST_CARD_BUTTON = "create_first_card_button"
     const val CARD_PANEL = "card_panel"
     const val CONFIRM_DELETE_BUTTON = "confirm_delete_button"
+}
+
+// For multiline fields, Tab doesn't work as expected, so we need to move focus manually
+// see https://github.com/JetBrains/compose-multiplatform/blob/master/tutorials/Tab_Navigation/README.md#a-possible-workaround
+@OptIn(ExperimentalComposeUiApi::class)
+fun Modifier.moveFocusOnTab() = composed {
+    val focusManager = LocalFocusManager.current
+    onPreviewKeyEvent {
+        if (it.type == KeyEventType.KeyDown && it.key == Key.Tab) {
+            focusManager.moveFocus(
+                if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next
+            )
+            true
+        } else {
+            false
+        }
+    }
 }
