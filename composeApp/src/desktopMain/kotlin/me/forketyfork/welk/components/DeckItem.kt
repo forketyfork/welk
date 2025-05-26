@@ -2,15 +2,7 @@ package me.forketyfork.welk.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
@@ -36,8 +28,8 @@ fun DeckItem(
     deck: StateFlow<Deck>,
     isSelected: Boolean,
     onClick: () -> Unit,
-    onAddCard: ((String) -> Unit)? = null,
-    onDeleteDeck: ((String) -> Unit)? = null
+    onAddCard: ((String) -> Unit),
+    onDeleteDeck: ((String) -> Unit),
 ) {
     val deck by deck.collectAsStateWithLifecycle()
 
@@ -67,56 +59,54 @@ fun DeckItem(
             Spacer(modifier = Modifier.height(4.dp))
 
             // Add card button
-            if (onAddCard != null) {
-                TextButton(
-                    onClick = { onAddCard(deck.id) },
-                    contentPadding = PaddingValues(
-                        horizontal = 8.dp,
-                        vertical = 2.dp
-                    ),
-                    modifier = Modifier
-                        .height(24.dp)
-                        .testTag(DeckItemTestTags.ADD_CARD_BUTTON_TEMPLATE.format(deck.id))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Add Card",
-                        modifier = Modifier.size(14.dp),
-                        tint = MaterialTheme.colors.primary
-                    )
-                    Spacer(modifier = Modifier.width(2.dp))
-                    Text(
-                        "Add Card",
-                        style = MaterialTheme.typography.caption
-                    )
-                }
+            TextButton(
+                onClick = { onAddCard(deck.id) },
+                contentPadding = PaddingValues(
+                    horizontal = 8.dp,
+                    vertical = 2.dp
+                ),
+                modifier = Modifier
+                    .height(24.dp)
+                    .testTag(DeckItemTestTags.ADD_CARD_BUTTON_TEMPLATE.format(deck.id))
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add Card",
+                    modifier = Modifier.size(14.dp),
+                    tint = MaterialTheme.colors.primary
+                )
+                Spacer(modifier = Modifier.width(2.dp))
+                Text(
+                    "Add Card",
+                    style = MaterialTheme.typography.caption
+                )
             }
 
-            if (onDeleteDeck != null) {
-                Spacer(modifier = Modifier.height(4.dp))
-                TextButton(
-                    onClick = { onDeleteDeck(deck.id) },
-                    contentPadding = PaddingValues(
-                        horizontal = 8.dp,
-                        vertical = 2.dp
-                    ),
-                    modifier = Modifier
-                        .height(24.dp)
-                        .testTag(DeckItemTestTags.DELETE_DECK_BUTTON_TEMPLATE.format(deck.id))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete Deck",
-                        modifier = Modifier.size(14.dp),
-                        tint = MaterialTheme.colors.error
-                    )
-                    Spacer(modifier = Modifier.width(2.dp))
-                    Text(
-                        "Delete",
-                        style = MaterialTheme.typography.caption,
-                        color = MaterialTheme.colors.error
-                    )
-                }
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Delete deck button
+            TextButton(
+                onClick = { onDeleteDeck(deck.id) },
+                contentPadding = PaddingValues(
+                    horizontal = 8.dp,
+                    vertical = 2.dp
+                ),
+                modifier = Modifier
+                    .height(24.dp)
+                    .testTag(DeckItemTestTags.DELETE_DECK_BUTTON_TEMPLATE.format(deck.id))
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete Deck",
+                    modifier = Modifier.size(14.dp),
+                    tint = MaterialTheme.colors.error
+                )
+                Spacer(modifier = Modifier.width(2.dp))
+                Text(
+                    "Delete",
+                    style = MaterialTheme.typography.caption,
+                    color = MaterialTheme.colors.error
+                )
             }
         }
 
