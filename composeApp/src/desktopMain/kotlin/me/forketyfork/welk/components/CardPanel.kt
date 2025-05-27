@@ -78,6 +78,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
     }
 
     val focusRequester = remember { FocusRequester() }
+    val editFrontFocusRequester = remember { FocusRequester() }
 
     val currentDeck = cardViewModel.currentDeck.collectAsStateWithLifecycle()
     val hasCards = remember(currentDeck.value?.value) {
@@ -95,6 +96,12 @@ fun CardPanel(modifier: Modifier = Modifier) {
         // Check if we have a deck and either have cards or are in edit mode
         if (currentDeck.value != null && (hasCards.value || isEditing.value)) {
             focusRequester.requestFocus()
+        }
+    }
+
+    LaunchedEffect(isEditing.value) {
+        if (isEditing.value) {
+            editFrontFocusRequester.requestFocus()
         }
     }
 
@@ -213,6 +220,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                             onValueChange = { frontText = it },
                             label = { Text("Front") },
                             modifier = Modifier.fillMaxWidth().weight(1f)
+                                .focusRequester(editFrontFocusRequester)
                                 .testTag(CardPanelTestTags.EDIT_FRONT)
                         .moveFocusOnTab())
                         Divider()
