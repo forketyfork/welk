@@ -60,7 +60,10 @@ fun DeckItem(
 
             // Add card button
             TextButton(
-                onClick = { onAddCard(deck.id) },
+                onClick = {
+                    val deckId = deck.id ?: error("Deck id is null for a persistent entity")
+                    onAddCard(deckId)
+                },
                 contentPadding = PaddingValues(
                     horizontal = 8.dp,
                     vertical = 2.dp
@@ -86,7 +89,10 @@ fun DeckItem(
 
             // Delete deck button
             TextButton(
-                onClick = { onDeleteDeck(deck.id) },
+                onClick = {
+                    val deckId = deck.id ?: error("Deck id is null for a persistent entity")
+                    onDeleteDeck(deckId)
+                },
                 contentPadding = PaddingValues(
                     horizontal = 8.dp,
                     vertical = 2.dp

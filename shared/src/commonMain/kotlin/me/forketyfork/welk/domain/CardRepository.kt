@@ -12,11 +12,6 @@ interface CardRepository {
     suspend fun getCardById(deckId: String, cardId: String): Card
 
     /**
-     * Gets card at the specified position within a deck.
-     */
-    suspend fun getCardByPosition(deckId: String, position: Int): Card
-
-    /**
      * Gets the total number of cards in a deck.
      */
     suspend fun getCardCount(deckId: String): Int

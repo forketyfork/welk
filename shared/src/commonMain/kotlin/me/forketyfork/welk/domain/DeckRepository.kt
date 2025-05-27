@@ -19,12 +19,7 @@ interface DeckRepository {
     /**
      * Creates a new deck.
      */
-    suspend fun createDeck(name: String, description: String): Deck
-
-    /**
-     * Updates an existing deck.
-     */
-    suspend fun updateDeck(deck: Deck): Deck
+    suspend fun createDeck(name: String, description: String)
 
     /**
      * Deletes a deck and all its cards.

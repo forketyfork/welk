@@ -17,14 +17,15 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
     }
 
     private val firestore: FirebaseFirestore = platform.initializeFirestore()
+    private val users = firestore.collection("users")
 
-    private val userCollection
+    private val userDocument
         get() = Firebase.auth.currentUser?.uid?.let { userId ->
-            firestore.collection(userId)
+            users.document(userId)
         } ?: throw IllegalStateException("User must be logged in to access data")
 
     private val decksCollection
-        get() = userCollection.document("collections").collection("decks")
+        get() = userDocument.collection("decks")
 
     // DECK REPOSITORY IMPLEMENTATION
 
@@ -36,24 +37,25 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         return decksCollection.snapshots.map { it.documents }
             .map { documentSnapshots ->
                 documentSnapshots.map { documentSnapshot ->
-                    documentSnapshot.reference.snapshots.mapNotNull { it -> it.data() }
+                    documentSnapshot.reference.snapshots.mapNotNull { it ->
+                        it.data<Deck?>()?.apply { id = documentSnapshot.id }
+                    }
                 }
             }
     }
 
     suspend fun getDeckById(deckId: String): Deck {
-        return decksCollection.document(deckId).get().data<Deck>()
+        return decksCollection.document(deckId).get().data<Deck>().apply { id = deckId }
     }
 
     override fun flowDeck(deckId: String): Flow<Deck> =
-        decksCollection.document(deckId).snapshots.map { it.data() }
+        decksCollection.document(deckId).snapshots.mapNotNull { it.data<Deck?>()?.apply { id = deckId } }
 
     private suspend fun createSampleDecks() {
         // Create some sample decks
         val timestamp = Clock.System.now().toEpochMilliseconds()
 
         val deck1 = Deck(
-            id = "deck1",
             name = "Basic Vocabulary",
             description = "Essential words for beginners",
             cardCount = 3,
@@ -62,7 +64,6 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         )
 
         val deck2 = Deck(
-            id = "deck2",
             name = "Grammar Rules",
             description = "Key grammar concepts",
             cardCount = 2,
@@ -71,7 +72,6 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         )
 
         val deck3 = Deck(
-            id = "deck3",
             name = "Idioms",
             description = "Common expressions and idioms",
             cardCount = 2,
@@ -80,87 +80,46 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         )
 
         // Add the decks to Firestore
-        decksCollection.document(deck1.id).set(deck1)
-        decksCollection.document(deck2.id).set(deck2)
-        decksCollection.document(deck3.id).set(deck3)
+        decksCollection.document("deck1").set(deck1)
+        decksCollection.document("deck2").set(deck2)
+        decksCollection.document("deck3").set(deck3)
 
         // Add sample cards for each deck
-        val cards1 = listOf(
-            Card(id = "card1_1", deckId = "deck1", front = "Hello", back = "Hola", position = 0),
-            Card(id = "card1_2", deckId = "deck1", front = "Goodbye", back = "Adiós", position = 1),
-            Card(
-                id = "card1_3",
-                deckId = "deck1",
-                front = "Thank you",
-                back = "Gracias",
-                position = 2
-            )
-        )
-
-        val cards2 = listOf(
-            Card(
-                id = "card2_1",
-                deckId = "deck2",
-                front = "Present Simple",
-                back = "Used for habits and routines",
-                position = 0
-            ),
-            Card(
-                id = "card2_2",
-                deckId = "deck2",
-                front = "Present Continuous",
-                back = "Used for actions happening now",
-                position = 1
-            )
-        )
-
-        val cards3 = listOf(
-            Card(
-                id = "card3_1",
-                deckId = "deck3",
-                front = "Break a leg",
-                back = "Good luck",
-                position = 0
-            ),
-            Card(
-                id = "card3_2",
-                deckId = "deck3",
-                front = "Under the weather",
-                back = "Feeling sick",
-                position = 1
-            )
-        )
+        val card11 = Card(deckId = "deck1", front = "Hello", back = "Hola", position = 0)
+        val card12 = Card(deckId = "deck1", front = "Goodbye", back = "Adiós", position = 1)
+        val card13 = Card(deckId = "deck1", front = "Thank you", back = "Gracias", position = 2)
+        val card21 =
+            Card(deckId = "deck2", front = "Present Simple", back = "Used for habits and routines", position = 0)
+        val card22 =
+            Card(deckId = "deck2", front = "Present Continuous", back = "Used for actions happening now", position = 1)
+        val card31 = Card(deckId = "deck3", front = "Break a leg", back = "Good luck", position = 0)
+        val card32 = Card(deckId = "deck3", front = "Under the weather", back = "Feeling sick", position = 1)
 
         // Add cards to their respective decks
-        val deck1Cards = decksCollection.document(deck1.id).collection("cards")
-        cards1.forEach { card -> deck1Cards.document(card.id).set(card) }
+        val deck1Cards = decksCollection.document("deck1").collection("cards")
+        deck1Cards.document("card11").set(card11)
+        deck1Cards.document("card12").set(card12)
+        deck1Cards.document("card13").set(card13)
 
-        val deck2Cards = decksCollection.document(deck2.id).collection("cards")
-        cards2.forEach { card -> deck2Cards.document(card.id).set(card) }
+        val deck2Cards = decksCollection.document("deck2").collection("cards")
+        deck2Cards.document("card21").set(card21)
+        deck2Cards.document("card22").set(card22)
 
-        val deck3Cards = decksCollection.document(deck3.id).collection("cards")
-        cards3.forEach { card -> deck3Cards.document(card.id).set(card) }
+        val deck3Cards = decksCollection.document("deck3").collection("cards")
+        deck3Cards.document("card31").set(card31)
+        deck3Cards.document("card32").set(card32)
     }
 
-    override suspend fun createDeck(name: String, description: String): Deck {
+    override suspend fun createDeck(name: String, description: String) {
         val timestamp = Clock.System.now().toEpochMilliseconds()
         val newDeck = Deck(
-            id = "", // Will be populated by Firestore
             name = name,
             description = description,
             cardCount = 0,
             lastModified = timestamp,
             created = timestamp
         )
-
-        val docRef = decksCollection.add(newDeck)
-        return newDeck.copy(id = docRef.id)
-    }
-
-    override suspend fun updateDeck(deck: Deck): Deck {
-        val updatedDeck = deck.copy(lastModified = Clock.System.now().toEpochMilliseconds())
-        decksCollection.document(deck.id).set(updatedDeck)
-        return updatedDeck
+        decksCollection.add(newDeck)
     }
 
     override suspend fun deleteDeck(deckId: String) {
@@ -181,34 +140,12 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
 
     override suspend fun getCardsByDeckId(deckId: String): List<Card> {
         val cardsCollection = decksCollection.document(deckId).collection("cards")
-        return cardsCollection.get().documents.map { it.data<Card>() }
+        return cardsCollection.get().documents.map { it.data<Card>().apply { id = it.id } }
     }
 
     override suspend fun getCardById(deckId: String, cardId: String): Card {
-        // If either ID is empty, return an empty card rather than throwing an exception
-        if (cardId.isEmpty() || deckId.isEmpty()) {
-            logger.w { "Empty card ID or deck ID provided to getCardById" }
-            return Card(deckId = deckId)
-        }
-
         val cardsCollection = decksCollection.document(deckId).collection("cards")
-        return cardsCollection.document(cardId).get().data<Card>()
-    }
-
-    override suspend fun getCardByPosition(deckId: String, position: Int): Card {
-        val cardsCollection = decksCollection.document(deckId).collection("cards")
-        val cards = cardsCollection.get().documents
-
-        // Find the card with the specified position
-        val card = cards.firstOrNull { it.data<Card>().position == position }
-
-        if (card == null) {
-            // If no card found at that position, return first card
-            val firstCard = cards.minByOrNull { it.data<Card>().position }
-            return firstCard?.data<Card>() ?: Card() // Return empty card if none exists
-        }
-
-        return card.data<Card>()
+        return cardsCollection.document(cardId).get().data<Card>().apply { id = cardId }
     }
 
     override suspend fun getCardCount(deckId: String): Int {
@@ -217,18 +154,12 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
     }
 
     override suspend fun createCard(deckId: String, front: String, back: String): Card {
-        if (deckId.isEmpty()) {
-            logger.e { "Error: Cannot create card with empty deckId" }
-            return Card()
-        }
-
         val cardsCollection = decksCollection.document(deckId).collection("cards")
 
         // Get current card count to determine position
         val cardCount = getCardCount(deckId)
 
         val newCard = Card(
-            id = "", // Will be populated by Firestore
             deckId = deckId,
             front = front,
             back = back,
@@ -240,9 +171,6 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
 
         // Create a copy of the card with the Firestore-generated ID
         val cardWithId = newCard.copy(id = docRef.id)
-
-        // Update the card in Firestore with its ID to ensure it's properly stored
-        cardsCollection.document(docRef.id).set(cardWithId)
 
         // Update the deck's card count
         val deck = getDeckById(deckId)

@@ -83,7 +83,8 @@ fun SidePanel(
                     isSelected = currentDeck?.value?.id == deck.value.id,
                     onClick = {
                         cardViewModel.viewModelScope.launch {
-                            cardViewModel.selectDeck(deck.value.id)
+                            val deckId = deck.value.id ?: error("Deck id is null for a persistent entity")
+                            cardViewModel.selectDeck(deckId)
                         }
                     },
                     onAddCard = { deckId ->
