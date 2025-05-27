@@ -11,6 +11,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -40,8 +42,15 @@ fun SidePanel(
     var showAddDeckDialog by remember { mutableStateOf(false) }
     var newDeckName by remember { mutableStateOf("") }
     var newDeckDescription by remember { mutableStateOf("") }
+    val deckNameFocusRequester = remember { FocusRequester() }
     var deckIdToDelete by remember { mutableStateOf<String?>(null) }
     val deckListScrollState = rememberScrollState()
+
+    LaunchedEffect(showAddDeckDialog) {
+        if (showAddDeckDialog) {
+            deckNameFocusRequester.requestFocus()
+        }
+    }
 
     Box(
         modifier = modifier
@@ -169,7 +178,8 @@ fun SidePanel(
                                 value = newDeckName,
                                 onValueChange = { newDeckName = it },
                                 label = { Text("Name") },
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth()
+                                    .focusRequester(deckNameFocusRequester),
                                 singleLine = true,
                             )
                             Spacer(modifier = Modifier.height(8.dp))

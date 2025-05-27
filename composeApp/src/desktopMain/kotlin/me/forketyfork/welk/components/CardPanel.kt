@@ -23,7 +23,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,8 +56,8 @@ fun CardPanel(modifier: Modifier = Modifier) {
     val isDeleteConfirmationShowing =
         cardViewModel.isDeleteConfirmationShowing.collectAsStateWithLifecycle()
 
-    var frontText by remember { mutableStateOf("") }
-    var backText by remember { mutableStateOf("") }
+    var frontText by remember { mutableStateOf(TextFieldValue("")) }
+    var backText by remember { mutableStateOf(TextFieldValue("")) }
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -68,16 +70,17 @@ fun CardPanel(modifier: Modifier = Modifier) {
         // Only update the text values if we're in edit mode
         if (isEditing.value) {
             val (front, back) = editCardContent.value
-            frontText = front
-            backText = back
+            frontText = TextFieldValue(front, TextRange(front.length))
+            backText = TextFieldValue(back, TextRange(back.length))
         } else {
             // Clear the fields when exiting edit mode
-            frontText = ""
-            backText = ""
+            frontText = TextFieldValue("")
+            backText = TextFieldValue("")
         }
     }
 
     val focusRequester = remember { FocusRequester() }
+    val editFrontFocusRequester = remember { FocusRequester() }
 
     val currentDeck = cardViewModel.currentDeck.collectAsStateWithLifecycle()
     val hasCards = remember(currentDeck.value?.value) {
@@ -95,6 +98,12 @@ fun CardPanel(modifier: Modifier = Modifier) {
         // Check if we have a deck and either have cards or are in edit mode
         if (currentDeck.value != null && (hasCards.value || isEditing.value)) {
             focusRequester.requestFocus()
+        }
+    }
+
+    LaunchedEffect(isEditing.value) {
+        if (isEditing.value) {
+            editFrontFocusRequester.requestFocus()
         }
     }
 
@@ -213,6 +222,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                             onValueChange = { frontText = it },
                             label = { Text("Front") },
                             modifier = Modifier.fillMaxWidth().weight(1f)
+                                .focusRequester(editFrontFocusRequester)
                                 .testTag(CardPanelTestTags.EDIT_FRONT)
                         .moveFocusOnTab())
                         Divider()
@@ -233,7 +243,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                         ) {
                             Button(
                                 onClick = {
-                                    cardViewModel.updateEditContent(frontText, backText)
+                                    cardViewModel.updateEditContent(frontText.text, backText.text)
                                     coroutineScope.launch {
                                         // First save the edits to update the card content
                                         cardViewModel.saveCardEdit()
