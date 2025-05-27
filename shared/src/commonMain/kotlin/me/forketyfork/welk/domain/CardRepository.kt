@@ -7,16 +7,6 @@ interface CardRepository {
     suspend fun getCardsByDeckId(deckId: String): List<Card>
 
     /**
-     * Gets a specific card by its ID.
-     */
-    suspend fun getCardById(deckId: String, cardId: String): Card
-
-    /**
-     * Gets the total number of cards in a deck.
-     */
-    suspend fun getCardCount(deckId: String): Int
-
-    /**
      * Creates a new card in the specified deck.
      */
     suspend fun createCard(deckId: String, front: String, back: String): Card

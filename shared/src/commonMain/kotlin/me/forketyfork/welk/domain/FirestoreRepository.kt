@@ -27,6 +27,16 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
     private val decksCollection
         get() = userDocument.collection("decks")
 
+    private suspend fun getCardById(deckId: String, cardId: String): Card {
+        val cardsCollection = decksCollection.document(deckId).collection("cards")
+        return cardsCollection.document(cardId).get().data<Card>().apply { id = cardId }
+    }
+
+    private suspend fun getCardCount(deckId: String): Int {
+        val cardsCollection = decksCollection.document(deckId).collection("cards")
+        return cardsCollection.get().documents.size
+    }
+
     // DECK REPOSITORY IMPLEMENTATION
 
     override suspend fun flowDeckFlows(): Flow<List<Flow<Deck>>> {
@@ -141,16 +151,6 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
     override suspend fun getCardsByDeckId(deckId: String): List<Card> {
         val cardsCollection = decksCollection.document(deckId).collection("cards")
         return cardsCollection.get().documents.map { it.data<Card>().apply { id = it.id } }
-    }
-
-    override suspend fun getCardById(deckId: String, cardId: String): Card {
-        val cardsCollection = decksCollection.document(deckId).collection("cards")
-        return cardsCollection.document(cardId).get().data<Card>().apply { id = cardId }
-    }
-
-    override suspend fun getCardCount(deckId: String): Int {
-        val cardsCollection = decksCollection.document(deckId).collection("cards")
-        return cardsCollection.get().documents.size
     }
 
     override suspend fun createCard(deckId: String, front: String, back: String): Card {
