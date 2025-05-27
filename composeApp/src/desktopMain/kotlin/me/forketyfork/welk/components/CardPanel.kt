@@ -12,13 +12,16 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.KeyEvent
-import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.*
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -211,7 +214,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                             label = { Text("Front") },
                             modifier = Modifier.fillMaxWidth().weight(1f)
                                 .testTag(CardPanelTestTags.EDIT_FRONT)
-                        )
+                        .moveFocusOnTab())
                         Divider()
                         OutlinedTextField(
                             value = backText,
@@ -221,7 +224,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                             onValueChange = { backText = it },
                             label = { Text("Back") },
                             modifier = Modifier.fillMaxWidth().weight(1f)
-                                .testTag(CardPanelTestTags.EDIT_BACK)
+                                .testTag(CardPanelTestTags.EDIT_BACK).moveFocusOnTab()
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(
@@ -325,4 +328,21 @@ object CardPanelTestTags {
     const val CREATE_FIRST_CARD_BUTTON = "create_first_card_button"
     const val CARD_PANEL = "card_panel"
     const val CONFIRM_DELETE_BUTTON = "confirm_delete_button"
+}
+
+// For multiline fields, Tab doesn't work as expected, so we need to move focus manually
+// see https://github.com/JetBrains/compose-multiplatform/blob/master/tutorials/Tab_Navigation/README.md#a-possible-workaround
+@OptIn(ExperimentalComposeUiApi::class)
+fun Modifier.moveFocusOnTab() = composed {
+    val focusManager = LocalFocusManager.current
+    onPreviewKeyEvent {
+        if (it.type == KeyEventType.KeyDown && it.key == Key.Tab) {
+            focusManager.moveFocus(
+                if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next
+            )
+            true
+        } else {
+            false
+        }
+    }
 }
