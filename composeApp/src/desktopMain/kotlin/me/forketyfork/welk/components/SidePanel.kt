@@ -2,6 +2,8 @@ package me.forketyfork.welk.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
@@ -39,6 +41,7 @@ fun SidePanel(
     var newDeckName by remember { mutableStateOf("") }
     var newDeckDescription by remember { mutableStateOf("") }
     var deckIdToDelete by remember { mutableStateOf<String?>(null) }
+    val deckListScrollState = rememberScrollState()
 
     Box(
         modifier = modifier
@@ -76,26 +79,29 @@ fun SidePanel(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // List of decks
-            decks.forEach { deck ->
-                DeckItem(
-                    deck = deck,
-                    isSelected = currentDeck?.value?.id == deck.value.id,
-                    onClick = {
-                        cardViewModel.viewModelScope.launch {
-                            val deckId = deck.value.id ?: error("Deck id is null for a persistent entity")
-                            cardViewModel.selectDeck(deckId)
-                        }
-                    },
-                    onAddCard = { deckId ->
-                        cardViewModel.processAction(CardAction.CreateNewCard(deckId))
-                    },
-                    onDeleteDeck = { id -> deckIdToDelete = id }
-                )
+            // Scrollable list of decks
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(deckListScrollState)
+            ) {
+                decks.forEach { deck ->
+                    DeckItem(
+                        deck = deck,
+                        isSelected = currentDeck?.value?.id == deck.value.id,
+                        onClick = {
+                            cardViewModel.viewModelScope.launch {
+                                val deckId = deck.value.id ?: error("Deck id is null for a persistent entity")
+                                cardViewModel.selectDeck(deckId)
+                            }
+                        },
+                        onAddCard = { deckId ->
+                            cardViewModel.processAction(CardAction.CreateNewCard(deckId))
+                        },
+                        onDeleteDeck = { id -> deckIdToDelete = id }
+                    )
+                }
             }
-
-            // Spacer that pushes the bottom panel to the bottom
-            Spacer(modifier = Modifier.weight(1f))
 
             // Bottom panel with actions
             Divider()
