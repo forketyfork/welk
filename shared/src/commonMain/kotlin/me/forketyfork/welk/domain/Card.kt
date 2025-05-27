@@ -1,6 +1,7 @@
 package me.forketyfork.welk.domain
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 /**
  * Data class representing a single flashcard with front and back.
@@ -8,11 +9,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Card(
     // Document ID in Firestore
-    val id: String = "",
+    @Transient
+    var id: String? = null,
     // Reference to parent deck
-    val deckId: String = "",
-    val front: String = "",
-    val back: String = "",
+    val deckId: String,
+    val front: String,
+    val back: String,
     var learned: Boolean = false,
     // Position within the deck for ordering
     val position: Int = 0

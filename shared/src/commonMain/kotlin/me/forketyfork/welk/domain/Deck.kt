@@ -1,6 +1,7 @@
 package me.forketyfork.welk.domain
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 /**
  * Data class representing a deck of flashcards.
@@ -9,7 +10,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Deck(
     // Document ID in Firestore
-    val id: String = "",
+    @Transient
+    var id: String? = null,
     val name: String = "",
     val description: String = "",
     // We denormalize the card count for quick access without loading all cards
