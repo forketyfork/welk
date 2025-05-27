@@ -41,6 +41,7 @@ fun SidePanel(
     var newDeckName by remember { mutableStateOf("") }
     var newDeckDescription by remember { mutableStateOf("") }
     var deckIdToDelete by remember { mutableStateOf<String?>(null) }
+    val deckListScrollState = rememberScrollState()
 
     Box(
         modifier = modifier
@@ -82,7 +83,7 @@ fun SidePanel(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(deckListScrollState)
             ) {
                 decks.forEach { deck ->
                     DeckItem(
