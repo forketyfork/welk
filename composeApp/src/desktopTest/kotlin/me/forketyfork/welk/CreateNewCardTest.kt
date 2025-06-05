@@ -44,11 +44,13 @@ class CreateNewCardTest : KoinTest {
         // add a new card to the first deck
         onNodeWithTag(DeckItemTestTags.ADD_CARD_BUTTON_TEMPLATE.format("deck1")).performClick()
 
+        waitUntilExactlyOneExists(hasTestTag(CardPanelTestTags.EDIT_FRONT))
+
         // Enter front text of the new card
-        onNodeWithText("Front").performTextInput("New Front Text")
+        onNodeWithTag(CardPanelTestTags.EDIT_FRONT).performTextInput("New Front Text")
 
         // Enter back text of the new card
-        onNodeWithText("Back").performTextInput("New Back Text")
+        onNodeWithTag(CardPanelTestTags.EDIT_BACK).performTextInput("New Back Text")
 
         // Save the new card
         onNodeWithTag(CardPanelTestTags.EDIT_SAVE).performClick()

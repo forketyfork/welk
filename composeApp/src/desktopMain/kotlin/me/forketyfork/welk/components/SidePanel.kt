@@ -46,11 +46,6 @@ fun SidePanel(
     var deckIdToDelete by remember { mutableStateOf<String?>(null) }
     val deckListScrollState = rememberScrollState()
 
-    LaunchedEffect(showAddDeckDialog) {
-        if (showAddDeckDialog) {
-            deckNameFocusRequester.requestFocus()
-        }
-    }
 
     Box(
         modifier = modifier
@@ -179,7 +174,8 @@ fun SidePanel(
                                 onValueChange = { newDeckName = it },
                                 label = { Text("Name") },
                                 modifier = Modifier.fillMaxWidth()
-                                    .focusRequester(deckNameFocusRequester),
+                                    .focusRequester(deckNameFocusRequester)
+                                    .testTag(SidePanelTestTags.NEW_DECK_NAME),
                                 singleLine = true,
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -187,16 +183,24 @@ fun SidePanel(
                                 value = newDeckDescription,
                                 onValueChange = { newDeckDescription = it },
                                 label = { Text("Description") },
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth()
+                                    .testTag(SidePanelTestTags.NEW_DECK_DESCRIPTION),
                                 singleLine = true,
                             )
+
+                            LaunchedEffect(Unit) {
+                                deckNameFocusRequester.requestFocus()
+                            }
                         }
                     },
                     confirmButton = {
                         TextButton(
+                            modifier = Modifier.testTag(SidePanelTestTags.SAVE_DECK_BUTTON),
                             onClick = {
+                                val newDeckNameValue = newDeckName
+                                val newDeckDescriptionValue = newDeckDescription
                                 cardViewModel.viewModelScope.launch {
-                                    cardViewModel.createDeck(newDeckName, newDeckDescription)
+                                    cardViewModel.createDeck(newDeckNameValue, newDeckDescriptionValue)
                                 }
                                 newDeckName = ""
                                 newDeckDescription = ""
@@ -225,7 +229,8 @@ fun SidePanel(
                                     }
                                 }
                                 deckIdToDelete = null
-                            }
+                            },
+                            modifier = Modifier.testTag(SidePanelTestTags.CONFIRM_DELETE_BUTTON)
                         ) { Text("Delete") }
                     },
                     dismissButton = {
@@ -243,4 +248,8 @@ object SidePanelTestTags {
     const val LOGOUT_BUTTON = "logout_button"
     const val THEME_TOGGLE_BUTTON = "theme_toggle_button"
     const val ADD_DECK_BUTTON = "add_deck_button"
+    const val NEW_DECK_NAME = "new_deck_name"
+    const val NEW_DECK_DESCRIPTION = "new_deck_description"
+    const val SAVE_DECK_BUTTON = "save_deck_button"
+    const val CONFIRM_DELETE_BUTTON = "confirm_delete_button"
 }
