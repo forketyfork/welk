@@ -102,3 +102,12 @@ fun ComposeUiTest.printSemanticNodeState() {
         )
     }
 }
+
+@OptIn(ExperimentalTestApi::class, InternalComposeUiApi::class)
+fun ComposeUiTest.getDeckIdByName(name: String): String {
+    val tag = onNodeWithText(name)
+        .fetchSemanticsNode()
+        .config.getOrNull(SemanticsProperties.TestTag) as? String
+        ?: error("Deck tag not found for $name")
+    return tag.removePrefix("deck_name_")
+}

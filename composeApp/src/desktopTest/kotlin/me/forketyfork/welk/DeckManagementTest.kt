@@ -56,18 +56,17 @@ class DeckManagementTest : KoinTest {
         // Wait for the new deck to appear and verify its contents
         waitUntilExactlyOneExists(hasTextExactly("0 cards", "Test Deck", "A test deck for verification"))
 
-        // Find the deck ID by looking for the deck with "Test Deck" name
-        // Since we can't predict the exact deck ID, we'll use the add card button to add a card
-        // First, we need to find the add card button for our new deck
-        // We'll click on the deck first to select it
-        onNodeWithText("Test Deck").performClick()
+        // Obtain the newly created deck id from its test tag
+        val newDeckId = getDeckIdByName("Test Deck")
+
+        // Select the new deck
+        onNodeWithTag(DeckItemTestTags.DECK_NAME_TEMPLATE.format(newDeckId)).performClick()
 
         // Wait for the deck to be selected and verify no cards are shown initially
         waitUntilExactlyOneExists(hasText("No cards in this deck"))
 
-        // Now add a card to the new deck by finding the add card button
-        // We need to find the add card button for the new deck
-        onNode(hasText("Add Card").and(hasParent(hasText("Test Deck")))).performClick()
+        // Add a card to the new deck using its test tag
+        onNodeWithTag(DeckItemTestTags.ADD_CARD_BUTTON_TEMPLATE.format(newDeckId)).performClick()
 
         waitUntilExactlyOneExists(hasTestTag(CardPanelTestTags.EDIT_FRONT))
 
@@ -86,13 +85,12 @@ class DeckManagementTest : KoinTest {
         // Verify that the deck now shows 1 card
         waitUntilExactlyOneExists(hasTextExactly("1 cards", "Test Deck", "A test deck for verification"))
 
-        // Now delete the deck by clicking the delete button
-        // We need to find the delete button for our test deck
-        onNode(hasText("Delete").and(hasParent(hasText("Test Deck")))).performClick()
+        // Delete the deck via the delete button tagged with the deck id
+        onNodeWithTag(DeckItemTestTags.DELETE_DECK_BUTTON_TEMPLATE.format(newDeckId)).performClick()
 
         // Confirm the deletion in the dialog
         waitUntilExactlyOneExists(hasText("Are you sure you want to delete this deck? This action cannot be undone."))
-        onNodeWithText(SidePanelTestTags.CONFIRM_DELETE_BUTTON).performClick()
+        onNodeWithTag(SidePanelTestTags.CONFIRM_DELETE_BUTTON).performClick()
 
         // Verify that the deck is no longer visible
         waitUntilDoesNotExist(hasTextExactly("1 cards", "Test Deck", "A test deck for verification"))
