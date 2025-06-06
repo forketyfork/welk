@@ -30,11 +30,11 @@ class TestViewModelStoreOwner : ViewModelStoreOwner {
  */
 @OptIn(ExperimentalTestApi::class)
 fun getTestCredentials(): Pair<String, String> {
-    val testUsername = System.getenv("WELK_TEST_USERNAME")
-    val testPassword = System.getenv("WELK_TEST_PASSWORD")
+    val testUsername = System.getenv("WELK_TEST_USERNAME") ?: System.getProperty("WELK_TEST_USERNAME")
+    val testPassword = System.getenv("WELK_TEST_PASSWORD") ?: System.getProperty("WELK_TEST_PASSWORD")
 
     if (testUsername.isNullOrBlank() || testPassword.isNullOrBlank()) {
-        fail("WELK_TEST_USERNAME and WELK_TEST_PASSWORD environment variables must be set")
+        fail("WELK_TEST_USERNAME and WELK_TEST_PASSWORD must be set either as environment variables or in local.properties file")
     }
 
     return testUsername to testPassword
@@ -101,4 +101,13 @@ fun ComposeUiTest.printSemanticNodeState() {
                     "Focused = ${node.config.getOrNull(SemanticsProperties.Focused)}"
         )
     }
+}
+
+@OptIn(ExperimentalTestApi::class, InternalComposeUiApi::class)
+fun ComposeUiTest.getDeckIdByName(name: String): String {
+    val tag = onNodeWithText(name)
+        .fetchSemanticsNode()
+        .config.getOrNull(SemanticsProperties.TestTag) as? String
+        ?: error("Deck tag not found for $name")
+    return tag.removePrefix("deck_name_")
 }

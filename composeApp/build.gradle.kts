@@ -1,4 +1,7 @@
+import org.gradle.internal.classpath.Instrumented.systemProperty
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import java.io.FileInputStream
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -67,5 +70,14 @@ compose.desktop {
                 )
             }
         }
+    }
+}
+
+// load test user and password from local.properties
+val localProperties = Properties()
+localProperties.load(FileInputStream(rootProject.file("local.properties")))
+tasks.withType<Test>() {
+    listOf("WELK_TEST_USERNAME", "WELK_TEST_PASSWORD").forEach { key ->
+        systemProperty(key, localProperties.getProperty(key))
     }
 }
