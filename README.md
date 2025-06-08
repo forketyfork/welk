@@ -51,3 +51,4 @@ For local development:
 - [ ] Audio (TTS), transcription
 - [ ] Spelling / writing modes
 - [ ] Import from other similar tools (Anki, Mochi...)
+- [ ] A word card should show connections to related words
