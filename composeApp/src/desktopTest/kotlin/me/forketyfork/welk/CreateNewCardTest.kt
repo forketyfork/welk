@@ -45,10 +45,10 @@ class CreateNewCardTest : KoinTest {
 
         waitUntilExactlyOneExists(hasTestTag(CardPanelTestTags.EDIT_FRONT))
 
-        // Enter front text of the new card
+        // Enter the front text of the new card
         onNodeWithTag(CardPanelTestTags.EDIT_FRONT).performTextInput("New Front Text")
 
-        // Enter back text of the new card
+        // Enter the back text of the new card
         onNodeWithTag(CardPanelTestTags.EDIT_BACK).performTextInput("New Back Text")
 
         // Save the new card

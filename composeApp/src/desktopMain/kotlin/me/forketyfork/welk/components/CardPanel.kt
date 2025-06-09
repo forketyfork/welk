@@ -61,7 +61,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
 
     val coroutineScope = rememberCoroutineScope()
 
-    // Update local state when edit mode is activated or when creating a new card
+    // Update the local state when edit mode is activated or when creating a new card
     LaunchedEffect(
         editCardContent.value,
         isEditing.value,
@@ -250,7 +250,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                                     onClick = {
                                         cardViewModel.updateEditContent(frontText.text, backText.text)
                                         coroutineScope.launch {
-                                            // First save the edits to update the card content
+                                            // First, save the edits to update the card content
                                             cardViewModel.saveCardEdit()
                                             // Then exit edit mode
                                             cardViewModel.processAction(CardAction.SaveEdit)

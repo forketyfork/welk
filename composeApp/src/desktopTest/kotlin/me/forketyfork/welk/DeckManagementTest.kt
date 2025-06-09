@@ -39,7 +39,7 @@ class DeckManagementTest : KoinTest {
             waitUntilExactlyOneExists(hasTextExactly(name))
         }
 
-        // Click the add deck button
+        // Click the "Add deck" button
         onNodeWithTag(SidePanelTestTags.ADD_DECK_BUTTON).performClick()
 
         // wait until the new deck dialog opens
@@ -56,7 +56,7 @@ class DeckManagementTest : KoinTest {
         // Wait for the new deck to appear
         waitUntilExactlyOneExists(hasTextExactly("Test Deck"))
 
-        // Obtain the newly created deck id from its test tag
+        // Get the newly created deck id from its test tag
         val newDeckId = getDeckIdByName("Test Deck")
 
         // Select the new deck
@@ -70,10 +70,10 @@ class DeckManagementTest : KoinTest {
 
         waitUntilExactlyOneExists(hasTestTag(CardPanelTestTags.EDIT_FRONT))
 
-        // Enter front text of the new card
+        // Enter the front text of the new card
         onNodeWithTag(CardPanelTestTags.EDIT_FRONT).performTextInput("Test Front")
 
-        // Enter back text of the new card
+        // Enter the back text of the new card
         onNodeWithTag(CardPanelTestTags.EDIT_BACK).performTextInput("Test Back")
 
         // Save the new card
