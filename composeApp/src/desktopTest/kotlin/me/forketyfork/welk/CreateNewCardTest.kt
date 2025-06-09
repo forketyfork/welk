@@ -22,13 +22,13 @@ class CreateNewCardTest : KoinTest {
         verifyBasicUiElements()
 
         // wait until the decks are loaded, verify their expected contents
-        val preloadedDeckIdsAndTexts = mapOf(
-            "deck1" to arrayOf("3 cards", "Basic Vocabulary", "Essential words for beginners"),
-            "deck2" to arrayOf("2 cards", "Grammar Rules", "Key grammar concepts"),
-            "deck3" to arrayOf("2 cards", "Idioms", "Common expressions and idioms")
+        val preloadedDecks = mapOf(
+            "deck1" to "Basic Vocabulary",
+            "deck2" to "Grammar Rules",
+            "deck3" to "Idioms"
         )
 
-        preloadedDeckIdsAndTexts.forEach { (deckId, texts) ->
+        preloadedDecks.forEach { (deckId, name) ->
             waitUntilExactlyOneExists(
                 hasTestTag(DeckItemTestTags.DECK_NAME_TEMPLATE.format(deckId)),
                 timeoutMillis = 10000
@@ -37,8 +37,7 @@ class CreateNewCardTest : KoinTest {
                 hasTestTag(DeckItemTestTags.ADD_CARD_BUTTON_TEMPLATE.format(deckId)),
                 timeoutMillis = 10000
             )
-
-            waitUntilExactlyOneExists(hasTextExactly(*texts))
+            waitUntilExactlyOneExists(hasTextExactly(name))
         }
 
         // add a new card to the first deck
@@ -65,7 +64,8 @@ class CreateNewCardTest : KoinTest {
         waitUntilExactlyOneExists(hasTextExactly("New Back Text"))
 
         // verify that the number of cards bumped to 4
-        waitUntilExactlyOneExists(hasTextExactly("4 cards", "Basic Vocabulary", "Essential words for beginners"))
+        waitUntilExactlyOneExists(hasTextExactly("4 cards, 0 learned"))
+        waitUntilExactlyOneExists(hasTextExactly("Essential words for beginners"))
 
         // delete the card
         onNodeWithTag(CardPanelTestTags.DELETE_BUTTON).performClick()
@@ -73,7 +73,7 @@ class CreateNewCardTest : KoinTest {
         onNodeWithTag(CardPanelTestTags.CONFIRM_DELETE_BUTTON).performClick()
 
         // the number of cards is back to 3
-        waitUntilExactlyOneExists(hasTextExactly("3 cards", "Basic Vocabulary", "Essential words for beginners"))
+        waitUntilExactlyOneExists(hasTextExactly("3 cards, 0 learned"))
 
         // Log out
         logout()

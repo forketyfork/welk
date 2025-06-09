@@ -89,6 +89,8 @@ fun CardPanel(modifier: Modifier = Modifier) {
         }
     }
 
+    val learnedCardCount = cardViewModel.learnedCardCount.collectAsStateWithLifecycle()
+
     // Only request focus when we have cards or there's a deck selected
     LaunchedEffect(
         currentCard.value,
@@ -138,8 +140,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
         )
     }
 
-    Box(
-        // Make sure this panel can gain focus and receives keyboard events
+    Column(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colors.background)
@@ -150,10 +151,13 @@ fun CardPanel(modifier: Modifier = Modifier) {
                 cardViewModel.processAction(action)
             }
             .focusRequester(focusRequester)
-            .focusable(),
-        contentAlignment = Alignment.Center
+            .focusable()
     ) {
-        if (currentDeck.value != null) {
+        Box(
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            if (currentDeck.value != null) {
             if (!hasCards.value && !isEditing.value) {
                 // Show a message when there are no cards in the deck
                 Column(
@@ -325,6 +329,10 @@ fun CardPanel(modifier: Modifier = Modifier) {
             }
         }
     }
+
+        currentDeck.value?.value?.let { deck ->
+            DeckInfoPanel(deck, learnedCardCount.value)
+        }
 }
 
 object CardPanelTestTags {
@@ -338,6 +346,7 @@ object CardPanelTestTags {
     const val CREATE_FIRST_CARD_BUTTON = "create_first_card_button"
     const val CARD_PANEL = "card_panel"
     const val CONFIRM_DELETE_BUTTON = "confirm_delete_button"
+    const val DECK_INFO_PANEL = "deck_info_panel"
 }
 
 // For multiline fields, Tab doesn't work as expected, so we need to move focus manually

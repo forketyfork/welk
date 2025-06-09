@@ -14,6 +14,7 @@ interface CardViewModel : InitializableViewModel {
     val availableDecks: StateFlow<List<StateFlow<Deck>>>
     val isNewCard: StateFlow<Boolean>
     val isDeleteConfirmationShowing: StateFlow<Boolean>
+    val learnedCardCount: StateFlow<Int>
 
     fun flipCard()
     suspend fun nextCard()

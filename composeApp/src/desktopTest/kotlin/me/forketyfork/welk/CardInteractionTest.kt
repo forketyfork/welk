@@ -35,13 +35,13 @@ class CardInteractionTest : KoinTest {
         verifyBasicUiElements()
 
         // wait until the decks are loaded, verify their expected contents
-        val preloadedDeckIdsAndTexts = mapOf(
-            "deck1" to arrayOf("3 cards", "Basic Vocabulary", "Essential words for beginners"),
-            "deck2" to arrayOf("2 cards", "Grammar Rules", "Key grammar concepts"),
-            "deck3" to arrayOf("2 cards", "Idioms", "Common expressions and idioms")
+        val preloadedDecks = mapOf(
+            "deck1" to "Basic Vocabulary",
+            "deck2" to "Grammar Rules",
+            "deck3" to "Idioms"
         )
 
-        preloadedDeckIdsAndTexts.forEach { (deckId, texts) ->
+        preloadedDecks.forEach { (deckId, name) ->
             waitUntilExactlyOneExists(
                 hasTestTag(DeckItemTestTags.DECK_NAME_TEMPLATE.format(deckId)),
                 timeoutMillis = 10000
@@ -50,8 +50,7 @@ class CardInteractionTest : KoinTest {
                 hasTestTag(DeckItemTestTags.ADD_CARD_BUTTON_TEMPLATE.format(deckId)),
                 timeoutMillis = 10000
             )
-
-            waitUntilExactlyOneExists(hasTextExactly(*texts))
+            waitUntilExactlyOneExists(hasTextExactly(name))
         }
 
         // wait until the first deck is selected and the card is loaded

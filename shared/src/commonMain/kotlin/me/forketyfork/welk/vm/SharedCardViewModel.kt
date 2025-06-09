@@ -34,6 +34,13 @@ open class SharedCardViewModel(
     // List of cards in the current deck (cached to avoid repeated Firestore queries)
     private val _currentDeckCards = MutableStateFlow<List<Card>>(emptyList())
 
+    private val _learnedCardCount = MutableStateFlow(0)
+    override val learnedCardCount: StateFlow<Int> = _learnedCardCount.asStateFlow()
+
+    private fun updateLearnedCardCount() {
+        _learnedCardCount.value = _currentDeckCards.value.count { it.learned }
+    }
+
     private val _isFlipped = MutableStateFlow(false)
     override val isFlipped: StateFlow<Boolean> = _isFlipped.asStateFlow()
 
@@ -75,6 +82,7 @@ open class SharedCardViewModel(
             if (deck != null) {
                 val deckId = deck.value.id ?: error("Deck ID is null for a persistent deck")
                 _currentDeckCards.value = cardRepository.getCardsByDeckId(deckId)
+                updateLearnedCardCount()
                 // Reset to the first card in the deck
                 _currentCardPosition.value = 0
                 updateCurrentCardFromPosition()
@@ -127,6 +135,7 @@ open class SharedCardViewModel(
 
             // Store the cards in our local cache
             _currentDeckCards.value = cards
+            updateLearnedCardCount()
 
             // Reset position and flip state
             _currentCardPosition.value = 0
@@ -168,6 +177,17 @@ open class SharedCardViewModel(
                     currentCard.deckId,
                     it.learned
                 )
+
+                // Update local card list with new learned status
+                val idx = _currentCardPosition.value
+                val updatedCards = _currentDeckCards.value.toMutableList()
+                if (idx in updatedCards.indices) {
+                    val updated = updatedCards[idx].copy(learned = it.learned)
+                    updatedCards[idx] = updated
+                    _currentDeckCards.value = updatedCards
+                    updateLearnedCardCount()
+                }
+
                 // Move to the next card
                 nextCard()
                 // Reset the animation trigger
@@ -216,6 +236,7 @@ open class SharedCardViewModel(
                 val updatedCards = _currentDeckCards.value.toMutableList()
                 updatedCards.add(newCard)
                 _currentDeckCards.value = updatedCards
+                updateLearnedCardCount()
                 _currentCardPosition.value = updatedCards.size - 1
 
                 // Mark as no longer a new card since it's been saved
@@ -238,6 +259,7 @@ open class SharedCardViewModel(
             if (currentPosition < updatedCards.size) {
                 updatedCards[currentPosition] = updatedCard
                 _currentDeckCards.value = updatedCards
+                updateLearnedCardCount()
             }
         } catch (e: Exception) {
             logger.e(e) { "Error saving card" }
@@ -418,6 +440,7 @@ open class SharedCardViewModel(
 
                     // Update the cards list
                     _currentDeckCards.value = freshCards
+                    updateLearnedCardCount()
 
                     // Set position to the first card if available
                     if (freshCards.isNotEmpty()) {
@@ -490,6 +513,7 @@ open class SharedCardViewModel(
             val updatedCards = _currentDeckCards.value.toMutableList()
             updatedCards.removeAt(currentPosition)
             _currentDeckCards.value = updatedCards
+            updateLearnedCardCount()
 
             // Set position to the next card or first card if we're at the end
             if (updatedCards.isNotEmpty()) {

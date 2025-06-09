@@ -25,18 +25,18 @@ class DeckManagementTest : KoinTest {
         verifyBasicUiElements()
 
         // Wait until the initial decks are loaded
-        val preloadedDeckIdsAndTexts = mapOf(
-            "deck1" to arrayOf("3 cards", "Basic Vocabulary", "Essential words for beginners"),
-            "deck2" to arrayOf("2 cards", "Grammar Rules", "Key grammar concepts"),
-            "deck3" to arrayOf("2 cards", "Idioms", "Common expressions and idioms")
+        val preloadedDecks = mapOf(
+            "deck1" to "Basic Vocabulary",
+            "deck2" to "Grammar Rules",
+            "deck3" to "Idioms"
         )
 
-        preloadedDeckIdsAndTexts.forEach { (deckId, texts) ->
+        preloadedDecks.forEach { (deckId, name) ->
             waitUntilExactlyOneExists(
                 hasTestTag(DeckItemTestTags.DECK_NAME_TEMPLATE.format(deckId)),
                 timeoutMillis = 10000
             )
-            waitUntilExactlyOneExists(hasTextExactly(*texts))
+            waitUntilExactlyOneExists(hasTextExactly(name))
         }
 
         // Click the add deck button
@@ -53,8 +53,8 @@ class DeckManagementTest : KoinTest {
         // Save the new deck
         onNodeWithTag(SidePanelTestTags.SAVE_DECK_BUTTON).performClick()
 
-        // Wait for the new deck to appear and verify its contents
-        waitUntilExactlyOneExists(hasTextExactly("0 cards", "Test Deck", "A test deck for verification"))
+        // Wait for the new deck to appear
+        waitUntilExactlyOneExists(hasTextExactly("Test Deck"))
 
         // Obtain the newly created deck id from its test tag
         val newDeckId = getDeckIdByName("Test Deck")
@@ -83,7 +83,8 @@ class DeckManagementTest : KoinTest {
         waitUntilExactlyOneExists(hasTextExactly("Test Front"))
 
         // Verify that the deck now shows 1 card
-        waitUntilExactlyOneExists(hasTextExactly("1 cards", "Test Deck", "A test deck for verification"))
+        waitUntilExactlyOneExists(hasTextExactly("1 cards, 0 learned"))
+        waitUntilExactlyOneExists(hasTextExactly("A test deck for verification"))
 
         // Delete the deck via the delete button tagged with the deck id
         onNodeWithTag(DeckItemTestTags.DELETE_DECK_BUTTON_TEMPLATE.format(newDeckId)).performClick()
@@ -93,15 +94,15 @@ class DeckManagementTest : KoinTest {
         onNodeWithTag(SidePanelTestTags.CONFIRM_DELETE_BUTTON).performClick()
 
         // Verify that the deck is no longer visible
-        waitUntilDoesNotExist(hasTextExactly("1 cards", "Test Deck", "A test deck for verification"))
+        waitUntilDoesNotExist(hasTextExactly("Test Deck"))
 
         // Verify that we're back to the original 3 decks
-        preloadedDeckIdsAndTexts.forEach { (deckId, texts) ->
+        preloadedDecks.forEach { (deckId, name) ->
             waitUntilExactlyOneExists(
                 hasTestTag(DeckItemTestTags.DECK_NAME_TEMPLATE.format(deckId)),
                 timeoutMillis = 5000
             )
-            waitUntilExactlyOneExists(hasTextExactly(*texts))
+            waitUntilExactlyOneExists(hasTextExactly(name))
         }
 
         // Log out
