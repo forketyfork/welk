@@ -140,7 +140,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
         )
     }
 
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colors.background)
@@ -153,8 +153,9 @@ fun CardPanel(modifier: Modifier = Modifier) {
             .focusRequester(focusRequester)
             .focusable()
     ) {
+        // Main card content centered in the full available space
         Box(
-            modifier = Modifier.weight(1f).fillMaxWidth(),
+            modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             if (currentDeck.value != null) {
@@ -171,9 +172,12 @@ fun CardPanel(modifier: Modifier = Modifier) {
                             )
                             .background(color = MaterialTheme.colors.background)
                             .padding(all = 20.dp),
-                        verticalArrangement = Arrangement.Center,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
+                        // Add flexible spacer to center content vertically
+                        Spacer(modifier = Modifier.weight(1f))
+                        
                         Text(
                             "No cards in this deck",
                             style = TextStyle(fontSize = 18.sp),
@@ -192,6 +196,9 @@ fun CardPanel(modifier: Modifier = Modifier) {
                         ) {
                             Text("Create a Card")
                         }
+                        
+                        // Add flexible spacer to center content vertically
+                        Spacer(modifier = Modifier.weight(1f))
                     }
                 } else {
                     // Show the card
@@ -331,8 +338,14 @@ fun CardPanel(modifier: Modifier = Modifier) {
             }
 
         }
+        
+        // Position the DeckInfoPanel at the bottom, independent of card positioning
         currentDeck.value?.value?.let { deck ->
-            DeckInfoPanel(deck, learnedCardCount.value)
+            DeckInfoPanel(
+                deck = deck,
+                learnedCount = learnedCardCount.value,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
         }
     }
 }
