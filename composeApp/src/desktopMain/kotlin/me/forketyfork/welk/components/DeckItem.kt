@@ -48,17 +48,8 @@ fun DeckItem(
             modifier = Modifier.align(Alignment.TopEnd),
             horizontalAlignment = Alignment.End
         ) {
-            // Card count
-            Text(
-                text = "${deck.cardCount} cards",
-                style = MaterialTheme.typography.caption,
-                color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
-            )
 
-            // Spacer between count and add button
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Add card button
+            // "Add card" button
             TextButton(
                 onClick = {
                     val deckId = deck.id ?: error("Deck id is null for a persistent entity")
@@ -128,14 +119,6 @@ fun DeckItem(
                 style = MaterialTheme.typography.body1,
                 color = if (isSelected) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface,
             )
-            if (deck.description.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = deck.description,
-                    style = MaterialTheme.typography.body2,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
-                )
-            }
         }
     }
 }

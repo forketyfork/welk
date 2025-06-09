@@ -70,7 +70,7 @@ xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -destination 'platfor
     - Card panel with edit/delete functionality
     - Side panel with deck listing and user actions
     - Confirmation dialogs for destructive actions
-    - Bottom panel in side panel with application-wide actions like logout
+    - Bottom panel in the side panel with application-wide actions like logout
 
 4. **Service Layer**
     - `AuthService` - Interface for authentication operations
@@ -208,8 +208,16 @@ Available log levels:
 - If you need to add any Kotlin opt-ins, use file-level annotations
 
 ### Concurrency
-
+- Structure the code using the principles of functional reactive programming.
+- Reuse existing flows to derive state using Kotlin's flow operations instead of creating new flows.
 - Implement the reactive code using Kotlin's `StateFlow`, do not rely on the Android specific
   reactive features.
 - Avoid calling `delay()` or `Thread.sleep()` to wait for obscure racy conditions, even in tests.
   Always implement proper reactive patterns to react on the exact condition.
+
+### Comments
+
+- Write useful, accessible and grammatically correct comments. 
+- Avoid words or phrases that may be hard to comprehend.
+- When writing comments, don't explain obvious things or duplicate what's already visible from the code.
+  Try to focus on complicated parts or intentions that may not be clear from the code itself. 

@@ -61,7 +61,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
 
     val coroutineScope = rememberCoroutineScope()
 
-    // Update local state when edit mode is activated or when creating a new card
+    // Update the local state when edit mode is activated or when creating a new card
     LaunchedEffect(
         editCardContent.value,
         isEditing.value,
@@ -88,6 +88,8 @@ fun CardPanel(modifier: Modifier = Modifier) {
             (currentDeck.value?.value?.cardCount ?: 0) > 0
         }
     }
+
+    val learnedCardCount = cardViewModel.learnedCardCount.collectAsStateWithLifecycle()
 
     // Only request focus when we have cards or there's a deck selected
     LaunchedEffect(
@@ -138,8 +140,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
         )
     }
 
-    Box(
-        // Make sure this panel can gain focus and receives keyboard events
+    Column(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colors.background)
@@ -150,194 +151,190 @@ fun CardPanel(modifier: Modifier = Modifier) {
                 cardViewModel.processAction(action)
             }
             .focusRequester(focusRequester)
-            .focusable(),
-        contentAlignment = Alignment.Center
+            .focusable()
     ) {
-        if (currentDeck.value != null) {
-            if (!hasCards.value && !isEditing.value) {
-                // Show a message when there are no cards in the deck
-                Column(
-                    modifier = Modifier
-                        .width(315.dp)
-                        .height(440.dp)
-                        .border(
-                            width = 2.dp,
-                            color = MaterialTheme.colors.primary,
-                            shape = RoundedCornerShape(10.dp)
-                        )
-                        .background(color = MaterialTheme.colors.background)
-                        .padding(all = 20.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text(
-                        "No cards in this deck",
-                        style = TextStyle(fontSize = 18.sp),
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colors.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Button(
-                        onClick = {
-                            val currentDeck = cardViewModel.currentDeck.value
-                            if (currentDeck != null) {
-                                cardViewModel.processAction(CardAction.CreateNewCardInCurrentDeck)
-                            }
-                        },
-                        modifier = Modifier.testTag(CardPanelTestTags.CREATE_FIRST_CARD_BUTTON)
+        Box(
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            if (currentDeck.value != null) {
+                if (!hasCards.value && !isEditing.value) {
+                    // Show a message when there are no cards in the deck
+                    Column(
+                        modifier = Modifier
+                            .width(315.dp)
+                            .height(440.dp)
+                            .border(
+                                width = 2.dp,
+                                color = MaterialTheme.colors.primary,
+                                shape = RoundedCornerShape(10.dp)
+                            )
+                            .background(color = MaterialTheme.colors.background)
+                            .padding(all = 20.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Text("Create a Card")
-                    }
-                }
-            } else {
-                // Show the card
-                Column(
-                    modifier = Modifier
-                        .width(315.dp)
-                        .height(440.dp)
-                        .offset { animatedOffset }
-                        .rotate(animatedOffset.x / 80.0f)
-                        .border(
-                            width = 2.dp,
-                            color = MaterialTheme.colors.primary,
-                            shape = RoundedCornerShape(10.dp)
+                        Text(
+                            "No cards in this deck",
+                            style = TextStyle(fontSize = 18.sp),
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colors.onSurface
                         )
-                        .background(
-                            color = if (animatedColor == Color.Transparent) {
-                                MaterialTheme.colors.background
-                            } else {
-                                animatedColor
-                            }
-                        )
-                        .padding(all = 20.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    if (isEditing.value) {
-                        // Edit mode UI
-                        OutlinedTextField(
-                            value = frontText,
-                            colors = TextFieldDefaults.textFieldColors(
-                                textColor = MaterialTheme.colors.onSurface
-                            ),
-                            onValueChange = { frontText = it },
-                            label = { Text("Front") },
-                            modifier = Modifier.fillMaxWidth().weight(1f)
-                                .focusRequester(editFrontFocusRequester)
-                                .testTag(CardPanelTestTags.EDIT_FRONT)
-                        .moveFocusOnTab())
-                        Divider()
-                        OutlinedTextField(
-                            value = backText,
-                            colors = TextFieldDefaults.textFieldColors(
-                                textColor = MaterialTheme.colors.onSurface
-                            ),
-                            onValueChange = { backText = it },
-                            label = { Text("Back") },
-                            modifier = Modifier.fillMaxWidth().weight(1f)
-                                .testTag(CardPanelTestTags.EDIT_BACK).moveFocusOnTab()
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Button(
+                            onClick = {
+                                val currentDeck = cardViewModel.currentDeck.value
+                                if (currentDeck != null) {
+                                    cardViewModel.processAction(CardAction.CreateNewCardInCurrentDeck)
+                                }
+                            },
+                            modifier = Modifier.testTag(CardPanelTestTags.CREATE_FIRST_CARD_BUTTON)
                         ) {
-                            Button(
-                                onClick = {
-                                    cardViewModel.updateEditContent(frontText.text, backText.text)
-                                    coroutineScope.launch {
-                                        // First save the edits to update the card content
-                                        cardViewModel.saveCardEdit()
-                                        // Then exit edit mode
-                                        cardViewModel.processAction(CardAction.SaveEdit)
-                                        // Return focus to the card for keyboard navigation
-                                        focusRequester.requestFocus()
-                                    }
-                                },
-                                modifier = Modifier.testTag(CardPanelTestTags.EDIT_SAVE)
-                            ) {
-                                Text("Save")
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Button(
-                                onClick = {
-                                    // Cancel without saving changes and reset to original values
-                                    cardViewModel.processAction(CardAction.CancelEdit)
-                                    // Return focus to the card for keyboard navigation
-                                    focusRequester.requestFocus()
-                                },
-                                modifier = Modifier.testTag(CardPanelTestTags.EDIT_CANCEL)
-                            ) {
-                                Text("Cancel")
-                            }
+                            Text("Create a Card")
                         }
-                    } else {
-                        // Normal view mode UI
-                        val card = currentCard.value
-                        if (card != null) {
+                    }
+                } else {
+                    // Show the card
+                    Column(
+                        modifier = Modifier
+                            .width(315.dp)
+                            .height(440.dp)
+                            .offset { animatedOffset }
+                            .rotate(animatedOffset.x / 80.0f)
+                            .border(
+                                width = 2.dp,
+                                color = MaterialTheme.colors.primary,
+                                shape = RoundedCornerShape(10.dp)
+                            )
+                            .background(
+                                color = if (animatedColor == Color.Transparent) {
+                                    MaterialTheme.colors.background
+                                } else {
+                                    animatedColor
+                                }
+                            )
+                            .padding(all = 20.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        if (isEditing.value) {
+                            // Edit mode UI
+                            OutlinedTextField(
+                                value = frontText,
+                                colors = TextFieldDefaults.textFieldColors(
+                                    textColor = MaterialTheme.colors.onSurface
+                                ),
+                                onValueChange = { frontText = it },
+                                label = { Text("Front") },
+                                modifier = Modifier.fillMaxWidth().weight(1f)
+                                    .focusRequester(editFrontFocusRequester)
+                                    .testTag(CardPanelTestTags.EDIT_FRONT)
+                                    .moveFocusOnTab()
+                            )
+                            Divider()
+                            OutlinedTextField(
+                                value = backText,
+                                colors = TextFieldDefaults.textFieldColors(
+                                    textColor = MaterialTheme.colors.onSurface
+                                ),
+                                onValueChange = { backText = it },
+                                label = { Text("Back") },
+                                modifier = Modifier.fillMaxWidth().weight(1f)
+                                    .testTag(CardPanelTestTags.EDIT_BACK).moveFocusOnTab()
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                Button(
+                                    onClick = {
+                                        cardViewModel.updateEditContent(frontText.text, backText.text)
+                                        coroutineScope.launch {
+                                            // First, save the edits to update the card content
+                                            cardViewModel.saveCardEdit()
+                                            // Then exit edit mode
+                                            cardViewModel.processAction(CardAction.SaveEdit)
+                                            // Return focus to the card for keyboard navigation
+                                            focusRequester.requestFocus()
+                                        }
+                                    },
+                                    modifier = Modifier.testTag(CardPanelTestTags.EDIT_SAVE)
                                 ) {
-                                Text(
-                                    card.front,
-                                    modifier = Modifier.weight(1f),
-                                    color = MaterialTheme.colors.onSurface
-                                )
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    Text("Save")
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Button(
+                                    onClick = {
+                                        // Cancel without saving changes and reset to original values
+                                        cardViewModel.processAction(CardAction.CancelEdit)
+                                        // Return focus to the card for keyboard navigation
+                                        focusRequester.requestFocus()
+                                    },
+                                    modifier = Modifier.testTag(CardPanelTestTags.EDIT_CANCEL)
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Edit,
-                                        contentDescription = "Edit",
-                                        tint = MaterialTheme.colors.primary,
-                                        modifier = Modifier
-                                            .size(24.dp)
-                                            .clickable {
-                                                cardViewModel.processAction(CardAction.Edit)
-                                            }
-                                            .testTag(CardPanelTestTags.EDIT_BUTTON)
-                                    )
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Delete",
-                                        tint = MaterialTheme.colors.error,
-                                        modifier = Modifier
-                                            .size(24.dp)
-                                            .clickable {
-                                                cardViewModel.processAction(CardAction.Delete)
-                                            }
-                                            .testTag(CardPanelTestTags.DELETE_BUTTON)
-                                    )
+                                    Text("Cancel")
                                 }
                             }
-                            Divider()
-                            if (isFlipped.value) {
-                                Text(
-                                    text = card.back,
-                                    color = MaterialTheme.colors.onSurface,
-                                    modifier = Modifier.testTag(CardPanelTestTags.VIEW_BACK)
-                                )
+                        } else {
+                            // Normal view mode UI
+                            val card = currentCard.value
+                            if (card != null) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+
+                                    ) {
+                                    Text(
+                                        card.front,
+                                        modifier = Modifier.weight(1f),
+                                        color = MaterialTheme.colors.onSurface
+                                    )
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "Edit",
+                                            tint = MaterialTheme.colors.primary,
+                                            modifier = Modifier
+                                                .size(24.dp)
+                                                .clickable {
+                                                    cardViewModel.processAction(CardAction.Edit)
+                                                }
+                                                .testTag(CardPanelTestTags.EDIT_BUTTON)
+                                        )
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Delete",
+                                            tint = MaterialTheme.colors.error,
+                                            modifier = Modifier
+                                                .size(24.dp)
+                                                .clickable {
+                                                    cardViewModel.processAction(CardAction.Delete)
+                                                }
+                                                .testTag(CardPanelTestTags.DELETE_BUTTON)
+                                        )
+                                    }
+                                }
+                                Divider()
+                                if (isFlipped.value) {
+                                    Text(
+                                        text = card.back,
+                                        color = MaterialTheme.colors.onSurface,
+                                        modifier = Modifier.testTag(CardPanelTestTags.VIEW_BACK)
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
+
+        }
+        currentDeck.value?.value?.let { deck ->
+            DeckInfoPanel(deck, learnedCardCount.value)
         }
     }
-}
-
-object CardPanelTestTags {
-    const val VIEW_BACK = "card_view_back"
-    const val EDIT_FRONT = "card_edit_front"
-    const val EDIT_BACK = "card_edit_back"
-    const val EDIT_SAVE = "card_edit_save_button"
-    const val EDIT_CANCEL = "card_edit_cancel_button"
-    const val EDIT_BUTTON = "card_edit_button"
-    const val DELETE_BUTTON = "card_delete_button"
-    const val CREATE_FIRST_CARD_BUTTON = "create_first_card_button"
-    const val CARD_PANEL = "card_panel"
-    const val CONFIRM_DELETE_BUTTON = "confirm_delete_button"
 }
 
 // For multiline fields, Tab doesn't work as expected, so we need to move focus manually
@@ -355,4 +352,17 @@ fun Modifier.moveFocusOnTab() = composed {
             false
         }
     }
+}
+
+object CardPanelTestTags {
+    const val VIEW_BACK = "card_view_back"
+    const val EDIT_FRONT = "card_edit_front"
+    const val EDIT_BACK = "card_edit_back"
+    const val EDIT_SAVE = "card_edit_save_button"
+    const val EDIT_CANCEL = "card_edit_cancel_button"
+    const val EDIT_BUTTON = "card_edit_button"
+    const val DELETE_BUTTON = "card_delete_button"
+    const val CREATE_FIRST_CARD_BUTTON = "create_first_card_button"
+    const val CARD_PANEL = "card_panel"
+    const val CONFIRM_DELETE_BUTTON = "confirm_delete_button"
 }

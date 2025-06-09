@@ -34,6 +34,12 @@ open class SharedCardViewModel(
     // List of cards in the current deck (cached to avoid repeated Firestore queries)
     private val _currentDeckCards = MutableStateFlow<List<Card>>(emptyList())
 
+    override val learnedCardCount: StateFlow<Int> by lazy {
+        _currentDeckCards
+            .map { cards -> cards.count { it.learned } }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 0)
+    }
+
     private val _isFlipped = MutableStateFlow(false)
     override val isFlipped: StateFlow<Boolean> = _isFlipped.asStateFlow()
 
@@ -55,7 +61,7 @@ open class SharedCardViewModel(
         _isDeleteConfirmationShowing.asStateFlow()
 
     /**
-     * Starts collection of card position change events, e.g., when we select a new deck,
+     * Starts collecting of card position change events, e.g., when we select a new deck,
      * and the position resets to 0. Updates the UI accordingly.
      */
     private suspend fun collectCurrentCardPositionChanges() {
@@ -69,7 +75,7 @@ open class SharedCardViewModel(
      * deck, and we need to switch the card view.
      */
     private suspend fun collectCurrentDeckChanges() {
-        // When deck changes, load its cards
+        // When the deck changes, load its cards
         _currentDeck.collect { deck ->
             logger.d { "Current deck changed to ${deck?.value?.name}" }
             if (deck != null) {
@@ -152,9 +158,9 @@ open class SharedCardViewModel(
     }
 
     /**
-     * Starts the collection of the card animation completion events, when the user swipes the card
-     * to the left or to the right. When the animation completed, we update the card learned status
-     * and the UI accordingly.
+     * Starts the collection of the card animation completion events when the user swipes the card
+     * to the left or to the right.
+     * When the animation is completed, we update the learned status of the card and the UI accordingly.
      */
     private suspend fun collectCardAnimationCompletion() {
         cardAnimationManager.animationCompleteTrigger
@@ -168,6 +174,16 @@ open class SharedCardViewModel(
                     currentCard.deckId,
                     it.learned
                 )
+
+                // Update the local card list with the new learned status
+                val idx = _currentCardPosition.value
+                val updatedCards = _currentDeckCards.value.toMutableList()
+                if (idx in updatedCards.indices) {
+                    val updated = updatedCards[idx].copy(learned = it.learned)
+                    updatedCards[idx] = updated
+                    _currentDeckCards.value = updatedCards
+                }
+
                 // Move to the next card
                 nextCard()
                 // Reset the animation trigger
@@ -189,7 +205,7 @@ open class SharedCardViewModel(
 
                 logger.w("Not saving card with empty content")
                 if (_isNewCard.value) {
-                    // If this is a new card with empty content, just cancel it
+                    // If this is a new card with empty content, cancel it
                     cancelNewCard()
                 }
                 return
@@ -379,7 +395,7 @@ open class SharedCardViewModel(
 
         logger.d { "Created temporary card for deck $deckId" }
 
-        // Set new card state
+        // Set the new card state
         _isNewCard.value = true
 
         // Set the temporary card as the current card
@@ -405,18 +421,18 @@ open class SharedCardViewModel(
             _isEditing.value = false
             _editCardContent.value = Pair("", "")
 
-            // Simply reload the current deck's data
+            // Reload the current deck's data
             val currentDeck = _currentDeck.value?.value
             if (currentDeck != null) {
                 val deckId = currentDeck.id ?: error("Deck ID is null for a persistent deck")
                 logger.d { "Reloading cards for current deck $deckId" }
 
                 try {
-                    // Get fresh cards list from the repository
+                    // Get the fresh cards list from the repository
                     val freshCards = cardRepository.getCardsByDeckId(deckId)
                     logger.d { "Loaded ${freshCards.size} cards for current deck" }
 
-                    // Update the cards list
+                    // Update the list of cards
                     _currentDeckCards.value = freshCards
 
                     // Set position to the first card if available
@@ -486,7 +502,7 @@ open class SharedCardViewModel(
             // Delete the card from the repository
             cardRepository.deleteCard(cardId, card.deckId)
 
-            // Remove from local card list
+            // Remove from the local card list
             val updatedCards = _currentDeckCards.value.toMutableList()
             updatedCards.removeAt(currentPosition)
             _currentDeckCards.value = updatedCards
