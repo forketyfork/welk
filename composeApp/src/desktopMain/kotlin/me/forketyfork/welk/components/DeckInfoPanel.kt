@@ -10,13 +10,17 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import me.forketyfork.welk.domain.Deck
 
+object DeckInfoPanelTestTags {
+    const val DECK_INFO_PANEL = "deck_info_panel"
+}
+
 @Composable
 fun DeckInfoPanel(deck: Deck, learnedCount: Int, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
-            .testTag(CardPanelTestTags.DECK_INFO_PANEL)
+            .testTag(DeckInfoPanelTestTags.DECK_INFO_PANEL)
     ) {
         Divider()
         Spacer(modifier = Modifier.height(8.dp))
