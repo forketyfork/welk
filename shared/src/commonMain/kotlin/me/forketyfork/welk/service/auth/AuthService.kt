@@ -14,4 +14,9 @@ interface AuthService {
      * Sign out the current user
      */
     suspend fun signOut()
+
+    /**
+     * ID of the currently authenticated user or null if not logged in.
+     */
+    fun currentUserId(): String?
 }

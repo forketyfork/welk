@@ -53,4 +53,6 @@ class FirestoreAuthService(val platform: Platform) : AuthService {
             logger.e(e) { "Sign-out failed: ${e.message}" }
         }
     }
+
+    override fun currentUserId(): String? = Firebase.auth.currentUser?.uid
 }
