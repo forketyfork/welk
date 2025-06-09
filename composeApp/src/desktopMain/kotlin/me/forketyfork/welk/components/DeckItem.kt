@@ -1,13 +1,9 @@
 package me.forketyfork.welk.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -18,11 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.StateFlow
 import me.forketyfork.welk.domain.Deck
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DeckItem(
     deck: StateFlow<Deck>,
@@ -40,85 +38,92 @@ fun DeckItem(
             .clip(RoundedCornerShape(8.dp))
             .background(if (isSelected) MaterialTheme.colors.primary.copy(alpha = 0.1f) else Color.Transparent)
             .clickable { onClick() }
-            .padding(12.dp)
+            .padding(horizontal = 12.dp, vertical = 8.dp)
             .testTag(DeckItemTestTags.DECK_NAME_TEMPLATE.format(deck.id))
     ) {
-        // Right-side controls column
-        Column(
-            modifier = Modifier.align(Alignment.TopEnd),
-            horizontalAlignment = Alignment.End
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-
-            // "Add card" button
-            TextButton(
-                onClick = {
-                    val deckId = deck.id ?: error("Deck id is null for a persistent entity")
-                    onAddCard(deckId)
-                },
-                contentPadding = PaddingValues(
-                    horizontal = 8.dp,
-                    vertical = 2.dp
-                ),
-                modifier = Modifier
-                    .height(24.dp)
-                    .testTag(DeckItemTestTags.ADD_CARD_BUTTON_TEMPLATE.format(deck.id))
+            // The deck name with a tooltip for full text
+            Box(
+                modifier = Modifier.weight(1f)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add Card",
-                    modifier = Modifier.size(14.dp),
-                    tint = MaterialTheme.colors.primary
-                )
-                Spacer(modifier = Modifier.width(2.dp))
-                Text(
-                    "Add Card",
-                    style = MaterialTheme.typography.caption
-                )
+                TooltipArea(
+                    tooltip = {
+                        Surface(
+                            elevation = 4.dp,
+                            shape = RoundedCornerShape(4.dp),
+                            color = MaterialTheme.colors.surface
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .padding(8.dp)
+                            ) {
+                                Text(
+                                    text = deck.name,
+                                    color = MaterialTheme.colors.onSurface
+                                )
+                            }
+                        }
+                    },
+                    delayMillis = 600,
+                    tooltipPlacement = TooltipPlacement.CursorPoint(
+                        alignment = Alignment.TopStart
+                    )
+                ) {
+                    Text(
+                        text = deck.name,
+                        style = MaterialTheme.typography.body1,
+                        color = if (isSelected) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Delete deck button
-            TextButton(
-                onClick = {
-                    val deckId = deck.id ?: error("Deck id is null for a persistent entity")
-                    onDeleteDeck(deckId)
-                },
-                contentPadding = PaddingValues(
-                    horizontal = 8.dp,
-                    vertical = 2.dp
-                ),
-                modifier = Modifier
-                    .height(24.dp)
-                    .testTag(DeckItemTestTags.DELETE_DECK_BUTTON_TEMPLATE.format(deck.id))
+            // Action buttons
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
             ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete Deck",
-                    modifier = Modifier.size(14.dp),
-                    tint = MaterialTheme.colors.error
-                )
-                Spacer(modifier = Modifier.width(2.dp))
-                Text(
-                    "Delete",
-                    style = MaterialTheme.typography.caption,
-                    color = MaterialTheme.colors.error
-                )
+                // "Add card" icon button
+                IconButton(
+                    onClick = {
+                        val deckId = deck.id ?: error("Deck id is null for a persistent entity")
+                        onAddCard(deckId)
+                    },
+                    modifier = Modifier
+                        .size(28.dp)
+                        .testTag(DeckItemTestTags.ADD_CARD_BUTTON_TEMPLATE.format(deck.id))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Card",
+                        tint = MaterialTheme.colors.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+
+                // Delete deck icon button
+                IconButton(
+                    onClick = {
+                        val deckId = deck.id ?: error("Deck id is null for a persistent entity")
+                        onDeleteDeck(deckId)
+                    },
+                    modifier = Modifier
+                        .size(28.dp)
+                        .testTag(DeckItemTestTags.DELETE_DECK_BUTTON_TEMPLATE.format(deck.id))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete Deck",
+                        tint = MaterialTheme.colors.error,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
             }
-        }
-
-        // Column for deck main content with right padding to avoid overlapping the controls
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = 120.dp) // Make space for the controls
-
-        ) {
-            Text(
-                text = deck.name,
-                style = MaterialTheme.typography.body1,
-                color = if (isSelected) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface,
-            )
         }
     }
 }
