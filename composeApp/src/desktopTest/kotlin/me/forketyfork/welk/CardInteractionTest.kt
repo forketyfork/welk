@@ -12,6 +12,7 @@ import org.koin.test.KoinTest
 
 class CardInteractionTest : KoinTest {
 
+
     @OptIn(ExperimentalTestApi::class)
     @Test
     fun canViewAndFlipCards() = runComposeUiTest {
@@ -22,52 +23,51 @@ class CardInteractionTest : KoinTest {
 
         // Log in and verify basic UI elements
         login(testUsername, testPassword)
-        verifyBasicUiElements()
 
-        // wait until the decks are loaded, verify their expected contents
-        val preloadedDecks = mapOf(
-            "deck1" to "Basic Vocabulary",
-            "deck2" to "Grammar Rules",
-            "deck3" to "Idioms"
-        )
+        var testDeckId: String? = null
 
-        preloadedDecks.forEach { (deckId, name) ->
-            waitUntilExactlyOneExists(
-                hasTestTag(DeckItemTestTags.DECK_NAME_TEMPLATE.format(deckId)),
-                timeoutMillis = 10000
-            )
-            waitUntilExactlyOneExists(
-                hasTestTag(DeckItemTestTags.ADD_CARD_BUTTON_TEMPLATE.format(deckId)),
-                timeoutMillis = 10000
-            )
-            waitUntilExactlyOneExists(hasTextExactly(name))
+        try {
+            // Create a test deck with a card
+            testDeckId = createTestDeck("Test Deck", "Test deck for card interaction")
+
+            // Create a test card in the deck
+            createTestCard(testDeckId, "Hello", "Hola")
+
+            // Select the test deck
+            onNodeWithTag(DeckItemTestTags.DECK_NAME_TEMPLATE.format(testDeckId)).performClick()
+
+            // Wait until the deck is selected and the card is loaded
+            waitUntilExactlyOneExists(hasTestTag(CardPanelTestTags.CARD_PANEL))
+            waitUntilExactlyOneExists(hasTextExactly("Hello"))
+
+            // Assert that the card is visible and has edit and delete buttons
+            onNodeWithTag(CardPanelTestTags.EDIT_BUTTON).assertExists()
+            onNodeWithTag(CardPanelTestTags.DELETE_BUTTON).assertExists()
+
+            // Check that the front of the card is visible but the back is not
+            onNodeWithText("Hello").assertExists()
+            onNodeWithText("Hola").assertDoesNotExist()
+
+            // Press space to flip the card
+            onRoot().performKeyInput { pressKey(Key.Spacebar) }
+
+            // Verify that the back of the card appeared
+            waitUntilExactlyOneExists(hasTextExactly("Hola"))
+
+            // Press space again to flip back
+            onRoot().performKeyInput { pressKey(Key.Spacebar) }
+
+            // Verify that the back of the card is hidden
+            waitUntilDoesNotExist(hasTextExactly("Hola"))
+
+        } finally {
+            // Clean up: delete the test deck if it was created
+            testDeckId?.let { deckId ->
+                deleteTestDeck(deckId)
+                // Verify the deck is deleted
+                waitUntilDoesNotExist(hasTextExactly("Test Deck"))
+            }
+            logout()
         }
-
-        // wait until the first deck is selected and the card is loaded
-        waitUntilExactlyOneExists(hasTestTag(CardPanelTestTags.CARD_PANEL))
-        waitUntilExactlyOneExists(hasTextExactly("Hello"))
-
-        // assert that the first card in the first deck is visible and has edit and delete buttons
-        onNodeWithTag(CardPanelTestTags.EDIT_BUTTON).assertExists()
-        onNodeWithTag(CardPanelTestTags.DELETE_BUTTON).assertExists()
-
-        // check that the front of the card is visible but the back is not
-        onNodeWithText("Hello").assertExists()
-        onNodeWithText("Hola").assertDoesNotExist()
-
-        // press space
-        onRoot().performKeyInput { pressKey(Key.Spacebar) }
-
-        // verify that the back of the card appeared
-        waitUntilExactlyOneExists(hasTextExactly("Hola"))
-
-        // press space again
-        onRoot().performKeyInput { pressKey(Key.Spacebar) }
-
-        // verify that the back of the card is hidden
-        waitUntilDoesNotExist(hasTextExactly("Hola"))
-
-        // Log out
-        logout()
     }
 }

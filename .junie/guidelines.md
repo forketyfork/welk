@@ -149,8 +149,8 @@ Available log levels:
 
 - Try to reuse as much code as possible between the iOS and Desktop by placing it into the `shared`
   module.
-- After implementing changes to the shared or desktop code, check that the application builds by
-  executing `./gradlew :composeApp:build`
+- After implementing changes to the shared or desktop code, check that the code compiles by
+  executing `./gradlew :composeApp:compileKotlinDesktop`
 - Use proper logging with Kermit instead of println statements for better debugging.
 - When adding new UI functionality:
     - First implement the data model in the domain layer

@@ -31,6 +31,10 @@ open class SharedCardViewModel(
     override val availableDecks: MutableStateFlow<List<StateFlow<Deck>>> =
         MutableStateFlow(emptyList())
 
+    // Set of expanded deck IDs
+    private val _expandedDeckIds = MutableStateFlow<Set<String>>(emptySet())
+    override val expandedDeckIds: StateFlow<Set<String>> = _expandedDeckIds.asStateFlow()
+
     // List of cards in the current deck (cached to avoid repeated Firestore queries)
     private val _currentDeckCards = MutableStateFlow<List<Card>>(emptyList())
 
@@ -523,12 +527,63 @@ open class SharedCardViewModel(
         }
     }
 
-    override suspend fun createDeck(name: String, description: String) {
+    override suspend fun createDeck(name: String, description: String, parentId: String?) {
         try {
-            deckRepository.createDeck(name, description)
+            deckRepository.createDeck(name, description, parentId)
+
+            // If this deck has a parent, expand the parent deck to make the new child visible
+            if (parentId != null) {
+                expandParentDeck(parentId)
+            }
         } catch (e: Exception) {
             logger.e(e) { "Error creating deck" }
         }
+    }
+
+    /**
+     * Expands a deck and all its parent decks to make nested content visible
+     */
+    private fun expandParentDeck(deckId: String) {
+        try {
+            // Add the deck ID to the expanded set
+            val currentExpanded = _expandedDeckIds.value.toMutableSet()
+            currentExpanded.add(deckId)
+            _expandedDeckIds.value = currentExpanded
+
+            // Find the deck in our available decks list to get parent info
+            val deckFlow = availableDecks.value.find { it.value.id == deckId }
+            if (deckFlow != null) {
+                logger.d { "Expanded deck: ${deckFlow.value.name}" }
+
+                // If this deck has a parent, recursively expand it too
+                val parentId = deckFlow.value.parentId
+                if (parentId != null) {
+                    expandParentDeck(parentId)
+                }
+            }
+        } catch (e: Exception) {
+            logger.w(e) { "Error expanding parent deck $deckId: ${e.message}" }
+        }
+    }
+
+    /**
+     * Toggles the expansion state of a deck
+     */
+    override fun toggleDeckExpansion(deckId: String) {
+        val currentExpanded = _expandedDeckIds.value.toMutableSet()
+        if (currentExpanded.contains(deckId)) {
+            currentExpanded.remove(deckId)
+        } else {
+            currentExpanded.add(deckId)
+        }
+        _expandedDeckIds.value = currentExpanded
+    }
+
+    /**
+     * Checks if a deck is expanded
+     */
+    override fun isDeckExpanded(deckId: String): Boolean {
+        return _expandedDeckIds.value.contains(deckId)
     }
 
     override suspend fun deleteDeck(deckId: String) {

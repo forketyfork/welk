@@ -15,6 +15,7 @@ interface CardViewModel : InitializableViewModel {
     val isNewCard: StateFlow<Boolean>
     val isDeleteConfirmationShowing: StateFlow<Boolean>
     val learnedCardCount: StateFlow<Int>
+    val expandedDeckIds: StateFlow<Set<String>>
 
     fun flipCard()
     suspend fun nextCard()
@@ -24,9 +25,11 @@ interface CardViewModel : InitializableViewModel {
     suspend fun saveCardEdit()
     suspend fun createNewCard(deckId: String)
     suspend fun cancelNewCard()
-    suspend fun createDeck(name: String, description: String)
+    suspend fun createDeck(name: String, description: String, parentId: String? = null)
     suspend fun deleteDeck(deckId: String)
     suspend fun deleteCurrentCard()
     fun showDeleteConfirmation()
     fun hideDeleteConfirmation()
+    fun toggleDeckExpansion(deckId: String)
+    fun isDeckExpanded(deckId: String): Boolean
 }

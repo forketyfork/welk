@@ -8,6 +8,8 @@ import androidx.compose.ui.test.*
 import androidx.lifecycle.*
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import me.forketyfork.welk.components.CardPanelTestTags
+import me.forketyfork.welk.components.DeckItemTestTags
 import me.forketyfork.welk.components.LoginViewTestTags
 import me.forketyfork.welk.components.SidePanelTestTags
 import kotlin.test.fail
@@ -63,6 +65,7 @@ fun ComposeUiTest.login(username: String, password: String) {
     onNodeWithTag(LoginViewTestTags.USERNAME_INPUT).performTextInput(username)
     onNodeWithTag(LoginViewTestTags.PASSWORD_INPUT).performTextInput(password)
     onNodeWithTag(LoginViewTestTags.SIGN_IN_BUTTON).performClick()
+    verifyBasicUiElements()
 }
 
 /**
@@ -81,6 +84,7 @@ fun ComposeUiTest.verifyBasicUiElements() {
  */
 @OptIn(ExperimentalTestApi::class)
 fun ComposeUiTest.logout() {
+    waitUntilExactlyOneExists(hasTestTag(SidePanelTestTags.LOGOUT_BUTTON), timeoutMillis = 10000)
     onNodeWithTag(SidePanelTestTags.LOGOUT_BUTTON).performClick()
     waitUntilExactlyOneExists(
         hasTestTag(LoginViewTestTags.USERNAME_INPUT),
@@ -107,7 +111,68 @@ fun ComposeUiTest.printSemanticNodeState() {
 fun ComposeUiTest.getDeckIdByName(name: String): String {
     val tag = onNodeWithText(name)
         .fetchSemanticsNode()
-        .config.getOrNull(SemanticsProperties.TestTag) as? String
+        .config.getOrNull(SemanticsProperties.TestTag)
         ?: error("Deck tag not found for $name")
     return tag.removePrefix("deck_name_")
+}
+
+/**
+ * Creates a test deck through the UI and returns its ID
+ */
+@OptIn(ExperimentalTestApi::class)
+fun ComposeUiTest.createTestDeck(name: String, description: String): String {
+    // Click the "Add deck" button
+    onNodeWithTag(SidePanelTestTags.ADD_DECK_BUTTON).performClick()
+
+    // Wait until the new deck dialog opens
+    waitUntilExactlyOneExists(hasTestTag(SidePanelTestTags.NEW_DECK_NAME))
+
+    // Fill in the deck creation dialog
+    onNodeWithTag(SidePanelTestTags.NEW_DECK_NAME).performTextInput(name)
+    onNodeWithTag(SidePanelTestTags.NEW_DECK_DESCRIPTION).performTextInput(description)
+
+    // Save the new deck
+    onNodeWithTag(SidePanelTestTags.SAVE_DECK_BUTTON).performClick()
+
+    // Wait for the new deck to appear
+    waitUntilExactlyOneExists(hasTextExactly(name))
+
+    // Return the newly created deck id
+    return getDeckIdByName(name)
+}
+
+/**
+ * Creates a test card in the specified deck through the UI
+ */
+@OptIn(ExperimentalTestApi::class)
+fun ComposeUiTest.createTestCard(deckId: String, front: String, back: String) {
+    // Add a card to the deck using its test tag
+    onNodeWithTag(DeckItemTestTags.ADD_CARD_BUTTON_TEMPLATE.format(deckId)).performClick()
+
+    waitUntilExactlyOneExists(hasTestTag(CardPanelTestTags.EDIT_FRONT))
+
+    // Enter the front text of the new card
+    onNodeWithTag(CardPanelTestTags.EDIT_FRONT).performTextInput(front)
+
+    // Enter the back text of the new card
+    onNodeWithTag(CardPanelTestTags.EDIT_BACK).performTextInput(back)
+
+    // Save the new card
+    onNodeWithTag(CardPanelTestTags.EDIT_SAVE).performClick()
+
+    // Wait for the card to be created and visible
+    waitUntilExactlyOneExists(hasTextExactly(front))
+}
+
+/**
+ * Deletes a test deck through the UI
+ */
+@OptIn(ExperimentalTestApi::class)
+fun ComposeUiTest.deleteTestDeck(deckId: String) {
+    // Delete the deck via the delete button tagged with the deck id
+    onNodeWithTag(DeckItemTestTags.DELETE_DECK_BUTTON_TEMPLATE.format(deckId)).performClick()
+
+    // Confirm the deletion in the dialog
+    waitUntilExactlyOneExists(hasText("Are you sure you want to delete this deck? This action cannot be undone."))
+    onNodeWithTag(SidePanelTestTags.CONFIRM_DELETE_BUTTON).performClick()
 }
