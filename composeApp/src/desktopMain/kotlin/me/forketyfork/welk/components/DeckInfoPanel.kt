@@ -10,10 +10,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import me.forketyfork.welk.domain.Deck
 
-object DeckInfoPanelTestTags {
-    const val DECK_INFO_PANEL = "deck_info_panel"
-}
-
 @Composable
 fun DeckInfoPanel(deck: Deck, learnedCount: Int, modifier: Modifier = Modifier) {
     Column(
@@ -38,4 +34,8 @@ fun DeckInfoPanel(deck: Deck, learnedCount: Int, modifier: Modifier = Modifier) 
             color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
         )
     }
+}
+
+object DeckInfoPanelTestTags {
+    const val DECK_INFO_PANEL = "deck_info_panel"
 }

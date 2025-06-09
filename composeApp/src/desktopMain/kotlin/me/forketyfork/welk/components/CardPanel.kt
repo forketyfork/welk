@@ -39,19 +39,6 @@ import me.forketyfork.welk.vm.DesktopCardViewModel
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
-object CardPanelTestTags {
-    const val VIEW_BACK = "card_view_back"
-    const val EDIT_FRONT = "card_edit_front"
-    const val EDIT_BACK = "card_edit_back"
-    const val EDIT_SAVE = "card_edit_save_button"
-    const val EDIT_CANCEL = "card_edit_cancel_button"
-    const val EDIT_BUTTON = "card_edit_button"
-    const val DELETE_BUTTON = "card_delete_button"
-    const val CREATE_FIRST_CARD_BUTTON = "create_first_card_button"
-    const val CARD_PANEL = "card_panel"
-    const val CONFIRM_DELETE_BUTTON = "confirm_delete_button"
-}
-
 private val logger = Logger.withTag("CardPanel")
 
 @Composable
@@ -365,4 +352,17 @@ fun Modifier.moveFocusOnTab() = composed {
             false
         }
     }
+}
+
+object CardPanelTestTags {
+    const val VIEW_BACK = "card_view_back"
+    const val EDIT_FRONT = "card_edit_front"
+    const val EDIT_BACK = "card_edit_back"
+    const val EDIT_SAVE = "card_edit_save_button"
+    const val EDIT_CANCEL = "card_edit_cancel_button"
+    const val EDIT_BUTTON = "card_edit_button"
+    const val DELETE_BUTTON = "card_delete_button"
+    const val CREATE_FIRST_CARD_BUTTON = "create_first_card_button"
+    const val CARD_PANEL = "card_panel"
+    const val CONFIRM_DELETE_BUTTON = "confirm_delete_button"
 }

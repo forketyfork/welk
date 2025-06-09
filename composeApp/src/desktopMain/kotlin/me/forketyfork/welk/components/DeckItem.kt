@@ -49,7 +49,7 @@ fun DeckItem(
             horizontalAlignment = Alignment.End
         ) {
 
-            // Add card button
+            // "Add card" button
             TextButton(
                 onClick = {
                     val deckId = deck.id ?: error("Deck id is null for a persistent entity")
