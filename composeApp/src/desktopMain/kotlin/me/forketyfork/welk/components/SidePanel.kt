@@ -1,18 +1,24 @@
 package me.forketyfork.welk.components
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -25,6 +31,7 @@ import me.forketyfork.welk.vm.DesktopLoginViewModel
 import me.forketyfork.welk.vm.ThemeViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SidePanel(
     width: Int = 250,
@@ -47,6 +54,14 @@ fun SidePanel(
     val deckNameFocusRequester = remember { FocusRequester() }
     var deckIdToDelete by remember { mutableStateOf<String?>(null) }
     val deckListScrollState = rememberScrollState()
+    
+    // Drag and drop state
+    var draggingDeckId by remember { mutableStateOf<String?>(null) }
+    var dropTargetDeckId by remember { mutableStateOf<String?>(null) }
+    var currentPointerPosition by remember { mutableStateOf(Offset.Zero) }
+    var deckPositions by remember { mutableStateOf<Map<String, Pair<Offset, Offset>>>(emptyMap()) }
+    var deckTreeBounds by remember { mutableStateOf<Pair<Offset, Offset>?>(null) }
+    var isTopLevelDropTarget by remember { mutableStateOf(false) }
 
 
     Box(
@@ -85,11 +100,70 @@ fun SidePanel(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Scrollable list of decks
+            // Calculate drop targets during drag
+            LaunchedEffect(draggingDeckId, currentPointerPosition, deckPositions) {
+                if (draggingDeckId != null) {
+                    // Find which deck the pointer is over
+                    var foundTarget: String? = null
+                    for ((deckId, bounds) in deckPositions) {
+                        if (deckId != draggingDeckId) {
+                            val (topLeft, bottomRight) = bounds
+                            if (currentPointerPosition.x >= topLeft.x && 
+                                currentPointerPosition.x <= bottomRight.x &&
+                                currentPointerPosition.y >= topLeft.y && 
+                                currentPointerPosition.y <= bottomRight.y) {
+                                foundTarget = deckId
+                                break
+                            }
+                        }
+                    }
+                    
+                    dropTargetDeckId = foundTarget
+                    
+                    // Check if pointer is over deck tree area for top-level drop
+                    isTopLevelDropTarget = if (foundTarget == null && deckTreeBounds != null) {
+                        val (treeTopLeft, treeBottomRight) = deckTreeBounds!!
+                        currentPointerPosition.x >= treeTopLeft.x && 
+                        currentPointerPosition.x <= treeBottomRight.x &&
+                        currentPointerPosition.y >= treeTopLeft.y && 
+                        currentPointerPosition.y <= treeBottomRight.y
+                    } else {
+                        false
+                    }
+                } else {
+                    dropTargetDeckId = null
+                    isTopLevelDropTarget = false
+                }
+            }
+
+            // Scrollable list of decks with tree-level border when dragging to top level
             Column(
                 modifier = Modifier
                     .weight(1f)
+                    .border(
+                        width = if (isTopLevelDropTarget) 2.dp else 0.dp,
+                        color = if (isTopLevelDropTarget) MaterialTheme.colors.secondary else Color.Transparent,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(if (isTopLevelDropTarget) 8.dp else 0.dp)
                     .verticalScroll(deckListScrollState)
+                    .onGloballyPositioned { coordinates ->
+                        // Track the bounds of the entire deck tree
+                        val topLeft = coordinates.localToWindow(Offset.Zero)
+                        val bottomRight = coordinates.localToWindow(
+                            Offset(
+                                coordinates.size.width.toFloat(),
+                                coordinates.size.height.toFloat()
+                            )
+                        )
+                        deckTreeBounds = Pair(topLeft, bottomRight)
+                    }
+                    .onPointerEvent(PointerEventType.Move) { pointerEvent ->
+                        if (draggingDeckId != null && pointerEvent.changes.isNotEmpty()) {
+                            val change = pointerEvent.changes.first()
+                            currentPointerPosition = change.position
+                        }
+                    }
             ) {
                 // Filter top-level decks (those with no parent)
                 val topLevelDecks = decks.filter { it.value.parentId == null }
@@ -133,7 +207,41 @@ fun SidePanel(
                         onToggleExpansion = { deckId ->
                             cardViewModel.toggleDeckExpansion(deckId)
                         },
-                        expandedDeckIds = expandedDeckIds
+                        expandedDeckIds = expandedDeckIds,
+                        onMoveDeck = { draggedDeckId, targetParentId ->
+                            cardViewModel.viewModelScope.launch {
+                                cardViewModel.moveDeck(draggedDeckId, targetParentId)
+                            }
+                        },
+                        draggingDeckId = draggingDeckId,
+                        dropTargetDeckId = dropTargetDeckId,
+                        onDragStart = { deckId ->
+                            draggingDeckId = deckId
+                            dropTargetDeckId = null
+                        },
+                        onDragEnd = {
+                            // Handle the drop
+                            val draggedId = draggingDeckId
+                            val targetId = dropTargetDeckId
+                            if (draggedId != null) {
+                                cardViewModel.viewModelScope.launch {
+                                    if (isTopLevelDropTarget) {
+                                        // Drop to top level (no parent)
+                                        cardViewModel.moveDeck(draggedId, null)
+                                    } else if (targetId != null && targetId != draggedId) {
+                                        // Drop on specific deck (make it a child)
+                                        cardViewModel.moveDeck(draggedId, targetId)
+                                    }
+                                }
+                            }
+                            // Reset drag state
+                            draggingDeckId = null
+                            dropTargetDeckId = null
+                            isTopLevelDropTarget = false
+                        },
+                        onDeckPositioned = { deckId, topLeft, bottomRight ->
+                            deckPositions = deckPositions + (deckId to Pair(topLeft, bottomRight))
+                        }
                     )
                 }
             }

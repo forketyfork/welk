@@ -598,4 +598,18 @@ open class SharedCardViewModel(
             logger.e(e) { "Error deleting deck" }
         }
     }
+
+    override suspend fun moveDeck(deckId: String, newParentId: String?) {
+        try {
+            logger.d { "Moving deck $deckId to parent $newParentId" }
+            deckRepository.moveDeck(deckId, newParentId)
+            
+            // If the new parent is not null, expand it to show the moved deck
+            if (newParentId != null) {
+                expandParentDeck(newParentId)
+            }
+        } catch (e: Exception) {
+            logger.e(e) { "Error moving deck" }
+        }
+    }
 }
