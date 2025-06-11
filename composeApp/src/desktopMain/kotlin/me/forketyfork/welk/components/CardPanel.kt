@@ -83,9 +83,10 @@ fun CardPanel(modifier: Modifier = Modifier) {
     val editFrontFocusRequester = remember { FocusRequester() }
 
     val currentDeck = cardViewModel.currentDeck.collectAsStateWithLifecycle()
-    val hasCards = remember(currentDeck.value?.value) {
+    val currentCards = cardViewModel.currentDeckCards.collectAsStateWithLifecycle()
+    val hasCards = remember(currentCards.value) {
         derivedStateOf {
-            (currentDeck.value?.value?.cardCount ?: 0) > 0
+            currentCards.value.isNotEmpty()
         }
     }
 
