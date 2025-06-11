@@ -45,6 +45,12 @@ open class SharedCardViewModel(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 0)
     }
 
+    override val totalCardCount: StateFlow<Int> by lazy {
+        _currentDeckCards
+            .map { cards -> cards.size }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 0)
+    }
+
     private val _isFlipped = MutableStateFlow(false)
     override val isFlipped: StateFlow<Boolean> = _isFlipped.asStateFlow()
 

@@ -91,6 +91,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
     }
 
     val learnedCardCount = cardViewModel.learnedCardCount.collectAsStateWithLifecycle()
+    val totalCardCount = cardViewModel.totalCardCount.collectAsStateWithLifecycle()
 
     // Only request focus when we have cards or there's a deck selected
     LaunchedEffect(
@@ -344,6 +345,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
         currentDeck.value?.value?.let { deck ->
             DeckInfoPanel(
                 deck = deck,
+                totalCount = totalCardCount.value,
                 learnedCount = learnedCardCount.value,
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
