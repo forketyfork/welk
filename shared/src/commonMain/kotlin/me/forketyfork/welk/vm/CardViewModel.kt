@@ -12,9 +12,11 @@ interface CardViewModel : InitializableViewModel {
     val editCardContent: StateFlow<Pair<String, String>>
     val currentDeck: StateFlow<StateFlow<Deck>?>
     val availableDecks: StateFlow<List<StateFlow<Deck>>>
+    val currentDeckCards: StateFlow<List<Card>>
     val isNewCard: StateFlow<Boolean>
     val isDeleteConfirmationShowing: StateFlow<Boolean>
     val learnedCardCount: StateFlow<Int>
+    val totalCardCount: StateFlow<Int>
     val expandedDeckIds: StateFlow<Set<String>>
 
     fun flipCard()

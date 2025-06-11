@@ -37,10 +37,17 @@ open class SharedCardViewModel(
 
     // List of cards in the current deck (cached to avoid repeated Firestore queries)
     private val _currentDeckCards = MutableStateFlow<List<Card>>(emptyList())
+    override val currentDeckCards: StateFlow<List<Card>> = _currentDeckCards.asStateFlow()
 
     override val learnedCardCount: StateFlow<Int> by lazy {
         _currentDeckCards
             .map { cards -> cards.count { it.learned } }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 0)
+    }
+
+    override val totalCardCount: StateFlow<Int> by lazy {
+        _currentDeckCards
+            .map { cards -> cards.size }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 0)
     }
 
@@ -84,7 +91,7 @@ open class SharedCardViewModel(
             logger.d { "Current deck changed to ${deck?.value?.name}" }
             if (deck != null) {
                 val deckId = deck.value.id ?: error("Deck ID is null for a persistent deck")
-                _currentDeckCards.value = cardRepository.getCardsByDeckId(deckId)
+                _currentDeckCards.value = getAllCardsForDeck(deckId)
                 // Reset to the first card in the deck
                 _currentCardPosition.value = 0
                 updateCurrentCardFromPosition()
@@ -105,6 +112,24 @@ open class SharedCardViewModel(
 
         val position = _currentCardPosition.value.coerceIn(0, cards.size - 1)
         _currentCard.value = cards.getOrNull(position)
+    }
+
+    /**
+     * Recursively collects all cards for the given deck and its child decks.
+     */
+    private suspend fun getAllCardsForDeck(deckId: String): List<Card> {
+        val cards = mutableListOf<Card>()
+
+        suspend fun gather(id: String) {
+            cards += cardRepository.getCardsByDeckId(id)
+            val children = deckRepository.getChildDecks(id)
+            children.forEach { child ->
+                child.id?.let { gather(it) }
+            }
+        }
+
+        gather(deckId)
+        return cards
     }
 
     /**
@@ -132,7 +157,7 @@ open class SharedCardViewModel(
             _currentDeck.value = deck
 
             // Load cards for this deck
-            val cards = cardRepository.getCardsByDeckId(deckId)
+            val cards = getAllCardsForDeck(deckId)
             logger.d { "Loaded ${cards.size} cards for deck $deckId" }
 
             // Store the cards in our local cache
@@ -433,7 +458,7 @@ open class SharedCardViewModel(
 
                 try {
                     // Get the fresh cards list from the repository
-                    val freshCards = cardRepository.getCardsByDeckId(deckId)
+                    val freshCards = getAllCardsForDeck(deckId)
                     logger.d { "Loaded ${freshCards.size} cards for current deck" }
 
                     // Update the list of cards
