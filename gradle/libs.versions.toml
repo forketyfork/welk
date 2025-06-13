@@ -1,4 +1,8 @@
 [versions]
+
+agp = "8.10.1" # https://developer.android.com/reference/tools/gradle-api/
+android-compileSdk = "35"
+
 androidx-lifecycle = "2.9.0" # https://central.sonatype.com/artifact/org.jetbrains.androidx.lifecycle/lifecycle-viewmodel/versions
 compose-multiplatform = "1.8.1" # https://github.com/JetBrains/compose-multiplatform/releases
 kotlin = "2.1.21" # https://github.com/JetBrains/kotlin/releases
@@ -54,3 +58,6 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotilnSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 skie = { id = "co.touchlab.skie", version.ref = "skie" }
+
+# currently there's no Android application, this is only needed for `@Preview` annotations to work
+androidApplication = { id = "com.android.application", version.ref = "agp" }

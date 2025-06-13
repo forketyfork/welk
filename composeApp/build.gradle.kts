@@ -1,16 +1,20 @@
-import org.gradle.internal.classpath.Instrumented.systemProperty
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import java.io.FileInputStream
-import java.util.Properties
+import java.util.*
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.androidApplication)
 }
 
 kotlin {
     jvm("desktop")
+
+    // currently there's no Android application, this is only needed for `@Preview` annotations to work
+    androidTarget {
+    }
 
     sourceSets {
         commonMain.dependencies {
@@ -80,4 +84,9 @@ tasks.withType<Test>() {
     listOf("WELK_TEST_USERNAME", "WELK_TEST_PASSWORD").forEach { key ->
         systemProperty(key, localProperties.getProperty(key))
     }
+}
+
+android {
+    namespace = "com.forketyfork.welk"
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
 }

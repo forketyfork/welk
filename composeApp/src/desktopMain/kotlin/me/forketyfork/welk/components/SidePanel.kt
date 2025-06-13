@@ -24,7 +24,9 @@ import me.forketyfork.welk.vm.DesktopCardViewModel
 import me.forketyfork.welk.vm.DesktopLoginViewModel
 import me.forketyfork.welk.vm.ThemeViewModel
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.desktop.ui.tooling.preview.Preview
 
+@Preview
 @Composable
 fun SidePanel(
     width: Int = 250,
