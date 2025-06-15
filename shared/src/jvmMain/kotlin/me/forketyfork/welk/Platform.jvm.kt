@@ -8,7 +8,9 @@ import dev.gitlive.firebase.FirebaseOptions
 import dev.gitlive.firebase.firestore.FirebaseFirestore
 import dev.gitlive.firebase.firestore.firestore
 import dev.gitlive.firebase.initialize
+import java.io.File
 import java.util.Properties
+import me.forketyfork.welk.FileStorage
 
 class JVMPlatform : Platform {
 
@@ -21,15 +23,14 @@ class JVMPlatform : Platform {
             lazyInitializeFirestore()
         }
 
+        private val fileStorage = FileStorage(File(System.getProperty("user.home"), ".welk/firebase"))
+
         private fun lazyInitializeFirestore(): FirebaseFirestore {
 
             FirebasePlatform.initializeFirebasePlatform(object : FirebasePlatform() {
-                val storage = mutableMapOf<String, String>()
-                override fun store(key: String, value: String) = storage.set(key, value)
-                override fun retrieve(key: String) = storage[key]
-                override fun clear(key: String) {
-                    storage.remove(key)
-                }
+                override fun store(key: String, value: String) = fileStorage.store(key, value)
+                override fun retrieve(key: String) = fileStorage.retrieve(key)
+                override fun clear(key: String) = fileStorage.clear(key)
 
                 override fun log(msg: String) = logger.d(msg)
             })
