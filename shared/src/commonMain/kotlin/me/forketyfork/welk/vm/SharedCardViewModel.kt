@@ -2,6 +2,8 @@ package me.forketyfork.welk.vm
 
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import me.forketyfork.welk.domain.Card
@@ -19,6 +21,13 @@ open class SharedCardViewModel(
     companion object {
         private val logger = Logger.withTag("CommonCardViewModel")
     }
+
+    /** Scope that is active only while the user is logged in. */
+    private var sessionJob: Job? = null
+    private var sessionScope: CoroutineScope? = null
+
+    private val activeScope: CoroutineScope
+        get() = sessionScope ?: viewModelScope
 
     // Current position within the deck
     private val _currentCardPosition = MutableStateFlow(0)
@@ -137,7 +146,7 @@ open class SharedCardViewModel(
      */
     suspend fun collectDeckListChanges() {
         deckRepository.flowDeckFlows().collect { decks ->
-            availableDecks.value = decks.map { it.stateIn(viewModelScope) }
+            availableDecks.value = decks.map { it.stateIn(activeScope) }
             // If we don't have a selected deck yet but decks exist, select the first one
             if (_currentDeck.value == null && availableDecks.value.isNotEmpty()) {
                 val deck = availableDecks.value.first().value
@@ -153,7 +162,7 @@ open class SharedCardViewModel(
     override suspend fun selectDeck(deckId: String) {
         try {
             logger.d { "Selecting deck with ID: $deckId" }
-            val deck = deckRepository.flowDeck(deckId).stateIn(viewModelScope)
+            val deck = deckRepository.flowDeck(deckId).stateIn(activeScope)
             _currentDeck.value = deck
 
             // Load cards for this deck
@@ -497,26 +506,46 @@ open class SharedCardViewModel(
      */
     private fun installCollectors(coroutineScope: CoroutineScope) {
         logger.d { "Installing card view model collectors" }
-        coroutineScope.launch {
-            // update the card when the swipe left/right animation completes
-            collectCardAnimationCompletion()
-        }
-        coroutineScope.launch {
-            // update the UI when the current card position changes
-            collectCurrentCardPositionChanges()
-        }
-        coroutineScope.launch {
-            // update the UI when the current deck changes
-            collectCurrentDeckChanges()
-        }
-        coroutineScope.launch {
-            collectDeckListChanges()
+        sessionJob?.cancel()
+        sessionScope = coroutineScope
+        sessionJob = coroutineScope.launch {
+            launch { collectCardAnimationCompletion() }
+            launch { collectCurrentCardPositionChanges() }
+            launch { collectCurrentDeckChanges() }
+            launch { collectDeckListChanges() }
         }
     }
 
     override fun initialize(viewModelScope: CoroutineScope) {
         super.initialize(viewModelScope)
-        installCollectors(viewModelScope)
+        startSession()
+    }
+
+    /** Starts collecting flows for the current login session. */
+    fun startSession() {
+        if (sessionJob == null) {
+            val scope = CoroutineScope(viewModelScope.coroutineContext + SupervisorJob())
+            installCollectors(scope)
+        }
+    }
+
+    /** Stops all active collectors and resets view model state. */
+    fun stopSession() {
+        sessionJob?.cancel()
+        sessionJob = null
+        sessionScope = null
+
+        _currentDeck.value = null
+        availableDecks.value = emptyList()
+        _currentDeckCards.value = emptyList()
+        _currentCard.value = null
+        _currentCardPosition.value = 0
+        _isFlipped.value = false
+        _isEditing.value = false
+        _editCardContent.value = "" to ""
+        _isNewCard.value = false
+        _isDeleteConfirmationShowing.value = false
+        _expandedDeckIds.value = emptySet()
     }
 
     override suspend fun deleteCurrentCard() {
