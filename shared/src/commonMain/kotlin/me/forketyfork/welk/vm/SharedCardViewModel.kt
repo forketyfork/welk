@@ -4,6 +4,7 @@ import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import me.forketyfork.welk.domain.Card
@@ -531,8 +532,12 @@ open class SharedCardViewModel(
 
     /** Stops all active collectors and resets view model state. */
     override fun stopSession() {
+        // Cancel the session job and scope to stop all Firestore listeners
         sessionJob?.cancel()
         sessionJob = null
+        
+        // Cancel the session scope which will cancel all stateIn() flows created with activeScope
+        sessionScope?.cancel()
         sessionScope = null
 
         _currentDeck.value = null
