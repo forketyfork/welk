@@ -77,12 +77,19 @@ compose.desktop {
     }
 }
 
-// load test user and password from local.properties
+// load test user and password from local.properties or environment variables
+val localPropertiesFile = rootProject.file("local.properties")
 val localProperties = Properties()
-localProperties.load(FileInputStream(rootProject.file("local.properties")))
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+
 tasks.withType<Test> {
     listOf("WELK_TEST_USERNAME", "WELK_TEST_PASSWORD").forEach { key ->
-        systemProperty(key, localProperties.getProperty(key))
+        val value = localProperties.getProperty(key) ?: System.getenv(key)
+        if (value != null) {
+            systemProperty(key, value)
+        }
     }
 }
 
