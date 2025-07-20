@@ -1,6 +1,5 @@
 package me.forketyfork.welk.vm
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 
 /**

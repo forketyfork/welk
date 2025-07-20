@@ -80,7 +80,7 @@ compose.desktop {
 // load test user and password from local.properties
 val localProperties = Properties()
 localProperties.load(FileInputStream(rootProject.file("local.properties")))
-tasks.withType<Test>() {
+tasks.withType<Test> {
     listOf("WELK_TEST_USERNAME", "WELK_TEST_PASSWORD").forEach { key ->
         systemProperty(key, localProperties.getProperty(key))
     }

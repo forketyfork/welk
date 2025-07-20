@@ -19,18 +19,4 @@ object AppFonts {
             style = FontStyle.Normal
         )
     )
-
-    // Roboto is a free-to-use font from Google Fonts
-    val roboto = FontFamily(
-        Font(
-            resource = "font/roboto_regular.ttf",
-            weight = FontWeight.Normal,
-            style = FontStyle.Normal
-        ),
-        Font(
-            resource = "font/roboto_bold.ttf",
-            weight = FontWeight.Bold,
-            style = FontStyle.Normal
-        )
-    )
 }
