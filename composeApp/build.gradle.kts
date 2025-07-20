@@ -6,15 +6,10 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.androidApplication)
 }
 
 kotlin {
     jvm("desktop")
-
-    // currently there's no Android application, this is only needed for `@Preview` annotations to work
-    androidTarget {
-    }
 
     sourceSets {
         commonMain.dependencies {
@@ -91,9 +86,4 @@ tasks.withType<Test> {
             systemProperty(key, value)
         }
     }
-}
-
-android {
-    namespace = "com.forketyfork.welk"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
 }
