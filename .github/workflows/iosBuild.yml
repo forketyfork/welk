@@ -1,0 +1,40 @@
+name: Build iOS App
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Create firebase.properties file
+        env:
+          FIREBASE_PROPERTIES_CONTENT: ${{ secrets.FIREBASE_PROPERTIES_CONTENT }}
+        run: |
+          echo "$FIREBASE_PROPERTIES_CONTENT" > ./shared/src/jvmMain/resources/firebase.properties
+
+      - name: Build Shared Module
+        run: ./gradlew :shared:build
+
+      - name: Build iOS App
+        run: |
+          xcodebuild -project iosApp/iosApp.xcodeproj \
+            -scheme iosApp \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.4' \
+            build
