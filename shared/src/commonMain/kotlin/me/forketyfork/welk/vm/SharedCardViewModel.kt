@@ -522,7 +522,7 @@ open class SharedCardViewModel(
     }
 
     /** Starts collecting flows for the current login session. */
-    fun startSession() {
+    override fun startSession() {
         if (sessionJob == null) {
             val scope = CoroutineScope(viewModelScope.coroutineContext + SupervisorJob())
             installCollectors(scope)
@@ -530,7 +530,7 @@ open class SharedCardViewModel(
     }
 
     /** Stops all active collectors and resets view model state. */
-    fun stopSession() {
+    override fun stopSession() {
         sessionJob?.cancel()
         sessionJob = null
         sessionScope = null

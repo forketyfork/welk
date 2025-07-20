@@ -34,4 +34,6 @@ interface CardViewModel : InitializableViewModel {
     fun hideDeleteConfirmation()
     fun toggleDeckExpansion(deckId: String)
     fun isDeckExpanded(deckId: String): Boolean
+    fun startSession()
+    fun stopSession()
 }

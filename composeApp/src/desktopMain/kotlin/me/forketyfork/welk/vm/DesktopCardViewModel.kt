@@ -11,18 +11,14 @@ import me.forketyfork.welk.domain.DeckRepository
 class DesktopCardViewModel(
     cardAnimationManager: CardAnimationManager,
     cardRepository: CardRepository,
-    deckRepository: DeckRepository,
-    private val delegate: SharedCardViewModel = SharedCardViewModel(
-        cardAnimationManager = cardAnimationManager,
-        cardRepository = cardRepository,
-        deckRepository = deckRepository
-    ),
-) : ViewModel(), CardViewModel by delegate {
+    deckRepository: DeckRepository
+) : ViewModel(), CardViewModel by SharedCardViewModel(
+    cardAnimationManager = cardAnimationManager,
+    cardRepository = cardRepository,
+    deckRepository = deckRepository
+) {
 
     init {
-        delegate.initialize(viewModelScope)
+        initialize(viewModelScope)
     }
-
-    fun startSession() = delegate.startSession()
-    fun stopSession() = delegate.stopSession()
 }
