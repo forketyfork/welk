@@ -37,6 +37,9 @@ fun SidePanel(
     val cardViewModel = koinViewModel<DesktopCardViewModel>()
     val themeViewModel = koinViewModel<ThemeViewModel>()
 
+    // Ensure the card view model collectors are running when the panel is shown
+    LaunchedEffect(Unit) { cardViewModel.startSession() }
+
     val decks by cardViewModel.availableDecks.collectAsStateWithLifecycle()
     val currentDeck by cardViewModel.currentDeck.collectAsStateWithLifecycle()
     val themeMode by themeViewModel.themeMode.collectAsStateWithLifecycle()
@@ -182,6 +185,7 @@ fun SidePanel(
                 // Logout button
                 IconButton(
                     onClick = {
+                        cardViewModel.stopSession()
                         cardViewModel.viewModelScope.launch {
                             loginViewModel.signOut()
                         }
