@@ -8,7 +8,7 @@ The repository already supports authentication, dependency injection, dark mode,
 The plan is divided into immediate tasks from the "Current focus" section and longer‑term tasks from the "Targeted features" section.
 
 ## Current Focus
-1. **End‑to‑End Tests for Main Functionality**
+1. [x] **End‑to‑End Tests for Main Functionality**
    - Extend existing Compose UI tests to cover login, card flipping, deck creation, card editing, and deletion.
    - Configure GitHub Actions to run tests against a mocked Firestore or use a local emulator so CI does not depend on external accounts.
    - Stabilize test data utilities so they create and clean up decks and cards reliably.

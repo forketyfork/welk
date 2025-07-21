@@ -17,18 +17,18 @@ class CardInteractionTest : KoinTest {
     @Test
     fun canViewAndFlipCards() = runComposeUiTest {
 
-        // Get test credentials and set up the app
-        val (testUsername, testPassword) = getTestCredentials()
         setupApp()
 
         // Log in and verify basic UI elements
-        login(testUsername, testPassword)
+        login("user@test", "password")
 
         var testDeckId: String? = null
+        var deckName = ""
 
         try {
+            deckName = "Test Deck ${System.currentTimeMillis()}"
             // Create a test deck with a card
-            testDeckId = createTestDeck("Test Deck", "Test deck for card interaction")
+            testDeckId = createTestDeck(deckName, "Test deck for card interaction")
 
             // Create a test card in the deck
             createTestCard(testDeckId, "Hello", "Hola")
@@ -65,7 +65,7 @@ class CardInteractionTest : KoinTest {
             testDeckId?.let { deckId ->
                 deleteTestDeck(deckId)
                 // Verify the deck is deleted
-                waitUntilDoesNotExist(hasTextExactly("Test Deck"))
+                waitUntilDoesNotExist(hasTextExactly(deckName))
             }
             logout()
         }

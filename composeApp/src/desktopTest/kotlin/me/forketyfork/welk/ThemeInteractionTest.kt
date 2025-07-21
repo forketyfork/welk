@@ -20,12 +20,10 @@ class ThemeInteractionTest : KoinTest {
     @Test
     fun canToggleThemeMode() = runComposeUiTest {
 
-        // Get test credentials and set up the app
-        val (testUsername, testPassword) = getTestCredentials()
         setupApp()
 
         // Log in and verify basic UI elements
-        login(testUsername, testPassword)
+        login("user@test", "password")
 
         // Only verify the app title since we don't need to check all UI elements for this test
         waitUntilExactlyOneExists(hasTestTag(SidePanelTestTags.APP_TITLE), timeoutMillis = 10000)

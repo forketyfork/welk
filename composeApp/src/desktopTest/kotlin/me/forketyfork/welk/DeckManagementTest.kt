@@ -16,19 +16,21 @@ class DeckManagementTest : KoinTest {
     @Test
     fun canCreateAndDeleteDeck() = runComposeUiTest {
 
-        // Get test credentials and set up the app
-        val (testUsername, testPassword) = getTestCredentials()
         setupApp()
 
         // Log in and verify basic UI elements
-        login(testUsername, testPassword)
+        login("user@test", "password")
 
         var testDeckId: String? = null
+        var deckName = ""
 
         try {
+            val ts = System.currentTimeMillis()
             // Create some initial decks to verify the deck count changes properly
-            val initialDeck1 = createTestDeck("Initial Deck 1", "First initial deck")
-            val initialDeck2 = createTestDeck("Initial Deck 2", "Second initial deck")
+            val initialDeck1Name = "Initial Deck 1 $ts"
+            val initialDeck2Name = "Initial Deck 2 $ts"
+            val initialDeck1 = createTestDeck(initialDeck1Name, "First initial deck")
+            val initialDeck2 = createTestDeck(initialDeck2Name, "Second initial deck")
 
             // Click the "Add deck" button to create the main test deck
             onNodeWithTag(SidePanelTestTags.ADD_DECK_BUTTON).performClick()
@@ -37,17 +39,18 @@ class DeckManagementTest : KoinTest {
             waitUntilExactlyOneExists(hasTestTag(SidePanelTestTags.NEW_DECK_NAME))
 
             // Fill in the deck creation dialog
-            onNodeWithTag(SidePanelTestTags.NEW_DECK_NAME).performTextInput("Test Deck")
+            deckName = "Test Deck $ts"
+            onNodeWithTag(SidePanelTestTags.NEW_DECK_NAME).performTextInput(deckName)
             onNodeWithTag(SidePanelTestTags.NEW_DECK_DESCRIPTION).performTextInput("A test deck for verification")
 
             // Save the new deck
             onNodeWithTag(SidePanelTestTags.SAVE_DECK_BUTTON).performClick()
 
             // Wait for the new deck to appear
-            waitUntilExactlyOneExists(hasTextExactly("Test Deck"))
+            waitUntilExactlyOneExists(hasTextExactly(deckName))
 
             // Get the newly created deck id from its test tag
-            testDeckId = getDeckIdByName("Test Deck")
+            testDeckId = getDeckIdByName(deckName)
 
             // Select the new deck
             onNodeWithTag(DeckItemTestTags.DECK_NAME_TEMPLATE.format(testDeckId)).performClick()
@@ -84,26 +87,26 @@ class DeckManagementTest : KoinTest {
             onNodeWithTag(SidePanelTestTags.CONFIRM_DELETE_BUTTON).performClick()
 
             // Verify that the deck is no longer visible
-            waitUntilDoesNotExist(hasTextExactly("Test Deck"))
+            waitUntilDoesNotExist(hasTextExactly(deckName))
             testDeckId = null // Mark as deleted
 
             // Verify that the initial decks are still there
-            waitUntilExactlyOneExists(hasTextExactly("Initial Deck 1"))
-            waitUntilExactlyOneExists(hasTextExactly("Initial Deck 2"))
+            waitUntilExactlyOneExists(hasTextExactly(initialDeck1Name))
+            waitUntilExactlyOneExists(hasTextExactly(initialDeck2Name))
 
             // Clean up initial decks
             deleteTestDeck(initialDeck1)
             deleteTestDeck(initialDeck2)
 
             // Verify initial decks are deleted
-            waitUntilDoesNotExist(hasTextExactly("Initial Deck 1"))
-            waitUntilDoesNotExist(hasTextExactly("Initial Deck 2"))
+            waitUntilDoesNotExist(hasTextExactly(initialDeck1Name))
+            waitUntilDoesNotExist(hasTextExactly(initialDeck2Name))
 
         } finally {
             // Clean up: delete the test deck if it still exists
             testDeckId?.let { deckId ->
                 deleteTestDeck(deckId)
-                waitUntilDoesNotExist(hasTextExactly("Test Deck"))
+                waitUntilDoesNotExist(hasTextExactly(deckName))
             }
             logout()
         }

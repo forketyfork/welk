@@ -24,18 +24,18 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: Create firebase.properties file
-        env:
-          FIREBASE_PROPERTIES_CONTENT: ${{ secrets.FIREBASE_PROPERTIES_CONTENT }}
         run: |
-          echo "$FIREBASE_PROPERTIES_CONTENT" > ./shared/src/jvmMain/resources/firebase.properties
+          echo "firebase.apiKey=dummy" > ./shared/src/jvmMain/resources/firebase.properties
+          echo "firebase.authDomain=dummy" >> ./shared/src/jvmMain/resources/firebase.properties
+          echo "firebase.projectId=dummy" >> ./shared/src/jvmMain/resources/firebase.properties
+          echo "firebase.storageBucket=dummy" >> ./shared/src/jvmMain/resources/firebase.properties
+          echo "firebase.messagingSenderId=dummy" >> ./shared/src/jvmMain/resources/firebase.properties
+          echo "firebase.appId=dummy" >> ./shared/src/jvmMain/resources/firebase.properties
 
       - name: Assemble Desktop App
         run: ./gradlew :composeApp:assemble
 
       - name: Run Desktop Tests
-        env:
-          WELK_TEST_USERNAME: ${{ secrets.WELK_TEST_USERNAME }}
-          WELK_TEST_PASSWORD: ${{ secrets.WELK_TEST_PASSWORD }}
         run: ./gradlew :composeApp:desktopTest
 
       - name: Publish Test Results

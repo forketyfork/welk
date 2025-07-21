@@ -32,13 +32,8 @@ class TestViewModelStoreOwner : ViewModelStoreOwner {
  */
 @OptIn(ExperimentalTestApi::class)
 fun getTestCredentials(): Pair<String, String> {
-    val testUsername = System.getenv("WELK_TEST_USERNAME") ?: System.getProperty("WELK_TEST_USERNAME")
-    val testPassword = System.getenv("WELK_TEST_PASSWORD") ?: System.getProperty("WELK_TEST_PASSWORD")
-
-    if (testUsername.isNullOrBlank() || testPassword.isNullOrBlank()) {
-        fail("WELK_TEST_USERNAME and WELK_TEST_PASSWORD must be set either as environment variables or in local.properties file")
-    }
-
+    val testUsername = System.getenv("WELK_TEST_USERNAME") ?: System.getProperty("WELK_TEST_USERNAME") ?: "user@test"
+    val testPassword = System.getenv("WELK_TEST_PASSWORD") ?: System.getProperty("WELK_TEST_PASSWORD") ?: "password"
     return testUsername to testPassword
 }
 
@@ -46,13 +41,13 @@ fun getTestCredentials(): Pair<String, String> {
  * Sets up the composition with the App composable
  */
 @OptIn(ExperimentalTestApi::class)
-fun ComposeUiTest.setupApp() {
+fun ComposeUiTest.setupApp(module: org.koin.core.module.Module = me.forketyfork.welk.fake.testAppModule) {
     setContent {
         CompositionLocalProvider(
             LocalLifecycleOwner provides TestLifecycleOwner(),
             LocalViewModelStoreOwner provides TestViewModelStoreOwner()
         ) {
-            App()
+            App(module)
         }
     }
 }
@@ -162,6 +157,21 @@ fun ComposeUiTest.createTestCard(deckId: String, front: String, back: String) {
 
     // Wait for the card to be created and visible
     waitUntilExactlyOneExists(hasTextExactly(front))
+}
+
+/**
+ * Edits the currently visible card through the UI
+ */
+@OptIn(ExperimentalTestApi::class)
+fun ComposeUiTest.editCurrentCard(newFront: String, newBack: String) {
+    onNodeWithTag(CardPanelTestTags.EDIT_BUTTON).performClick()
+    waitUntilExactlyOneExists(hasTestTag(CardPanelTestTags.EDIT_FRONT))
+    onNodeWithTag(CardPanelTestTags.EDIT_FRONT).performTextClearance()
+    onNodeWithTag(CardPanelTestTags.EDIT_FRONT).performTextInput(newFront)
+    onNodeWithTag(CardPanelTestTags.EDIT_BACK).performTextClearance()
+    onNodeWithTag(CardPanelTestTags.EDIT_BACK).performTextInput(newBack)
+    onNodeWithTag(CardPanelTestTags.EDIT_SAVE).performClick()
+    waitUntilExactlyOneExists(hasTextExactly(newFront))
 }
 
 /**
