@@ -36,4 +36,5 @@ interface CardViewModel : InitializableViewModel {
     fun isDeckExpanded(deckId: String): Boolean
     fun startSession()
     fun stopSession()
+    suspend fun moveDeck(deckId: String, newParentId: String?)
 }

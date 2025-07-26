@@ -40,4 +40,11 @@ interface DeckRepository {
      * @param parentId The ID of the parent deck, or null to get top-level decks
      */
     fun flowChildDecks(parentId: String?): Flow<List<Deck>>
+
+    /**
+     * Move a deck to a new parent (or to top level if newParentId is null)
+     * @param deckId The ID of the deck to move
+     * @param newParentId The ID of the new parent deck, or null to make it a top-level deck
+     */
+    suspend fun moveDeck(deckId: String, newParentId: String?)
 }

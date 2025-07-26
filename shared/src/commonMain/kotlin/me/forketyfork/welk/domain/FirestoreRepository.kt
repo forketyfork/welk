@@ -105,6 +105,24 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         }
     }
 
+    override suspend fun moveDeck(deckId: String, newParentId: String?) {
+        logger.d { "Moving deck $deckId to new parent $newParentId" }
+        
+        // Get the current deck
+        val deck = getDeckById(deckId)
+        
+        // Update the deck with the new parent ID
+        val updatedDeck = deck.copy(
+            parentId = newParentId,
+            lastModified = Clock.System.now().toEpochMilliseconds()
+        )
+        
+        // Save the updated deck to Firestore
+        decksCollection.document(deckId).set(updatedDeck)
+        
+        logger.d { "Successfully moved deck ${deck.name} to new parent $newParentId" }
+    }
+
     // CARD REPOSITORY IMPLEMENTATION
 
     override suspend fun getCardsByDeckId(deckId: String): List<Card> {
