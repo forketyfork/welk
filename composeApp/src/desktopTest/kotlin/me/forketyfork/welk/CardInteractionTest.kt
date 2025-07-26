@@ -10,14 +10,13 @@ import me.forketyfork.welk.components.DeckItemTestTags
 import org.junit.Test
 import org.koin.test.KoinTest
 
+@OptIn(ExperimentalTestApi::class)
 class CardInteractionTest : KoinTest {
 
-
-    @OptIn(ExperimentalTestApi::class)
     @Test
     fun canViewAndFlipCards() = runComposeUiTest {
 
-        // Get test credentials and set up the app with clean database
+        // Get test credentials and set up the app with a clean database
         val (testUsername, testPassword) = getTestCredentials()
         setupAppWithCleanDatabase(this, testUsername, testPassword)
 
@@ -57,6 +56,24 @@ class CardInteractionTest : KoinTest {
             // Verify that the back of the card is hidden
             waitUntilDoesNotExist(hasTextExactly("Hola"))
 
+            // click on the edit button
+            onNodeWithTag(CardPanelTestTags.EDIT_BUTTON).performClick()
+            waitUntilExactlyOneExists(hasTestTag(CardPanelTestTags.EDIT_FRONT))
+
+            // Input new values
+            onNodeWithTag(CardPanelTestTags.EDIT_FRONT).performTextClearance()
+            onNodeWithTag(CardPanelTestTags.EDIT_FRONT).performTextInput("Edited Front")
+            onNodeWithTag(CardPanelTestTags.EDIT_BACK).performTextClearance()
+            onNodeWithTag(CardPanelTestTags.EDIT_BACK).performTextInput("Edited Back")
+
+            // save and wait for the value to update
+            onNodeWithTag(CardPanelTestTags.EDIT_SAVE).performClick()
+            waitUntilExactlyOneExists(hasTextExactly("Edited Front"))
+
+            // verify flipped content works after edit
+            onRoot().performKeyInput { pressKey(Key.Spacebar) }
+            waitUntilExactlyOneExists(hasTextExactly("Edited Back"))
+
         } finally {
             // Clean up: delete the test deck if it was created
             testDeckId?.let { deckId ->
@@ -67,4 +84,5 @@ class CardInteractionTest : KoinTest {
             logout()
         }
     }
+
 }
