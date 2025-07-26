@@ -17,12 +17,9 @@ class CardInteractionTest : KoinTest {
     @Test
     fun canViewAndFlipCards() = runComposeUiTest {
 
-        // Get test credentials and set up the app
+        // Get test credentials and set up the app with clean database
         val (testUsername, testPassword) = getTestCredentials()
-        setupApp()
-
-        // Log in and verify basic UI elements
-        login(testUsername, testPassword)
+        setupAppWithCleanDatabase(this, testUsername, testPassword)
 
         var testDeckId: String? = null
 
