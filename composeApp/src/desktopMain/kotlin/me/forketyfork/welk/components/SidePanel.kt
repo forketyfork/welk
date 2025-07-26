@@ -30,6 +30,7 @@ import me.forketyfork.welk.vm.DesktopCardViewModel
 import me.forketyfork.welk.vm.DesktopLoginViewModel
 import me.forketyfork.welk.vm.ThemeViewModel
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.desktop.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -41,6 +42,9 @@ fun SidePanel(
     val loginViewModel = koinViewModel<DesktopLoginViewModel>()
     val cardViewModel = koinViewModel<DesktopCardViewModel>()
     val themeViewModel = koinViewModel<ThemeViewModel>()
+
+    // Ensure the card view model collectors are running when the panel is shown
+    LaunchedEffect(Unit) { cardViewModel.startSession() }
 
     val decks by cardViewModel.availableDecks.collectAsStateWithLifecycle()
     val currentDeck by cardViewModel.currentDeck.collectAsStateWithLifecycle()
@@ -54,7 +58,7 @@ fun SidePanel(
     val deckNameFocusRequester = remember { FocusRequester() }
     var deckIdToDelete by remember { mutableStateOf<String?>(null) }
     val deckListScrollState = rememberScrollState()
-    
+
     // Drag and drop state
     var draggingDeckId by remember { mutableStateOf<String?>(null) }
     var dropTargetDeckId by remember { mutableStateOf<String?>(null) }
@@ -108,24 +112,24 @@ fun SidePanel(
                     for ((deckId, bounds) in deckPositions) {
                         if (deckId != draggingDeckId) {
                             val (topLeft, bottomRight) = bounds
-                            if (currentPointerPosition.x >= topLeft.x && 
+                            if (currentPointerPosition.x >= topLeft.x &&
                                 currentPointerPosition.x <= bottomRight.x &&
-                                currentPointerPosition.y >= topLeft.y && 
+                                currentPointerPosition.y >= topLeft.y &&
                                 currentPointerPosition.y <= bottomRight.y) {
                                 foundTarget = deckId
                                 break
                             }
                         }
                     }
-                    
+
                     dropTargetDeckId = foundTarget
-                    
+
                     // Check if pointer is over deck tree area for top-level drop
                     isTopLevelDropTarget = if (foundTarget == null && deckTreeBounds != null) {
                         val (treeTopLeft, treeBottomRight) = deckTreeBounds!!
-                        currentPointerPosition.x >= treeTopLeft.x && 
+                        currentPointerPosition.x >= treeTopLeft.x &&
                         currentPointerPosition.x <= treeBottomRight.x &&
-                        currentPointerPosition.y >= treeTopLeft.y && 
+                        currentPointerPosition.y >= treeTopLeft.y &&
                         currentPointerPosition.y <= treeBottomRight.y
                     } else {
                         false
@@ -288,6 +292,7 @@ fun SidePanel(
                 // Logout button
                 IconButton(
                     onClick = {
+                        cardViewModel.stopSession()
                         cardViewModel.viewModelScope.launch {
                             loginViewModel.signOut()
                         }

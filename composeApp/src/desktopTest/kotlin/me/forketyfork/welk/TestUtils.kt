@@ -8,11 +8,15 @@ import androidx.compose.ui.test.*
 import androidx.lifecycle.*
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import kotlinx.coroutines.runBlocking
 import me.forketyfork.welk.components.CardPanelTestTags
 import me.forketyfork.welk.components.DeckItemTestTags
 import me.forketyfork.welk.components.LoginViewTestTags
 import me.forketyfork.welk.components.SidePanelTestTags
-import kotlin.test.fail
+import me.forketyfork.welk.domain.Deck
+import me.forketyfork.welk.domain.DeckRepository
+import org.koin.test.KoinTest
+import org.koin.test.get
 
 /**
  * Fake implementation of [LifecycleOwner] to be used in the tests
@@ -32,14 +36,34 @@ class TestViewModelStoreOwner : ViewModelStoreOwner {
  */
 @OptIn(ExperimentalTestApi::class)
 fun getTestCredentials(): Pair<String, String> {
-    val testUsername = System.getenv("WELK_TEST_USERNAME") ?: System.getProperty("WELK_TEST_USERNAME")
-    val testPassword = System.getenv("WELK_TEST_PASSWORD") ?: System.getProperty("WELK_TEST_PASSWORD")
-
-    if (testUsername.isNullOrBlank() || testPassword.isNullOrBlank()) {
-        fail("WELK_TEST_USERNAME and WELK_TEST_PASSWORD must be set either as environment variables or in local.properties file")
-    }
-
+    val testUsername = System.getenv("WELK_TEST_USERNAME") ?: System.getProperty("WELK_TEST_USERNAME") ?: "user@test"
+    val testPassword = System.getenv("WELK_TEST_PASSWORD") ?: System.getProperty("WELK_TEST_PASSWORD") ?: "password"
     return testUsername to testPassword
+}
+
+/**
+ * Cleans up the database for the test user by deleting all decks and their associated cards.
+ * This should be called before starting tests to ensure a clean state.
+ */
+fun KoinTest.cleanupTestUserDatabase() {
+    runBlocking {
+        try {
+            val deckRepository = get<DeckRepository>()
+
+            // Get all top-level decks (parentId = null)
+            val topLevelDecks = deckRepository.getChildDecks(null)
+
+            // Delete each top-level deck (this will recursively delete child decks and all cards)
+            topLevelDecks.forEach { deck: Deck ->
+                deck.id?.let { deckId: String ->
+                    deckRepository.deleteDeck(deckId)
+                }
+            }
+        } catch (e: Exception) {
+            // Log the error but don't fail the test setup
+            println("Warning: Failed to cleanup test user database: ${e.message}")
+        }
+    }
 }
 
 /**
@@ -58,7 +82,27 @@ fun ComposeUiTest.setupApp() {
 }
 
 /**
- * Logs in with the provided credentials
+ * Sets up the app, logs in with the provided credentials, and cleans up the database beforehand.
+ * This is the recommended way to start tests to ensure a clean database state.
+ */
+@OptIn(ExperimentalTestApi::class)
+fun KoinTest.setupAppWithCleanDatabase(composeTest: ComposeUiTest, username: String, password: String) {
+    // Set up the app
+    composeTest.setupApp()
+
+    // Log in first to establish authentication context
+    composeTest.login(username, password)
+
+    // Clean up the database after login to ensure a clean state
+    cleanupTestUserDatabase()
+
+    // Logout and login again to refresh the UI state after cleanup
+    composeTest.logout()
+    composeTest.login(username, password)
+}
+
+/**
+ * Logs in with the provided credentials and cleans up the database beforehand
  */
 @OptIn(ExperimentalTestApi::class)
 fun ComposeUiTest.login(username: String, password: String) {

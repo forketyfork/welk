@@ -7,7 +7,7 @@ import dev.gitlive.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import me.forketyfork.welk.Platform
 
 class FirestoreRepository(val platform: Platform) : CardRepository, DeckRepository {

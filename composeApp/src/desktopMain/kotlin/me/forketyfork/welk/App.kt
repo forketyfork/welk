@@ -61,10 +61,10 @@ fun App(module: Module = appModule) {
                             modifier = Modifier.zIndex(10f) // Higher z-index to stay on top
                         )
 
-                        // Spacer to push card panel to the center
+                        // Spacer to push the card panel to the center
                         Spacer(modifier = Modifier.weight(1f))
 
-                        // Main content area with the card - should get default focus
+                        // The main content area with the card should get the focus by default
                         CardPanel(
                             // Use weight to center it
                             modifier = Modifier.weight(2f)

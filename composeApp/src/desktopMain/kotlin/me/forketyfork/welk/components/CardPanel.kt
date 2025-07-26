@@ -83,13 +83,15 @@ fun CardPanel(modifier: Modifier = Modifier) {
     val editFrontFocusRequester = remember { FocusRequester() }
 
     val currentDeck = cardViewModel.currentDeck.collectAsStateWithLifecycle()
-    val hasCards = remember(currentDeck.value?.value) {
+    val currentCards = cardViewModel.currentDeckCards.collectAsStateWithLifecycle()
+    val hasCards = remember(currentCards.value) {
         derivedStateOf {
-            (currentDeck.value?.value?.cardCount ?: 0) > 0
+            currentCards.value.isNotEmpty()
         }
     }
 
     val learnedCardCount = cardViewModel.learnedCardCount.collectAsStateWithLifecycle()
+    val totalCardCount = cardViewModel.totalCardCount.collectAsStateWithLifecycle()
 
     // Only request focus when we have cards or there's a deck selected
     LaunchedEffect(
@@ -343,6 +345,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
         currentDeck.value?.value?.let { deck ->
             DeckInfoPanel(
                 deck = deck,
+                totalCount = totalCardCount.value,
                 learnedCount = learnedCardCount.value,
                 modifier = Modifier.align(Alignment.BottomCenter)
             )

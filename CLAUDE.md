@@ -5,19 +5,20 @@ repository.
 
 ## Behavioral Guidelines
 
-- Do not write stub comments instead of the actual implementation
-- Always verify that your changes do not break the application build
-- Plan first, then execute
-- Keep all of your actions in line with the initial task, don't do anything you weren't asked to do
+- Always implement complete, working code - never write stub comments instead of actual implementation
+- Verify that changes don't break the build by running `./gradlew :composeApp:build`
+- Run desktop tests with `./gradlew :composeApp:desktopTest` before finalizing tasks
+- Plan your approach first, then execute systematically
+- Stay focused on the requested task - avoid scope creep or unrelated changes
 
 ## Project Overview
 
-Welk is a Kotlin Multiplatform project targeting iOS and Desktop platforms. It's a flashcard
-application that allows users to view and edit cards, manage card decks, flip and swipe cards
-(mark as learned or not learned). The app uses Firebase Firestore for storing card data.
+Welk is a Kotlin Multiplatform flashcard application targeting iOS and Desktop platforms.
+Users can view and edit cards, manage decks, and mark cards as learned or not learned through
+flipping and swiping gestures. The app uses Firebase Firestore for data storage.
 
-Users can also create, edit, and delete cards. The application provides feedback when a deck has no
-cards and offers a simple way to create new cards.
+Key features include card creation, editing, and deletion, with helpful feedback and intuitive
+card creation workflows for empty decks.
 
 ## Build Commands
 
@@ -26,6 +27,9 @@ cards and offers a simple way to create new cards.
 ```bash
 # Build the desktop application
 ./gradlew :composeApp:build
+
+# Run desktop tests
+./gradlew :composeApp:desktopTest
 ```
 
 ### iOS
@@ -90,9 +94,9 @@ xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -destination 'platfor
    firebase.appId=
    ```
 
-## Workflow
+## Application Workflow
 
-The main workflow of the application:
+Main user flow:
 
 1. Users authenticate through the login screen
 2. After successful login, cards are fetched from Firestore
@@ -141,83 +145,95 @@ Available log levels:
 
 ## Testing
 
-- It is okay to write unit tests, however, make sure you're testing the important logic of the unit
-  under test that may be changed or broken; otherwise, go with an integration test.
-- Do not write tests that simply mirror the code under test, this is a bad pattern.
+### Guidelines
+- Focus unit tests on critical business logic that could break or change
+- Prefer integration tests over unit tests that simply mirror implementation details
+- Avoid tests that just verify method calls without testing actual behavior
+
+### Commands
+- Run desktop tests: `./gradlew :composeApp:desktopTest`
+- Always run tests before finalizing any task or feature
 
 ## Development Flow
 
-- Try to reuse as much code as possible between the iOS and Desktop by placing it into the `shared`
-  module.
-- After implementing changes to the shared or desktop code, check that the application builds by
-  executing `./gradlew :composeApp:build`
-- Use proper logging with Kermit instead of println statements for better debugging.
-- When adding new UI functionality:
-    - First implement the data model in the domain layer
-    - Then update the ViewModel layer with necessary state handling
-    - Finally implement the UI components for each platform
-- When implementing destructive actions (like delete), always provide confirmation dialogs
-- Delay database operations as much as possible to avoid unnecessary writes
-- When making changes to iOS code:
-    - First build the shared module with `./gradlew :shared:build`
-    - Test the Swift compilation by running
-      `xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.4' build`
-    - When working with Kotlin-Swift interop, be careful with type conversions. Use optional casting
-      with `as?` and null checks for Kotlin types exposed to Swift.
-    - Remember that Kotlin types like `Pair<String, String>` are exposed to Swift with properties
-      named `first` and `second`, which are `NSString?` type and need proper handling.
+### General Process
+1. **Plan**: Understand the requirements and plan your approach
+2. **Implement**: Write code following the established patterns
+3. **Build**: Verify the application builds with `./gradlew :composeApp:build`
+4. **Test**: Run desktop tests with `./gradlew :composeApp:desktopTest`
+5. **Review**: Ensure code follows project conventions
+
+### Code Organization
+- Maximize code reuse between iOS and Desktop by placing shared logic in the `shared` module
+- Use Kermit logging instead of println statements for better debugging
+### UI Implementation
+When adding new UI functionality:
+1. **Domain Layer**: Implement the data model first
+2. **ViewModel Layer**: Add necessary state handling  
+3. **UI Layer**: Implement platform-specific UI components
+
+### Best Practices
+- Always provide confirmation dialogs for destructive actions (like delete)
+- Delay database operations to minimize unnecessary writes
+
+### iOS Development
+When making changes to iOS code:
+1. **Build shared module first**: `./gradlew :shared:build`
+2. **Test Swift compilation**:
+   ```bash
+   xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp \
+   -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.4' build
+   ```
+3. **Kotlin-Swift interop considerations**:
+   - Use optional casting (`as?`) and null checks for Kotlin types
+   - `Pair<String, String>` exposes `first` and `second` properties as `NSString?`
+   - Handle type conversions carefully
 
 ## Library Management
 
-- All dependencies must be defined in `gradle/libs.versions.toml` file
-- When adding new libraries:
-    1. First add the library details to `libs.versions.toml` under the appropriate section
-    2. Then reference the library in build files using the `libs.some.library` syntax
-    3. For version references, use `version.ref = "some-version"` format
+### Dependency Management
+- All dependencies must be defined in `gradle/libs.versions.toml`
+- Follow this process when adding new libraries:
+  1. Add library details to `libs.versions.toml` under the appropriate section
+  2. Reference the library in build files using `libs.some.library` syntax
+  3. Use `version.ref = "some-version"` format for version references
 
 ## Common Patterns
 
 ### Entity Creation
-
-- Create new entity as a temporary object in memory
-- Only save to Firestore when user explicitly saves
-- Clear form fields when canceling or after successful save
+- Create entities as temporary in-memory objects
+- Save to Firestore only when user explicitly confirms
+- Clear form fields after cancellation or successful save
 
 ### Empty State Handling
-
-- When a deck has no cards, show appropriate empty state UI
-- Provide direct actions for users to add content
-- Update the hasCards state flow to properly trigger UI changes
+- Display appropriate empty state UI when decks contain no cards
+- Provide direct actions for content creation
+- Update `hasCards` state flow to trigger proper UI changes
 
 ### User Authentication
-
-- Login screen is shown when the user is not authenticated
-- Authentication state is managed by the LoginViewModel
-- Logout functionality is accessible from the side panel
-- After logout, users are redirected back to the login screen
+- Show login screen for unauthenticated users
+- Manage authentication state through `LoginViewModel`
+- Provide logout functionality in the side panel
+- Redirect to login screen after logout
 
 ### Error Handling
-
-- Use try-catch blocks around repository operations
+- Wrap repository operations in try-catch blocks
 - Log errors using appropriate Kermit log levels
-- Provide fallback behavior when operations fail
-- Show appropriate UI feedback for error states
+- Implement fallback behavior for failed operations
+- Provide user-facing feedback for error states
 
-### Kotlin
-
-- If you need to add any Kotlin opt-ins, use file-level annotations
+### Kotlin Guidelines
+- Use file-level annotations for Kotlin opt-ins when needed
 
 ### Concurrency
-- Structure the code using the principles of functional reactive programming.
-- Reuse existing flows to derive state using Kotlin's flow operations instead of creating new flows.
-- Implement the reactive code using Kotlin's `StateFlow`, do not rely on the Android specific
-  reactive features.
-- Avoid calling `delay()` or `Thread.sleep()` to wait for obscure racy conditions, even in tests.
-  Always implement proper reactive patterns to react on the exact condition.
+- Structure code using functional reactive programming principles
+- Derive state from existing flows using Kotlin's flow operations rather than creating new flows
+- Use Kotlin's `StateFlow` for reactive patterns - avoid Android-specific reactive features
+- Never use `delay()` or `Thread.sleep()` to handle race conditions, even in tests
+- Implement proper reactive patterns that respond to specific conditions
 
 ### Comments
-
-- Write useful, accessible and grammatically correct comments. 
-- Avoid words or phrases that may be hard to comprehend.
-- When writing comments, don't explain obvious things or duplicate what's already visible from the code.
-  Try to focus on complicated parts or intentions that may not be clear from the code itself. 
+- Write clear, accessible, and grammatically correct comments
+- Use simple language and avoid complex terminology
+- Focus on explaining "why" rather than "what" - don't duplicate what's already visible in code
+- Comment complex logic, business rules, and non-obvious design decisions 

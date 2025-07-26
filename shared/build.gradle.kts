@@ -5,6 +5,10 @@ plugins {
 }
 
 kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-opt-in=kotlin.time.ExperimentalTime")
+    }
+
     listOf(
         iosX64(),
         iosArm64(),
