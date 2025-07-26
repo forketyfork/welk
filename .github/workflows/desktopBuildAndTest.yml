@@ -1,7 +1,12 @@
 name: Build and Test Desktop App
 
+permissions:
+  contents: read
+
 on:
   push:
+    branches: [ main ]
+  pull_request:
     branches: [ main ]
 
 jobs:

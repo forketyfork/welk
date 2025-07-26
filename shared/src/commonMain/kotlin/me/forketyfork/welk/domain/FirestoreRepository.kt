@@ -7,7 +7,7 @@ import dev.gitlive.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import me.forketyfork.welk.Platform
 
 class FirestoreRepository(val platform: Platform) : CardRepository, DeckRepository {
@@ -40,10 +40,6 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
     // DECK REPOSITORY IMPLEMENTATION
 
     override suspend fun flowDeckFlows(): Flow<List<Flow<Deck>>> {
-        if (decksCollection.get().documents.isEmpty()) {
-            // Create some sample decks if none exist yet
-            createSampleDecks()
-        }
         return decksCollection.snapshots.map { it.documents }
             .map { documentSnapshots ->
                 documentSnapshots.map { documentSnapshot ->
@@ -61,79 +57,21 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
     override fun flowDeck(deckId: String): Flow<Deck> =
         decksCollection.document(deckId).snapshots.mapNotNull { it.data<Deck?>()?.apply { id = deckId } }
 
-    private suspend fun createSampleDecks() {
-        // Create some sample decks
-        val timestamp = Clock.System.now().toEpochMilliseconds()
-
-        val deck1 = Deck(
-            name = "Basic Vocabulary",
-            description = "Essential words for beginners",
-            cardCount = 3,
-            lastModified = timestamp,
-            created = timestamp
-        )
-
-        val deck2 = Deck(
-            name = "Grammar Rules",
-            description = "Key grammar concepts",
-            cardCount = 2,
-            lastModified = timestamp,
-            created = timestamp
-        )
-
-        val deck3 = Deck(
-            name = "Idioms",
-            description = "Common expressions and idioms",
-            cardCount = 2,
-            lastModified = timestamp,
-            created = timestamp
-        )
-
-        // Add the decks to Firestore
-        decksCollection.document("deck1").set(deck1)
-        decksCollection.document("deck2").set(deck2)
-        decksCollection.document("deck3").set(deck3)
-
-        // Add sample cards for each deck
-        val card11 = Card(deckId = "deck1", front = "Hello", back = "Hola", position = 0)
-        val card12 = Card(deckId = "deck1", front = "Goodbye", back = "Adiós", position = 1)
-        val card13 = Card(deckId = "deck1", front = "Thank you", back = "Gracias", position = 2)
-        val card21 =
-            Card(deckId = "deck2", front = "Present Simple", back = "Used for habits and routines", position = 0)
-        val card22 =
-            Card(deckId = "deck2", front = "Present Continuous", back = "Used for actions happening now", position = 1)
-        val card31 = Card(deckId = "deck3", front = "Break a leg", back = "Good luck", position = 0)
-        val card32 = Card(deckId = "deck3", front = "Under the weather", back = "Feeling sick", position = 1)
-
-        // Add cards to their respective decks
-        val deck1Cards = decksCollection.document("deck1").collection("cards")
-        deck1Cards.document("card11").set(card11)
-        deck1Cards.document("card12").set(card12)
-        deck1Cards.document("card13").set(card13)
-
-        val deck2Cards = decksCollection.document("deck2").collection("cards")
-        deck2Cards.document("card21").set(card21)
-        deck2Cards.document("card22").set(card22)
-
-        val deck3Cards = decksCollection.document("deck3").collection("cards")
-        deck3Cards.document("card31").set(card31)
-        deck3Cards.document("card32").set(card32)
-    }
-
-    override suspend fun createDeck(name: String, description: String) {
+    override suspend fun createDeck(name: String, description: String, parentId: String?) {
         val timestamp = Clock.System.now().toEpochMilliseconds()
         val newDeck = Deck(
             name = name,
             description = description,
             cardCount = 0,
             lastModified = timestamp,
-            created = timestamp
+            created = timestamp,
+            parentId = parentId
         )
         decksCollection.add(newDeck)
     }
 
     override suspend fun deleteDeck(deckId: String) {
-        // First delete all cards in the deck
+        // First, delete all cards in the deck
         val cardsCollection = decksCollection.document(deckId).collection("cards")
         val cards = cardsCollection.get().documents
 
@@ -142,8 +80,29 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
             cardsCollection.document(cardDoc.id).delete()
         }
 
+        // Delete all child decks recursively
+        val childDecks = getChildDecks(deckId)
+        childDecks.forEach { childDeck ->
+            childDeck.id?.let { deleteDeck(it) }
+        }
+
         // Then delete the deck itself
         decksCollection.document(deckId).delete()
+    }
+
+    override suspend fun getChildDecks(parentId: String?): List<Deck> {
+        val allDecks = decksCollection.get().documents.map { doc ->
+            doc.data<Deck>().apply { id = doc.id }
+        }
+        return allDecks.filter { deck -> deck.parentId == parentId }
+    }
+
+    override fun flowChildDecks(parentId: String?): Flow<List<Deck>> {
+        return decksCollection.snapshots.map { snapshot ->
+            snapshot.documents.map { doc ->
+                doc.data<Deck>().apply { id = doc.id }
+            }.filter { deck -> deck.parentId == parentId }
+        }
     }
 
     // CARD REPOSITORY IMPLEMENTATION
@@ -156,7 +115,7 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
     override suspend fun createCard(deckId: String, front: String, back: String): Card {
         val cardsCollection = decksCollection.document(deckId).collection("cards")
 
-        // Get current card count to determine position
+        // Get the current card count to determine position
         val cardCount = getCardCount(deckId)
 
         val newCard = Card(
@@ -196,7 +155,7 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         val updatedCard = card.copy()
         updatedCard.learned = learned
 
-        // Use set instead of update to ensure the operation works for all cards
+        // Use `set` instead of `update` to ensure the operation works for all cards
         cardsCollection.document(cardId).set(updatedCard)
 
         // Update the deck's last modified timestamp
@@ -221,7 +180,7 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         val card = getCardById(deckId, cardId)
         val updatedCard = card.copy(front = front, back = back)
 
-        // Use set instead of update to ensure the operation works for all cards
+        // Use `set` instead of `update` to ensure the operation works for all cards
         cardsCollection.document(cardId).set(updatedCard)
 
         // Update the deck's last modified timestamp

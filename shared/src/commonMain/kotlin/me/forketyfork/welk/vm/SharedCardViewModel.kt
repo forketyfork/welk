@@ -2,6 +2,9 @@ package me.forketyfork.welk.vm
 
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import me.forketyfork.welk.domain.Card
@@ -20,6 +23,13 @@ open class SharedCardViewModel(
         private val logger = Logger.withTag("CommonCardViewModel")
     }
 
+    /** Scope that is active only while the user is logged in. */
+    private var sessionJob: Job? = null
+    private var sessionScope: CoroutineScope? = null
+
+    private val activeScope: CoroutineScope
+        get() = sessionScope ?: viewModelScope
+
     // Current position within the deck
     private val _currentCardPosition = MutableStateFlow(0)
 
@@ -31,8 +41,25 @@ open class SharedCardViewModel(
     override val availableDecks: MutableStateFlow<List<StateFlow<Deck>>> =
         MutableStateFlow(emptyList())
 
+    // Set of expanded deck IDs
+    private val _expandedDeckIds = MutableStateFlow<Set<String>>(emptySet())
+    override val expandedDeckIds: StateFlow<Set<String>> = _expandedDeckIds.asStateFlow()
+
     // List of cards in the current deck (cached to avoid repeated Firestore queries)
     private val _currentDeckCards = MutableStateFlow<List<Card>>(emptyList())
+    override val currentDeckCards: StateFlow<List<Card>> = _currentDeckCards.asStateFlow()
+
+    override val learnedCardCount: StateFlow<Int> by lazy {
+        _currentDeckCards
+            .map { cards -> cards.count { it.learned } }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 0)
+    }
+
+    override val totalCardCount: StateFlow<Int> by lazy {
+        _currentDeckCards
+            .map { cards -> cards.size }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 0)
+    }
 
     private val _isFlipped = MutableStateFlow(false)
     override val isFlipped: StateFlow<Boolean> = _isFlipped.asStateFlow()
@@ -55,7 +82,7 @@ open class SharedCardViewModel(
         _isDeleteConfirmationShowing.asStateFlow()
 
     /**
-     * Starts collection of card position change events, e.g., when we select a new deck,
+     * Starts collecting of card position change events, e.g., when we select a new deck,
      * and the position resets to 0. Updates the UI accordingly.
      */
     private suspend fun collectCurrentCardPositionChanges() {
@@ -69,12 +96,12 @@ open class SharedCardViewModel(
      * deck, and we need to switch the card view.
      */
     private suspend fun collectCurrentDeckChanges() {
-        // When deck changes, load its cards
+        // When the deck changes, load its cards
         _currentDeck.collect { deck ->
             logger.d { "Current deck changed to ${deck?.value?.name}" }
             if (deck != null) {
                 val deckId = deck.value.id ?: error("Deck ID is null for a persistent deck")
-                _currentDeckCards.value = cardRepository.getCardsByDeckId(deckId)
+                _currentDeckCards.value = getAllCardsForDeck(deckId)
                 // Reset to the first card in the deck
                 _currentCardPosition.value = 0
                 updateCurrentCardFromPosition()
@@ -98,11 +125,29 @@ open class SharedCardViewModel(
     }
 
     /**
+     * Recursively collects all cards for the given deck and its child decks.
+     */
+    private suspend fun getAllCardsForDeck(deckId: String): List<Card> {
+        val cards = mutableListOf<Card>()
+
+        suspend fun gather(id: String) {
+            cards += cardRepository.getCardsByDeckId(id)
+            val children = deckRepository.getChildDecks(id)
+            children.forEach { child ->
+                child.id?.let { gather(it) }
+            }
+        }
+
+        gather(deckId)
+        return cards
+    }
+
+    /**
      * Loads all available decks
      */
     suspend fun collectDeckListChanges() {
         deckRepository.flowDeckFlows().collect { decks ->
-            availableDecks.value = decks.map { it.stateIn(viewModelScope) }
+            availableDecks.value = decks.map { it.stateIn(activeScope) }
             // If we don't have a selected deck yet but decks exist, select the first one
             if (_currentDeck.value == null && availableDecks.value.isNotEmpty()) {
                 val deck = availableDecks.value.first().value
@@ -118,11 +163,11 @@ open class SharedCardViewModel(
     override suspend fun selectDeck(deckId: String) {
         try {
             logger.d { "Selecting deck with ID: $deckId" }
-            val deck = deckRepository.flowDeck(deckId).stateIn(viewModelScope)
+            val deck = deckRepository.flowDeck(deckId).stateIn(activeScope)
             _currentDeck.value = deck
 
             // Load cards for this deck
-            val cards = cardRepository.getCardsByDeckId(deckId)
+            val cards = getAllCardsForDeck(deckId)
             logger.d { "Loaded ${cards.size} cards for deck $deckId" }
 
             // Store the cards in our local cache
@@ -152,9 +197,9 @@ open class SharedCardViewModel(
     }
 
     /**
-     * Starts the collection of the card animation completion events, when the user swipes the card
-     * to the left or to the right. When the animation completed, we update the card learned status
-     * and the UI accordingly.
+     * Starts the collection of the card animation completion events when the user swipes the card
+     * to the left or to the right.
+     * When the animation is completed, we update the learned status of the card and the UI accordingly.
      */
     private suspend fun collectCardAnimationCompletion() {
         cardAnimationManager.animationCompleteTrigger
@@ -168,6 +213,16 @@ open class SharedCardViewModel(
                     currentCard.deckId,
                     it.learned
                 )
+
+                // Update the local card list with the new learned status
+                val idx = _currentCardPosition.value
+                val updatedCards = _currentDeckCards.value.toMutableList()
+                if (idx in updatedCards.indices) {
+                    val updated = updatedCards[idx].copy(learned = it.learned)
+                    updatedCards[idx] = updated
+                    _currentDeckCards.value = updatedCards
+                }
+
                 // Move to the next card
                 nextCard()
                 // Reset the animation trigger
@@ -189,7 +244,7 @@ open class SharedCardViewModel(
 
                 logger.w("Not saving card with empty content")
                 if (_isNewCard.value) {
-                    // If this is a new card with empty content, just cancel it
+                    // If this is a new card with empty content, cancel it
                     cancelNewCard()
                 }
                 return
@@ -379,7 +434,7 @@ open class SharedCardViewModel(
 
         logger.d { "Created temporary card for deck $deckId" }
 
-        // Set new card state
+        // Set the new card state
         _isNewCard.value = true
 
         // Set the temporary card as the current card
@@ -405,18 +460,18 @@ open class SharedCardViewModel(
             _isEditing.value = false
             _editCardContent.value = Pair("", "")
 
-            // Simply reload the current deck's data
+            // Reload the current deck's data
             val currentDeck = _currentDeck.value?.value
             if (currentDeck != null) {
                 val deckId = currentDeck.id ?: error("Deck ID is null for a persistent deck")
                 logger.d { "Reloading cards for current deck $deckId" }
 
                 try {
-                    // Get fresh cards list from the repository
-                    val freshCards = cardRepository.getCardsByDeckId(deckId)
+                    // Get the fresh cards list from the repository
+                    val freshCards = getAllCardsForDeck(deckId)
                     logger.d { "Loaded ${freshCards.size} cards for current deck" }
 
-                    // Update the cards list
+                    // Update the list of cards
                     _currentDeckCards.value = freshCards
 
                     // Set position to the first card if available
@@ -452,26 +507,50 @@ open class SharedCardViewModel(
      */
     private fun installCollectors(coroutineScope: CoroutineScope) {
         logger.d { "Installing card view model collectors" }
-        coroutineScope.launch {
-            // update the card when the swipe left/right animation completes
-            collectCardAnimationCompletion()
-        }
-        coroutineScope.launch {
-            // update the UI when the current card position changes
-            collectCurrentCardPositionChanges()
-        }
-        coroutineScope.launch {
-            // update the UI when the current deck changes
-            collectCurrentDeckChanges()
-        }
-        coroutineScope.launch {
-            collectDeckListChanges()
+        sessionJob?.cancel()
+        sessionScope = coroutineScope
+        sessionJob = coroutineScope.launch {
+            launch { collectCardAnimationCompletion() }
+            launch { collectCurrentCardPositionChanges() }
+            launch { collectCurrentDeckChanges() }
+            launch { collectDeckListChanges() }
         }
     }
 
     override fun initialize(viewModelScope: CoroutineScope) {
         super.initialize(viewModelScope)
-        installCollectors(viewModelScope)
+        startSession()
+    }
+
+    /** Starts collecting flows for the current login session. */
+    override fun startSession() {
+        if (sessionJob == null) {
+            val scope = CoroutineScope(viewModelScope.coroutineContext + SupervisorJob())
+            installCollectors(scope)
+        }
+    }
+
+    /** Stops all active collectors and resets view model state. */
+    override fun stopSession() {
+        // Cancel the session job and scope to stop all Firestore listeners
+        sessionJob?.cancel()
+        sessionJob = null
+        
+        // Cancel the session scope which will cancel all stateIn() flows created with activeScope
+        sessionScope?.cancel()
+        sessionScope = null
+
+        _currentDeck.value = null
+        availableDecks.value = emptyList()
+        _currentDeckCards.value = emptyList()
+        _currentCard.value = null
+        _currentCardPosition.value = 0
+        _isFlipped.value = false
+        _isEditing.value = false
+        _editCardContent.value = "" to ""
+        _isNewCard.value = false
+        _isDeleteConfirmationShowing.value = false
+        _expandedDeckIds.value = emptySet()
     }
 
     override suspend fun deleteCurrentCard() {
@@ -486,7 +565,7 @@ open class SharedCardViewModel(
             // Delete the card from the repository
             cardRepository.deleteCard(cardId, card.deckId)
 
-            // Remove from local card list
+            // Remove from the local card list
             val updatedCards = _currentDeckCards.value.toMutableList()
             updatedCards.removeAt(currentPosition)
             _currentDeckCards.value = updatedCards
@@ -507,12 +586,63 @@ open class SharedCardViewModel(
         }
     }
 
-    override suspend fun createDeck(name: String, description: String) {
+    override suspend fun createDeck(name: String, description: String, parentId: String?) {
         try {
-            deckRepository.createDeck(name, description)
+            deckRepository.createDeck(name, description, parentId)
+
+            // If this deck has a parent, expand the parent deck to make the new child visible
+            if (parentId != null) {
+                expandParentDeck(parentId)
+            }
         } catch (e: Exception) {
             logger.e(e) { "Error creating deck" }
         }
+    }
+
+    /**
+     * Expands a deck and all its parent decks to make nested content visible
+     */
+    private fun expandParentDeck(deckId: String) {
+        try {
+            // Add the deck ID to the expanded set
+            val currentExpanded = _expandedDeckIds.value.toMutableSet()
+            currentExpanded.add(deckId)
+            _expandedDeckIds.value = currentExpanded
+
+            // Find the deck in our available decks list to get parent info
+            val deckFlow = availableDecks.value.find { it.value.id == deckId }
+            if (deckFlow != null) {
+                logger.d { "Expanded deck: ${deckFlow.value.name}" }
+
+                // If this deck has a parent, recursively expand it too
+                val parentId = deckFlow.value.parentId
+                if (parentId != null) {
+                    expandParentDeck(parentId)
+                }
+            }
+        } catch (e: Exception) {
+            logger.w(e) { "Error expanding parent deck $deckId: ${e.message}" }
+        }
+    }
+
+    /**
+     * Toggles the expansion state of a deck
+     */
+    override fun toggleDeckExpansion(deckId: String) {
+        val currentExpanded = _expandedDeckIds.value.toMutableSet()
+        if (currentExpanded.contains(deckId)) {
+            currentExpanded.remove(deckId)
+        } else {
+            currentExpanded.add(deckId)
+        }
+        _expandedDeckIds.value = currentExpanded
+    }
+
+    /**
+     * Checks if a deck is expanded
+     */
+    override fun isDeckExpanded(deckId: String): Boolean {
+        return _expandedDeckIds.value.contains(deckId)
     }
 
     override suspend fun deleteDeck(deckId: String) {

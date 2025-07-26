@@ -24,7 +24,9 @@ import me.forketyfork.welk.vm.DesktopCardViewModel
 import me.forketyfork.welk.vm.DesktopLoginViewModel
 import me.forketyfork.welk.vm.ThemeViewModel
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.desktop.ui.tooling.preview.Preview
 
+@Preview
 @Composable
 fun SidePanel(
     width: Int = 250,
@@ -35,13 +37,18 @@ fun SidePanel(
     val cardViewModel = koinViewModel<DesktopCardViewModel>()
     val themeViewModel = koinViewModel<ThemeViewModel>()
 
+    // Ensure the card view model collectors are running when the panel is shown
+    LaunchedEffect(Unit) { cardViewModel.startSession() }
+
     val decks by cardViewModel.availableDecks.collectAsStateWithLifecycle()
     val currentDeck by cardViewModel.currentDeck.collectAsStateWithLifecycle()
     val themeMode by themeViewModel.themeMode.collectAsStateWithLifecycle()
+    val expandedDeckIds by cardViewModel.expandedDeckIds.collectAsStateWithLifecycle()
 
     var showAddDeckDialog by remember { mutableStateOf(false) }
     var newDeckName by remember { mutableStateOf("") }
     var newDeckDescription by remember { mutableStateOf("") }
+    var parentDeckId by remember { mutableStateOf<String?>(null) }
     val deckNameFocusRequester = remember { FocusRequester() }
     var deckIdToDelete by remember { mutableStateOf<String?>(null) }
     val deckListScrollState = rememberScrollState()
@@ -89,7 +96,13 @@ fun SidePanel(
                     .weight(1f)
                     .verticalScroll(deckListScrollState)
             ) {
-                decks.forEach { deck ->
+                // Filter top-level decks (those with no parent)
+                val topLevelDecks = decks.filter { it.value.parentId == null }
+
+                topLevelDecks.forEach { deck ->
+                    // Find child decks for this deck
+                    val childDecks = decks.filter { it.value.parentId == deck.value.id }
+
                     DeckItem(
                         deck = deck,
                         isSelected = currentDeck?.value?.id == deck.value.id,
@@ -102,7 +115,30 @@ fun SidePanel(
                         onAddCard = { deckId ->
                             cardViewModel.processAction(CardAction.CreateNewCard(deckId))
                         },
-                        onDeleteDeck = { id -> deckIdToDelete = id }
+                        onAddDeck = { deckId ->
+                            parentDeckId = deckId
+                            showAddDeckDialog = true
+                        },
+                        onDeleteDeck = { id -> deckIdToDelete = id },
+                        childDecks = childDecks,
+                        onChildDeckSelected = { childDeckId ->
+                            cardViewModel.viewModelScope.launch {
+                                cardViewModel.selectDeck(childDeckId)
+                            }
+                        },
+                        onChildAddCard = { deckId ->
+                            cardViewModel.processAction(CardAction.CreateNewCard(deckId))
+                        },
+                        onChildAddDeck = { deckId ->
+                            parentDeckId = deckId
+                            showAddDeckDialog = true
+                        },
+                        onChildDeleteDeck = { id -> deckIdToDelete = id },
+                        allDecks = decks,
+                        onToggleExpansion = { deckId ->
+                            cardViewModel.toggleDeckExpansion(deckId)
+                        },
+                        expandedDeckIds = expandedDeckIds
                     )
                 }
             }
@@ -149,6 +185,7 @@ fun SidePanel(
                 // Logout button
                 IconButton(
                     onClick = {
+                        cardViewModel.stopSession()
                         cardViewModel.viewModelScope.launch {
                             loginViewModel.signOut()
                         }
@@ -164,9 +201,19 @@ fun SidePanel(
             }
 
             if (showAddDeckDialog) {
+                val dialogTitle = if (parentDeckId != null) {
+                    val parentDeck = decks.find { it.value.id == parentDeckId }?.value
+                    "Add Deck to ${parentDeck?.name ?: "Parent"}"
+                } else {
+                    "Add Top-Level Deck"
+                }
+
                 AlertDialog(
-                    onDismissRequest = { showAddDeckDialog = false },
-                    title = { Text("Add Deck") },
+                    onDismissRequest = {
+                        showAddDeckDialog = false
+                        parentDeckId = null
+                    },
+                    title = { Text(dialogTitle) },
                     text = {
                         Column {
                             OutlinedTextField(
@@ -199,17 +246,22 @@ fun SidePanel(
                             onClick = {
                                 val newDeckNameValue = newDeckName
                                 val newDeckDescriptionValue = newDeckDescription
+                                val parentId = parentDeckId
                                 cardViewModel.viewModelScope.launch {
-                                    cardViewModel.createDeck(newDeckNameValue, newDeckDescriptionValue)
+                                    cardViewModel.createDeck(newDeckNameValue, newDeckDescriptionValue, parentId)
                                 }
                                 newDeckName = ""
                                 newDeckDescription = ""
+                                parentDeckId = null
                                 showAddDeckDialog = false
                             }
                         ) { Text("Save") }
                     },
                     dismissButton = {
-                        TextButton(onClick = { showAddDeckDialog = false }) { Text("Cancel") }
+                        TextButton(onClick = {
+                            showAddDeckDialog = false
+                            parentDeckId = null
+                        }) { Text("Cancel") }
                     }
                 )
             }
