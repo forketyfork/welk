@@ -8,16 +8,15 @@ import androidx.compose.ui.test.*
 import androidx.lifecycle.*
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import kotlinx.coroutines.runBlocking
 import me.forketyfork.welk.components.CardPanelTestTags
 import me.forketyfork.welk.components.DeckItemTestTags
 import me.forketyfork.welk.components.LoginViewTestTags
 import me.forketyfork.welk.components.SidePanelTestTags
 import me.forketyfork.welk.domain.Deck
 import me.forketyfork.welk.domain.DeckRepository
-import kotlinx.coroutines.runBlocking
 import org.koin.test.KoinTest
 import org.koin.test.get
-import kotlin.test.fail
 
 /**
  * Fake implementation of [LifecycleOwner] to be used in the tests
@@ -50,10 +49,10 @@ fun KoinTest.cleanupTestUserDatabase() {
     runBlocking {
         try {
             val deckRepository = get<DeckRepository>()
-            
+
             // Get all top-level decks (parentId = null)
             val topLevelDecks = deckRepository.getChildDecks(null)
-            
+
             // Delete each top-level deck (this will recursively delete child decks and all cards)
             topLevelDecks.forEach { deck: Deck ->
                 deck.id?.let { deckId: String ->
@@ -71,13 +70,13 @@ fun KoinTest.cleanupTestUserDatabase() {
  * Sets up the composition with the App composable
  */
 @OptIn(ExperimentalTestApi::class)
-fun ComposeUiTest.setupApp(module: org.koin.core.module.Module = me.forketyfork.welk.fake.testAppModule) {
+fun ComposeUiTest.setupApp() {
     setContent {
         CompositionLocalProvider(
             LocalLifecycleOwner provides TestLifecycleOwner(),
             LocalViewModelStoreOwner provides TestViewModelStoreOwner()
         ) {
-            App(module)
+            App()
         }
     }
 }
@@ -90,13 +89,13 @@ fun ComposeUiTest.setupApp(module: org.koin.core.module.Module = me.forketyfork.
 fun KoinTest.setupAppWithCleanDatabase(composeTest: ComposeUiTest, username: String, password: String) {
     // Set up the app
     composeTest.setupApp()
-    
+
     // Log in first to establish authentication context
     composeTest.login(username, password)
-    
-    // Clean up the database after login to ensure clean state
+
+    // Clean up the database after login to ensure a clean state
     cleanupTestUserDatabase()
-    
+
     // Logout and login again to refresh the UI state after cleanup
     composeTest.logout()
     composeTest.login(username, password)
@@ -207,21 +206,6 @@ fun ComposeUiTest.createTestCard(deckId: String, front: String, back: String) {
 
     // Wait for the card to be created and visible
     waitUntilExactlyOneExists(hasTextExactly(front))
-}
-
-/**
- * Edits the currently visible card through the UI
- */
-@OptIn(ExperimentalTestApi::class)
-fun ComposeUiTest.editCurrentCard(newFront: String, newBack: String) {
-    onNodeWithTag(CardPanelTestTags.EDIT_BUTTON).performClick()
-    waitUntilExactlyOneExists(hasTestTag(CardPanelTestTags.EDIT_FRONT))
-    onNodeWithTag(CardPanelTestTags.EDIT_FRONT).performTextClearance()
-    onNodeWithTag(CardPanelTestTags.EDIT_FRONT).performTextInput(newFront)
-    onNodeWithTag(CardPanelTestTags.EDIT_BACK).performTextClearance()
-    onNodeWithTag(CardPanelTestTags.EDIT_BACK).performTextInput(newBack)
-    onNodeWithTag(CardPanelTestTags.EDIT_SAVE).performClick()
-    waitUntilExactlyOneExists(hasTextExactly(newFront))
 }
 
 /**
