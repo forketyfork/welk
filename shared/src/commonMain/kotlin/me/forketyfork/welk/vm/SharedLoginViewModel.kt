@@ -1,5 +1,6 @@
 package me.forketyfork.welk.vm
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +19,11 @@ class SharedLoginViewModel(
 
     private val _loginError = MutableStateFlow(false)
     override val loginError: StateFlow<Boolean> = _loginError.asStateFlow()
+
+    override fun initialize(viewModelScope: CoroutineScope) {
+        super.initialize(viewModelScope)
+        _userId.value = authService.currentUserId()
+    }
 
     override fun signIn(username: String, password: String) {
         viewModelScope.launch {
