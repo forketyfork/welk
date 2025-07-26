@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.material.MaterialTheme
@@ -33,6 +33,7 @@ fun App(module: Module = appModule) {
 
         // userId is null if the user is not logged in
         val userId = loginViewModel.userId.collectAsStateWithLifecycle()
+        var sidePanelWidth by remember { mutableStateOf(250) }
 
         AppTheme {
             if (userId.value == null) {
@@ -55,10 +56,11 @@ fun App(module: Module = appModule) {
                 ) {
                     // Use Row for the layout
                     Row(modifier = Modifier.fillMaxSize()) {
-                        // Left panel with the app name and deck list with fixed width
+                        // Left panel with the app name and deck list
                         SidePanel(
-                            // Fixed width instead of weight
-                            modifier = Modifier.zIndex(10f) // Higher z-index to stay on top
+                            width = sidePanelWidth,
+                            modifier = Modifier.zIndex(10f), // Keep above other content
+                            onWidthChange = { sidePanelWidth = it }
                         )
 
                         // Spacer to push the card panel to the center
