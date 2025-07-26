@@ -17,10 +17,9 @@ class ThirdLevelDeckTest : KoinTest {
         val level2Name = "Level 2 ($timestamp)"
         val level3Name = "Level 3 ($timestamp)"
 
-        setupApp()
-
-        // Log in
-        login("user@test", "password")
+        // Get test credentials and set up the app with clean database
+        val (testUsername, testPassword) = getTestCredentials()
+        setupAppWithCleanDatabase(this, testUsername, testPassword)
 
         var level1DeckId: String? = null
 

@@ -13,19 +13,15 @@ class CreateNewCardTest : KoinTest {
     @Test
     fun canCreateNewCard() = runComposeUiTest {
 
-        // Get test credentials and set up the app
-        setupApp()
-
-        // Log in and verify basic UI elements
-        login("user@test", "password")
+        // Get test credentials and set up the app with clean database
+        val (testUsername, testPassword) = getTestCredentials()
+        setupAppWithCleanDatabase(this, testUsername, testPassword)
 
         var testDeckId: String? = null
-        var deckName = ""
 
         try {
-            deckName = "Test Vocabulary ${System.currentTimeMillis()}"
             // Create a test deck with some existing cards
-            testDeckId = createTestDeck(deckName, "Test deck for card creation")
+            testDeckId = createTestDeck("Test Vocabulary", "Test deck for card creation")
 
             // Create some initial cards in the deck
             createTestCard(testDeckId, "Hello", "Hola")
@@ -79,7 +75,7 @@ class CreateNewCardTest : KoinTest {
             testDeckId?.let { deckId ->
                 deleteTestDeck(deckId)
                 // Verify the deck is deleted
-                waitUntilDoesNotExist(hasTextExactly(deckName))
+                waitUntilDoesNotExist(hasTextExactly("Test Vocabulary"))
             }
             logout()
         }

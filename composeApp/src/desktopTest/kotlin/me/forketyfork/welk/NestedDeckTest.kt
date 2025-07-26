@@ -11,42 +11,36 @@ class NestedDeckTest : KoinTest {
     @OptIn(ExperimentalTestApi::class)
     @Test
     fun canCreateAndExpandNestedDecks() = runComposeUiTest {
-        setupApp()
-
-        // Log in and verify basic UI elements
-        login("user@test", "password")
+        // Get test credentials and set up the app with clean database
+        val (testUsername, testPassword) = getTestCredentials()
+        setupAppWithCleanDatabase(this, testUsername, testPassword)
 
         var parentDeckId: String? = null
-        var parentName = ""
 
         try {
-            val ts = System.currentTimeMillis()
-            parentName = "Test Parent Deck $ts"
             // Create a top-level test deck using the utility function
-            parentDeckId = createTestDeck(parentName, "A test parent deck")
+            parentDeckId = createTestDeck("Test Parent Deck", "A test parent deck")
 
             // Add a child deck to the parent deck
             onNodeWithTag(DeckItemTestTags.ADD_DECK_BUTTON_TEMPLATE.format(parentDeckId)).performClick()
             waitUntilExactlyOneExists(hasTestTag(SidePanelTestTags.NEW_DECK_NAME))
-            val childName = "Test Child Deck $ts"
-            onNodeWithTag(SidePanelTestTags.NEW_DECK_NAME).performTextInput(childName)
+            onNodeWithTag(SidePanelTestTags.NEW_DECK_NAME).performTextInput("Test Child Deck")
             onNodeWithTag(SidePanelTestTags.SAVE_DECK_BUTTON).performClick()
 
             // Wait for the child deck to be created and the parent deck to be expanded
-            waitUntilExactlyOneExists(hasTextExactly(childName), timeoutMillis = 10000)
+            waitUntilExactlyOneExists(hasTextExactly("Test Child Deck"), timeoutMillis = 10000)
 
             // Get the child deck ID
-            val childDeckId = getDeckIdByName(childName)
+            val childDeckId = getDeckIdByName("Test Child Deck")
 
             // Add a grandchild deck to the child deck
             onNodeWithTag(DeckItemTestTags.ADD_DECK_BUTTON_TEMPLATE.format(childDeckId)).performClick()
             waitUntilExactlyOneExists(hasTestTag(SidePanelTestTags.NEW_DECK_NAME))
-            val grandchildName = "Test Grandchild Deck $ts"
-            onNodeWithTag(SidePanelTestTags.NEW_DECK_NAME).performTextInput(grandchildName)
+            onNodeWithTag(SidePanelTestTags.NEW_DECK_NAME).performTextInput("Test Grandchild Deck")
             onNodeWithTag(SidePanelTestTags.SAVE_DECK_BUTTON).performClick()
 
             // Wait for the grandchild deck to be created and the child deck to be expanded
-            waitUntilExactlyOneExists(hasTextExactly(grandchildName), timeoutMillis = 10000)
+            waitUntilExactlyOneExists(hasTextExactly("Test Grandchild Deck"), timeoutMillis = 10000)
 
             // Clean up - delete the parent deck (which should cascade delete all children)
             onNodeWithTag(DeckItemTestTags.DELETE_DECK_BUTTON_TEMPLATE.format(parentDeckId)).performClick()
@@ -54,16 +48,16 @@ class NestedDeckTest : KoinTest {
             onNodeWithTag(SidePanelTestTags.CONFIRM_DELETE_BUTTON).performClick()
 
             // Verify that the decks are deleted
-            waitUntilDoesNotExist(hasTextExactly(parentName))
-            waitUntilDoesNotExist(hasTextExactly(childName))
-            waitUntilDoesNotExist(hasTextExactly(grandchildName))
+            waitUntilDoesNotExist(hasTextExactly("Test Parent Deck"))
+            waitUntilDoesNotExist(hasTextExactly("Test Child Deck"))
+            waitUntilDoesNotExist(hasTextExactly("Test Grandchild Deck"))
             parentDeckId = null // Mark as deleted
 
         } finally {
             // Clean up: delete the parent deck if it still exists
             parentDeckId?.let { deckId ->
                 deleteTestDeck(deckId)
-                waitUntilDoesNotExist(hasTextExactly(parentName))
+                waitUntilDoesNotExist(hasTextExactly("Test Parent Deck"))
             }
             logout()
         }

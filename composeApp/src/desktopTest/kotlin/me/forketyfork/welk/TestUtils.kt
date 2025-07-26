@@ -12,6 +12,11 @@ import me.forketyfork.welk.components.CardPanelTestTags
 import me.forketyfork.welk.components.DeckItemTestTags
 import me.forketyfork.welk.components.LoginViewTestTags
 import me.forketyfork.welk.components.SidePanelTestTags
+import me.forketyfork.welk.domain.Deck
+import me.forketyfork.welk.domain.DeckRepository
+import kotlinx.coroutines.runBlocking
+import org.koin.test.KoinTest
+import org.koin.test.get
 import kotlin.test.fail
 
 /**
@@ -38,6 +43,31 @@ fun getTestCredentials(): Pair<String, String> {
 }
 
 /**
+ * Cleans up the database for the test user by deleting all decks and their associated cards.
+ * This should be called before starting tests to ensure a clean state.
+ */
+fun KoinTest.cleanupTestUserDatabase() {
+    runBlocking {
+        try {
+            val deckRepository = get<DeckRepository>()
+            
+            // Get all top-level decks (parentId = null)
+            val topLevelDecks = deckRepository.getChildDecks(null)
+            
+            // Delete each top-level deck (this will recursively delete child decks and all cards)
+            topLevelDecks.forEach { deck: Deck ->
+                deck.id?.let { deckId: String ->
+                    deckRepository.deleteDeck(deckId)
+                }
+            }
+        } catch (e: Exception) {
+            // Log the error but don't fail the test setup
+            println("Warning: Failed to cleanup test user database: ${e.message}")
+        }
+    }
+}
+
+/**
  * Sets up the composition with the App composable
  */
 @OptIn(ExperimentalTestApi::class)
@@ -53,7 +83,27 @@ fun ComposeUiTest.setupApp(module: org.koin.core.module.Module = me.forketyfork.
 }
 
 /**
- * Logs in with the provided credentials
+ * Sets up the app, logs in with the provided credentials, and cleans up the database beforehand.
+ * This is the recommended way to start tests to ensure a clean database state.
+ */
+@OptIn(ExperimentalTestApi::class)
+fun KoinTest.setupAppWithCleanDatabase(composeTest: ComposeUiTest, username: String, password: String) {
+    // Set up the app
+    composeTest.setupApp()
+    
+    // Log in first to establish authentication context
+    composeTest.login(username, password)
+    
+    // Clean up the database after login to ensure clean state
+    cleanupTestUserDatabase()
+    
+    // Logout and login again to refresh the UI state after cleanup
+    composeTest.logout()
+    composeTest.login(username, password)
+}
+
+/**
+ * Logs in with the provided credentials and cleans up the database beforehand
  */
 @OptIn(ExperimentalTestApi::class)
 fun ComposeUiTest.login(username: String, password: String) {
