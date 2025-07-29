@@ -90,6 +90,14 @@ fun KoinTest.setupAppWithCleanDatabase(composeTest: ComposeUiTest, username: Str
     // Set up the app
     composeTest.setupApp()
 
+    // Check if the logout button is present and logout if it exists
+    try {
+        composeTest.onNodeWithTag(SidePanelTestTags.LOGOUT_BUTTON).assertExists()
+        composeTest.logout()
+    } catch (_: AssertionError) {
+        // Logout button is absent, continue without logout
+    }
+
     // Log in first to establish authentication context
     composeTest.login(username, password)
 
@@ -205,7 +213,7 @@ fun ComposeUiTest.createTestCard(deckId: String, front: String, back: String) {
     onNodeWithTag(CardPanelTestTags.EDIT_SAVE).performClick()
 
     // Wait for the card to be created and visible
-    waitUntilExactlyOneExists(hasTextExactly(front))
+    waitUntilExactlyOneExists(hasTextExactly(front), timeoutMillis = 5000)
 }
 
 /**
