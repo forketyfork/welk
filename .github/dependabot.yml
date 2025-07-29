@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "org.jetbrains.kotlinx:kotlinx-datetime"
+        versions: ["0.7.1-0.6.x-compat"]

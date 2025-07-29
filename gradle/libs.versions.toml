@@ -1,14 +1,11 @@
 [versions]
 
-agp = "8.10.1" # https://developer.android.com/reference/tools/gradle-api/
-android-compileSdk = "35"
-
 androidx-lifecycle = "2.9.1" # https://central.sonatype.com/artifact/org.jetbrains.androidx.lifecycle/lifecycle-viewmodel/versions
 compose-multiplatform = "1.8.2" # https://github.com/JetBrains/compose-multiplatform/releases
 kotlin = "2.2.0" # https://github.com/JetBrains/kotlin/releases
 kotlinx-coroutines = "1.10.2" # https://github.com/Kotlin/kotlinx.coroutines/releases
 kotlinx-datetime = "0.7.1" # https://github.com/Kotlin/kotlinx-datetime/releases
-ktor-version = "3.2.2" # https://github.com/ktorio/ktor/releases
+ktor-version = "3.2.3" # https://github.com/ktorio/ktor/releases
 skie = "0.10.4" # https://github.com/touchlab/SKIE/releases
 kotlinx-serialization-json = "1.9.0" # https://github.com/Kotlin/kotlinx.serialization/releases
 firebase-kotlin-sdk = "2.1.0" # https://github.com/GitLiveApp/firebase-kotlin-sdk/releases
@@ -58,6 +55,3 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotilnSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 skie = { id = "co.touchlab.skie", version.ref = "skie" }
-
-# currently there's no Android application, this is only needed for `@Preview` annotations to work
-androidApplication = { id = "com.android.application", version.ref = "agp" }

@@ -4,6 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
@@ -31,6 +34,7 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 fun SidePanel(
     width: Int = 250,
     modifier: Modifier = Modifier,
+    onWidthChange: (Int) -> Unit = {},
 ) {
 
     val loginViewModel = koinViewModel<DesktopLoginViewModel>()
@@ -291,6 +295,24 @@ fun SidePanel(
                 )
             }
         }
+
+        // Draggable handle to resize the panel
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .fillMaxHeight()
+                .width(4.dp)
+                .draggable(
+                    orientation = Orientation.Horizontal,
+                    state = rememberDraggableState { delta ->
+                        val newWidth = (width + delta).toInt().coerceIn(150, 500)
+                        if (newWidth != width) {
+                            onWidthChange(newWidth)
+                        }
+                    }
+                )
+                .background(MaterialTheme.colors.onSurface.copy(alpha = 0.12f))
+        )
     }
 }
 

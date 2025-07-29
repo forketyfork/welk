@@ -30,7 +30,7 @@ For local development:
 - [x] Dark mode 🌚
 
 ### Current focus
-- [ ] End-to-end tests for the main functionality
+- [x] End-to-end tests for the main functionality
 - [ ] Use proper coroutine dispatchers for Firestore access
 - [ ] Catching up with the desktop functionality on iOS
 - [ ] Break down the main view model

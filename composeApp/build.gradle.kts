@@ -6,15 +6,10 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.androidApplication)
 }
 
 kotlin {
     jvm("desktop")
-
-    // currently there's no Android application, this is only needed for `@Preview` annotations to work
-    androidTarget {
-    }
 
     sourceSets {
         commonMain.dependencies {
@@ -77,16 +72,18 @@ compose.desktop {
     }
 }
 
-// load test user and password from local.properties
+// load test user and password from local.properties or environment variables
+val localPropertiesFile = rootProject.file("local.properties")
 val localProperties = Properties()
-localProperties.load(FileInputStream(rootProject.file("local.properties")))
-tasks.withType<Test> {
-    listOf("WELK_TEST_USERNAME", "WELK_TEST_PASSWORD").forEach { key ->
-        systemProperty(key, localProperties.getProperty(key))
-    }
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
 }
 
-android {
-    namespace = "com.forketyfork.welk"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+tasks.withType<Test> {
+    listOf("WELK_TEST_USERNAME", "WELK_TEST_PASSWORD").forEach { key ->
+        val value = localProperties.getProperty(key) ?: System.getenv(key)
+        if (value != null) {
+            systemProperty(key, value)
+        }
+    }
 }
