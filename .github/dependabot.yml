@@ -11,3 +11,12 @@ updates:
     ignore:
       - dependency-name: "org.jetbrains.kotlinx:kotlinx-datetime"
         versions: ["0.7.1-0.6.x-compat"]
+        
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      all-actions:
+        patterns:
+          - "*"
