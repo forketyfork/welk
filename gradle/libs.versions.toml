@@ -8,9 +8,9 @@ kotlinx-datetime = "0.7.1" # https://github.com/Kotlin/kotlinx-datetime/releases
 ktor-version = "3.2.3" # https://github.com/ktorio/ktor/releases
 skie = "0.10.5" # https://github.com/touchlab/SKIE/releases
 kotlinx-serialization-json = "1.9.0" # https://github.com/Kotlin/kotlinx.serialization/releases
-firebase-kotlin-sdk = "2.2.0" # https://github.com/GitLiveApp/firebase-kotlin-sdk/releases
+firebase-kotlin-sdk = "2.3.0" # https://github.com/GitLiveApp/firebase-kotlin-sdk/releases
 compose-material = "1.8.2" # https://search.maven.org/artifact/org.jetbrains.compose.material/material
-kermit = "2.0.6" # https://github.com/touchlab/Kermit/releases/
+kermit = "2.0.8" # https://github.com/touchlab/Kermit/releases/
 koin = "4.1.0" # https://github.com/InsertKoinIO/koin/releases
 
 [libraries]
