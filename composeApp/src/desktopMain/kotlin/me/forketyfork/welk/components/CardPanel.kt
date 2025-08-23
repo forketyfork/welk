@@ -32,15 +32,18 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.launch
+import me.forketyfork.welk.domain.ReviewGrade
 import me.forketyfork.welk.presentation.CardAction
 import me.forketyfork.welk.vm.CardInteractionManager
 import me.forketyfork.welk.vm.DesktopCardAnimationManager
 import me.forketyfork.welk.vm.DesktopCardViewModel
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.time.Instant
 
 private val logger = Logger.withTag("CardPanel")
 
+@OptIn(kotlin.time.ExperimentalTime::class)
 @Composable
 fun CardPanel(modifier: Modifier = Modifier) {
 
@@ -90,8 +93,10 @@ fun CardPanel(modifier: Modifier = Modifier) {
         }
     }
 
-    val learnedCardCount = cardViewModel.learnedCardCount.collectAsStateWithLifecycle()
+    val reviewedCardCount = cardViewModel.reviewedCardCount.collectAsStateWithLifecycle()
+    val dueCardCount = cardViewModel.dueCardCount.collectAsStateWithLifecycle()
     val totalCardCount = cardViewModel.totalCardCount.collectAsStateWithLifecycle()
+    val showAllCards = cardViewModel.showAllCards.collectAsStateWithLifecycle()
 
     // Only request focus when we have cards or there's a deck selected
     LaunchedEffect(
@@ -149,12 +154,58 @@ fun CardPanel(modifier: Modifier = Modifier) {
             .testTag(CardPanelTestTags.CARD_PANEL)
             .onKeyEvent { event: KeyEvent ->
                 logger.d { "Card got key event: $event" }
-                val action = cardInteractionManager.handleKeyEvent(event)
-                cardViewModel.processAction(action)
+                
+                // Handle grade button shortcuts (1-4 keys)
+                if (event.type == KeyEventType.KeyDown && hasCards.value && !isEditing.value) {
+                    when (event.key) {
+                        Key.One -> {
+                            coroutineScope.launch { cardViewModel.gradeCard(ReviewGrade.AGAIN) }
+                            true
+                        }
+                        Key.Two -> {
+                            coroutineScope.launch { cardViewModel.gradeCard(ReviewGrade.HARD) }
+                            true
+                        }
+                        Key.Three -> {
+                            coroutineScope.launch { cardViewModel.gradeCard(ReviewGrade.GOOD) }
+                            true
+                        }
+                        Key.Four -> {
+                            coroutineScope.launch { cardViewModel.gradeCard(ReviewGrade.EASY) }
+                            true
+                        }
+                        else -> {
+                            // Fall back to normal card interaction handling
+                            val action = cardInteractionManager.handleKeyEvent(event)
+                            cardViewModel.processAction(action)
+                        }
+                    }
+                } else {
+                    val action = cardInteractionManager.handleKeyEvent(event)
+                    cardViewModel.processAction(action)
+                }
             }
             .focusRequester(focusRequester)
             .focusable()
     ) {
+        // Show all cards checkbox in top-right corner
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = showAllCards.value,
+                onCheckedChange = { cardViewModel.toggleShowAllCards() }
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = "Show all",
+                style = MaterialTheme.typography.body2,
+                color = MaterialTheme.colors.onSurface
+            )
+        }
         // Main card content centered in the full available space
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -333,6 +384,18 @@ fun CardPanel(modifier: Modifier = Modifier) {
                                         modifier = Modifier.testTag(CardPanelTestTags.VIEW_BACK)
                                     )
                                 }
+                                
+                                // Review status indicator in bottom-right corner
+                                Spacer(modifier = Modifier.weight(1f))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.End
+                                ) {
+                                    ReviewStatusIndicator(
+                                        nextReview = card.nextReview,
+                                        isReviewed = card.reviews.isNotEmpty()
+                                    )
+                                }
                             }
                         }
                     }
@@ -341,12 +404,27 @@ fun CardPanel(modifier: Modifier = Modifier) {
 
         }
         
+        // Grade buttons positioned below the card area
+        if (hasCards.value && !isEditing.value && currentCard.value != null) {
+            GradeButtons(
+                onGrade = { grade ->
+                    coroutineScope.launch {
+                        cardViewModel.gradeCard(grade)
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 80.dp) // Space for DeckInfoPanel below
+            )
+        }
+        
         // Position the DeckInfoPanel at the bottom, independent of card positioning
         currentDeck.value?.value?.let { deck ->
             DeckInfoPanel(
                 deck = deck,
                 totalCount = totalCardCount.value,
-                learnedCount = learnedCardCount.value,
+                reviewedCount = reviewedCardCount.value,
+                dueCount = dueCardCount.value,
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
         }
@@ -366,6 +444,80 @@ fun Modifier.moveFocusOnTab() = composed {
             true
         } else {
             false
+        }
+    }
+}
+
+@OptIn(kotlin.time.ExperimentalTime::class)
+@Composable
+fun ReviewStatusIndicator(
+    nextReview: Instant?,
+    isReviewed: Boolean
+) {
+    val text: String
+    val color: Color
+    
+    if (nextReview == null) {
+        // Never reviewed
+        text = "New"
+        color = Color.Green
+    } else {
+        val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
+        if (nextReview <= now) {
+            text = "Due now"
+            color = Color.Green
+        } else {
+            text = "Later"
+            color = Color.Blue
+        }
+    }
+    
+    Text(
+        text = text,
+        style = MaterialTheme.typography.caption,
+        color = color,
+        fontSize = 12.sp
+    )
+}
+
+@Composable
+fun GradeButtons(
+    onGrade: (ReviewGrade) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Button(
+            onClick = { onGrade(ReviewGrade.AGAIN) },
+            modifier = Modifier.weight(1f),
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red.copy(alpha = 0.2f))
+        ) {
+            Text("Again (1)")
+        }
+        Button(
+            onClick = { onGrade(ReviewGrade.HARD) },
+            modifier = Modifier.weight(1f),
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Yellow.copy(alpha = 0.2f))
+        ) {
+            Text("Hard (2)")
+        }
+        Button(
+            onClick = { onGrade(ReviewGrade.GOOD) },
+            modifier = Modifier.weight(1f),
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Green.copy(alpha = 0.2f))
+        ) {
+            Text("Good (3)")
+        }
+        Button(
+            onClick = { onGrade(ReviewGrade.EASY) },
+            modifier = Modifier.weight(1f),
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue.copy(alpha = 0.2f))
+        ) {
+            Text("Easy (4)")
         }
     }
 }
