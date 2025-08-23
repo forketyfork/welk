@@ -7,8 +7,9 @@ import dev.gitlive.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
-import kotlin.time.Clock
+import kotlin.time.Instant
 import me.forketyfork.welk.Platform
+import me.forketyfork.welk.domain.sra.SimpleIntervalAlgorithm
 
 class FirestoreRepository(val platform: Platform) : CardRepository, DeckRepository {
 
@@ -18,6 +19,7 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
 
     private val firestore: FirebaseFirestore = platform.initializeFirestore()
     private val users = firestore.collection("users")
+    private val spacedRepetitionAlgorithm = SimpleIntervalAlgorithm()
 
     private val userDocument
         get() = Firebase.auth.currentUser?.uid?.let { userId ->
@@ -58,7 +60,7 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         decksCollection.document(deckId).snapshots.mapNotNull { it.data<Deck?>()?.apply { id = deckId } }
 
     override suspend fun createDeck(name: String, description: String, parentId: String?) {
-        val timestamp = Clock.System.now().toEpochMilliseconds()
+        val timestamp = System.currentTimeMillis()
         val newDeck = Deck(
             name = name,
             description = description,
@@ -135,7 +137,7 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         val deck = getDeckById(deckId)
         val updatedDeck = deck.copy(
             cardCount = cardCount + 1,
-            lastModified = Clock.System.now().toEpochMilliseconds()
+            lastModified = System.currentTimeMillis()
         )
         decksCollection.document(deckId).set(updatedDeck)
 
@@ -143,25 +145,45 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         return cardWithId
     }
 
-    override suspend fun updateCardLearnedStatus(cardId: String, deckId: String, learned: Boolean) {
+    override suspend fun addCardReview(cardId: String, deckId: String, grade: ReviewGrade): Instant {
         // Check if card ID or deck ID are invalid
         if (cardId.isEmpty() || deckId.isEmpty()) {
-            logger.e { "Error: Cannot update card with empty ID or deckId" }
-            return
+            logger.e { "Error: Cannot add review to card with empty ID or deckId" }
+            throw IllegalArgumentException("Card ID and Deck ID cannot be empty")
         }
 
         val cardsCollection = decksCollection.document(deckId).collection("cards")
         val card = getCardById(deckId, cardId)
-        val updatedCard = card.copy()
-        updatedCard.learned = learned
+        val currentTime = Instant.fromEpochMilliseconds(System.currentTimeMillis())
+        
+        // Create new review record
+        val newReview = CardReview(timestamp = currentTime, grade = grade)
+        
+        // Add review to existing reviews list (maintaining chronological order)
+        val updatedReviews = card.reviews + newReview
+        
+        // Calculate next review time using the algorithm
+        val nextReviewTime = spacedRepetitionAlgorithm.calculateNextReview(
+            reviews = updatedReviews,
+            currentGrade = grade,
+            currentTime = currentTime
+        )
+        
+        // Update card with new review and next review time
+        val updatedCard = card.copy(
+            reviews = updatedReviews,
+            nextReview = nextReviewTime
+        )
 
         // Use `set` instead of `update` to ensure the operation works for all cards
         cardsCollection.document(cardId).set(updatedCard)
 
         // Update the deck's last modified timestamp
         val deck = getDeckById(deckId)
-        val updatedDeck = deck.copy(lastModified = Clock.System.now().toEpochMilliseconds())
+        val updatedDeck = deck.copy(lastModified = System.currentTimeMillis())
         decksCollection.document(deckId).set(updatedDeck)
+        
+        return nextReviewTime
     }
 
     override suspend fun updateCardContent(
@@ -185,7 +207,7 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
 
         // Update the deck's last modified timestamp
         val deck = getDeckById(deckId)
-        val updatedDeck = deck.copy(lastModified = Clock.System.now().toEpochMilliseconds())
+        val updatedDeck = deck.copy(lastModified = System.currentTimeMillis())
         decksCollection.document(deckId).set(updatedDeck)
     }
 
@@ -204,7 +226,7 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         val deck = getDeckById(deckId)
         val updatedDeck = deck.copy(
             cardCount = cardCount,
-            lastModified = Clock.System.now().toEpochMilliseconds()
+            lastModified = System.currentTimeMillis()
         )
         decksCollection.document(deckId).set(updatedDeck)
     }

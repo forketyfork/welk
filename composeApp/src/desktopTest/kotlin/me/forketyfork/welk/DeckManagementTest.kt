@@ -70,7 +70,7 @@ class DeckManagementTest : KoinTest {
             waitUntilExactlyOneExists(hasTextExactly("Test Front"))
 
             // Verify that the deck now shows 1 card
-            waitUntilExactlyOneExists(hasTextExactly("1 cards, 0 learned"))
+            waitUntilExactlyOneExists(hasTextExactly("1 cards, 0 reviewed, 1 due"))
             waitUntilExactlyOneExists(hasTextExactly("A test deck for verification"))
 
             // Delete the deck via the delete button tagged with the deck id
