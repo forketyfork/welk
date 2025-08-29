@@ -162,18 +162,22 @@ fun CardPanel(modifier: Modifier = Modifier) {
                             coroutineScope.launch { cardViewModel.gradeCard(ReviewGrade.AGAIN) }
                             true
                         }
+
                         Key.Two, Key.NumPad2 -> {
                             coroutineScope.launch { cardViewModel.gradeCard(ReviewGrade.HARD) }
                             true
                         }
+
                         Key.Three, Key.NumPad3 -> {
                             coroutineScope.launch { cardViewModel.gradeCard(ReviewGrade.GOOD) }
                             true
                         }
+
                         Key.Four, Key.NumPad4 -> {
                             coroutineScope.launch { cardViewModel.gradeCard(ReviewGrade.EASY) }
                             true
                         }
+
                         else -> {
                             // Fall back to normal card interaction handling
                             val action = cardInteractionManager.handleKeyEvent(event)
@@ -230,7 +234,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                     ) {
                         // Add flexible spacer to center content vertically
                         Spacer(modifier = Modifier.weight(1f))
-                        
+
                         Text(
                             "No cards in this deck",
                             style = TextStyle(fontSize = 18.sp),
@@ -249,7 +253,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                         ) {
                             Text("Create a Card")
                         }
-                        
+
                         // Add flexible spacer to center content vertically
                         Spacer(modifier = Modifier.weight(1f))
                     }
@@ -384,7 +388,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                                         modifier = Modifier.testTag(CardPanelTestTags.VIEW_BACK)
                                     )
                                 }
-                                
+
                                 // Review status indicator in bottom-right corner
                                 Spacer(modifier = Modifier.weight(1f))
                                 Row(
@@ -403,7 +407,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
             }
 
         }
-        
+
         // Grade buttons positioned below the card area
         if (hasCards.value && !isEditing.value && currentCard.value != null) {
             GradeButtons(
@@ -413,11 +417,12 @@ fun CardPanel(modifier: Modifier = Modifier) {
                     }
                 },
                 modifier = Modifier
+                    .fillMaxWidth()
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 80.dp) // Space for DeckInfoPanel below
             )
         }
-        
+
         // Position the DeckInfoPanel at the bottom, independent of card positioning
         currentDeck.value?.value?.let { deck ->
             DeckInfoPanel(
@@ -456,7 +461,7 @@ fun ReviewStatusIndicator(
 ) {
     val text: String
     val color: Color
-    
+
     if (nextReview == null) {
         // Never reviewed
         text = "New"
@@ -467,11 +472,18 @@ fun ReviewStatusIndicator(
             text = "Due now"
             color = Color.Green
         } else {
-            text = "Later"
+            // Format the date and time for display
+            val epochMillis = nextReview.toEpochMilliseconds()
+            val date = java.time.LocalDateTime.ofInstant(
+                java.time.Instant.ofEpochMilli(epochMillis),
+                java.time.ZoneId.systemDefault()
+            )
+            val formatter = java.time.format.DateTimeFormatter.ofPattern("MMM d, HH:mm")
+            text = date.format(formatter)
             color = Color.Blue
         }
     }
-    
+
     Text(
         text = text,
         style = MaterialTheme.typography.caption,
@@ -488,36 +500,49 @@ fun GradeButtons(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(horizontal = 32.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Button(
             onClick = { onGrade(ReviewGrade.AGAIN) },
-            modifier = Modifier.weight(1f),
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red.copy(alpha = 0.2f))
+            modifier = Modifier.weight(1f).defaultMinSize(minWidth = 100.dp),
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = Color.Red.copy(alpha = 0.2f),
+                contentColor = MaterialTheme.colors.onSurface
+            )
         ) {
-            Text("Again (1)")
+            Text("Again (1)", maxLines = 1, fontSize = 14.sp)
         }
         Button(
             onClick = { onGrade(ReviewGrade.HARD) },
-            modifier = Modifier.weight(1f),
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Yellow.copy(alpha = 0.2f))
+            modifier = Modifier.weight(1f).defaultMinSize(minWidth = 100.dp),
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = Color.Yellow.copy(alpha = 0.2f),
+                contentColor = MaterialTheme.colors.onSurface
+            )
         ) {
-            Text("Hard (2)")
+            Text("Hard (2)", maxLines = 1, fontSize = 14.sp)
         }
         Button(
             onClick = { onGrade(ReviewGrade.GOOD) },
-            modifier = Modifier.weight(1f),
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Green.copy(alpha = 0.2f))
+            modifier = Modifier.weight(1f).defaultMinSize(minWidth = 100.dp),
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = Color.Green.copy(alpha = 0.2f),
+                contentColor = MaterialTheme.colors.onSurface
+            )
         ) {
-            Text("Good (3)")
+            Text("Good (3)", maxLines = 1, fontSize = 14.sp)
         }
         Button(
             onClick = { onGrade(ReviewGrade.EASY) },
-            modifier = Modifier.weight(1f),
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue.copy(alpha = 0.2f))
+            modifier = Modifier.weight(1f).defaultMinSize(minWidth = 100.dp),
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = Color.Blue.copy(alpha = 0.2f),
+                contentColor = MaterialTheme.colors.onSurface
+            )
         ) {
-            Text("Easy (4)")
+            Text("Easy (4)", maxLines = 1, fontSize = 14.sp)
         }
     }
 }

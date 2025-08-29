@@ -1,20 +1,11 @@
 package me.forketyfork.welk.vm
 
 import co.touchlab.kermit.Logger
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import kotlin.time.Instant
-import me.forketyfork.welk.domain.Card
-import me.forketyfork.welk.domain.CardRepository
-import me.forketyfork.welk.domain.CardReview
-import me.forketyfork.welk.domain.Deck
-import me.forketyfork.welk.domain.DeckRepository
-import me.forketyfork.welk.domain.ReviewGrade
+import me.forketyfork.welk.domain.*
 import me.forketyfork.welk.presentation.CardAction
+import kotlin.time.Instant
 
 open class SharedCardViewModel(
     private val cardAnimationManager: CardAnimationManager,
@@ -50,11 +41,11 @@ open class SharedCardViewModel(
 
     // List of cards in the current deck (cached to avoid repeated Firestore queries)
     private val _currentDeckCards = MutableStateFlow<List<Card>>(emptyList())
-    
+
     // Show all cards or only due cards
     private val _showAllCards = MutableStateFlow(false)
     override val showAllCards: StateFlow<Boolean> = _showAllCards.asStateFlow()
-    
+
     // Filtered cards based on review status and showAllCards setting
     override val currentDeckCards: StateFlow<List<Card>> by lazy {
         combine(_currentDeckCards, _showAllCards) { allCards, showAll ->
@@ -77,9 +68,9 @@ open class SharedCardViewModel(
 
     override val dueCardCount: StateFlow<Int> by lazy {
         _currentDeckCards
-            .map { cards -> 
+            .map { cards ->
                 val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
-                cards.count { card -> 
+                cards.count { card ->
                     card.nextReview == null || card.nextReview <= now
                 }
             }
@@ -230,10 +221,22 @@ open class SharedCardViewModel(
     override suspend fun gradeCard(grade: ReviewGrade) {
         val currentCard = _currentCard.value
         val currentCardId = currentCard?.id ?: return
-        
+
         if (currentCardId.isEmpty()) {
             logger.w { "Cannot grade card with empty ID" }
             return
+        }
+
+        // Trigger animation based on grade
+        val currentPosition = _currentCardPosition.value
+        when (grade) {
+            ReviewGrade.AGAIN, ReviewGrade.HARD -> {
+                cardAnimationManager.swipeLeft(currentPosition)
+            }
+
+            ReviewGrade.GOOD, ReviewGrade.EASY -> {
+                cardAnimationManager.swipeRight(currentPosition)
+            }
         }
 
         try {
@@ -276,10 +279,10 @@ open class SharedCardViewModel(
             .collect {
                 val currentCard = _currentCard.value
                 val currentCardId = currentCard?.id ?: error("Card ID is null")
-                
+
                 // Convert learned status to grade (backward compatibility)
                 val grade = if (it.learned) ReviewGrade.GOOD else ReviewGrade.AGAIN
-                
+
                 // Add review to the current card
                 val nextReviewTime = cardRepository.addCardReview(
                     currentCardId,
@@ -615,7 +618,7 @@ open class SharedCardViewModel(
         // Cancel the session job and scope to stop all Firestore listeners
         sessionJob?.cancel()
         sessionJob = null
-        
+
         // Cancel the session scope which will cancel all stateIn() flows created with activeScope
         sessionScope?.cancel()
         sessionScope = null
