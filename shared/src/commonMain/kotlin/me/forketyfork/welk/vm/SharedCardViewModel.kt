@@ -1,17 +1,11 @@
 package me.forketyfork.welk.vm
 
 import co.touchlab.kermit.Logger
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import me.forketyfork.welk.domain.Card
-import me.forketyfork.welk.domain.CardRepository
-import me.forketyfork.welk.domain.Deck
-import me.forketyfork.welk.domain.DeckRepository
+import me.forketyfork.welk.domain.*
 import me.forketyfork.welk.presentation.CardAction
+import kotlin.time.Instant
 
 open class SharedCardViewModel(
     private val cardAnimationManager: CardAnimationManager,
@@ -47,11 +41,39 @@ open class SharedCardViewModel(
 
     // List of cards in the current deck (cached to avoid repeated Firestore queries)
     private val _currentDeckCards = MutableStateFlow<List<Card>>(emptyList())
-    override val currentDeckCards: StateFlow<List<Card>> = _currentDeckCards.asStateFlow()
 
-    override val learnedCardCount: StateFlow<Int> by lazy {
+    // Show all cards or only due cards
+    private val _showAllCards = MutableStateFlow(false)
+    override val showAllCards: StateFlow<Boolean> = _showAllCards.asStateFlow()
+
+    // Filtered cards based on review status and showAllCards setting
+    override val currentDeckCards: StateFlow<List<Card>> by lazy {
+        combine(_currentDeckCards, _showAllCards) { allCards, showAll ->
+            if (showAll) {
+                allCards
+            } else {
+                val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
+                allCards.filter { card ->
+                    card.nextReview == null || card.nextReview <= now
+                }
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+    }
+
+    override val reviewedCardCount: StateFlow<Int> by lazy {
         _currentDeckCards
-            .map { cards -> cards.count { it.learned } }
+            .map { cards -> cards.count { it.reviews.isNotEmpty() } }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 0)
+    }
+
+    override val dueCardCount: StateFlow<Int> by lazy {
+        _currentDeckCards
+            .map { cards ->
+                val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
+                cards.count { card ->
+                    card.nextReview == null || card.nextReview <= now
+                }
+            }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 0)
     }
 
@@ -196,10 +218,60 @@ open class SharedCardViewModel(
         }
     }
 
+    override suspend fun gradeCard(grade: ReviewGrade) {
+        val currentCard = _currentCard.value
+        val currentCardId = currentCard?.id ?: return
+
+        if (currentCardId.isEmpty()) {
+            logger.w { "Cannot grade card with empty ID" }
+            return
+        }
+
+        // Trigger animation based on grade
+        val currentPosition = _currentCardPosition.value
+        when (grade) {
+            ReviewGrade.AGAIN, ReviewGrade.HARD -> {
+                cardAnimationManager.swipeLeft(currentPosition)
+            }
+
+            ReviewGrade.GOOD, ReviewGrade.EASY -> {
+                cardAnimationManager.swipeRight(currentPosition)
+            }
+        }
+
+        try {
+            // Add review to the current card
+            val nextReviewTime = cardRepository.addCardReview(
+                currentCardId,
+                currentCard.deckId,
+                grade
+            )
+
+            // Update the local card list with the new review data
+            val idx = _currentCardPosition.value
+            val updatedCards = _currentDeckCards.value.toMutableList()
+            if (idx in updatedCards.indices) {
+                val currentTime = Instant.fromEpochMilliseconds(System.currentTimeMillis())
+                val newReview = CardReview(currentTime, grade)
+                val updated = updatedCards[idx].copy(
+                    reviews = updatedCards[idx].reviews + newReview,
+                    nextReview = nextReviewTime
+                )
+                updatedCards[idx] = updated
+                _currentDeckCards.value = updatedCards
+            }
+
+            // Move to the next card
+            nextCard()
+        } catch (e: Exception) {
+            logger.e(e) { "Error grading card: ${e.message}" }
+        }
+    }
+
     /**
      * Starts the collection of the card animation completion events when the user swipes the card
      * to the left or to the right.
-     * When the animation is completed, we update the learned status of the card and the UI accordingly.
+     * When the animation is completed, we add a review to the card and update the UI accordingly.
      */
     private suspend fun collectCardAnimationCompletion() {
         cardAnimationManager.animationCompleteTrigger
@@ -207,18 +279,27 @@ open class SharedCardViewModel(
             .collect {
                 val currentCard = _currentCard.value
                 val currentCardId = currentCard?.id ?: error("Card ID is null")
-                // Update the learned status of the current card
-                cardRepository.updateCardLearnedStatus(
+
+                // Convert learned status to grade (backward compatibility)
+                val grade = if (it.learned) ReviewGrade.GOOD else ReviewGrade.AGAIN
+
+                // Add review to the current card
+                val nextReviewTime = cardRepository.addCardReview(
                     currentCardId,
                     currentCard.deckId,
-                    it.learned
+                    grade
                 )
 
-                // Update the local card list with the new learned status
+                // Update the local card list with the new review data
                 val idx = _currentCardPosition.value
                 val updatedCards = _currentDeckCards.value.toMutableList()
                 if (idx in updatedCards.indices) {
-                    val updated = updatedCards[idx].copy(learned = it.learned)
+                    val currentTime = Instant.fromEpochMilliseconds(System.currentTimeMillis())
+                    val newReview = me.forketyfork.welk.domain.CardReview(currentTime, grade)
+                    val updated = updatedCards[idx].copy(
+                        reviews = updatedCards[idx].reviews + newReview,
+                        nextReview = nextReviewTime
+                    )
                     updatedCards[idx] = updated
                     _currentDeckCards.value = updatedCards
                 }
@@ -429,6 +510,8 @@ open class SharedCardViewModel(
             deckId = deckId,
             front = "",
             back = "",
+            reviews = emptyList(),
+            nextReview = null,
             position = _currentDeckCards.value.size  // Will be the last card
         )
 
@@ -535,7 +618,7 @@ open class SharedCardViewModel(
         // Cancel the session job and scope to stop all Firestore listeners
         sessionJob?.cancel()
         sessionJob = null
-        
+
         // Cancel the session scope which will cancel all stateIn() flows created with activeScope
         sessionScope?.cancel()
         sessionScope = null
@@ -551,6 +634,7 @@ open class SharedCardViewModel(
         _isNewCard.value = false
         _isDeleteConfirmationShowing.value = false
         _expandedDeckIds.value = emptySet()
+        _showAllCards.value = false
     }
 
     override suspend fun deleteCurrentCard() {
@@ -643,6 +727,10 @@ open class SharedCardViewModel(
      */
     override fun isDeckExpanded(deckId: String): Boolean {
         return _expandedDeckIds.value.contains(deckId)
+    }
+
+    override fun toggleShowAllCards() {
+        _showAllCards.value = !_showAllCards.value
     }
 
     override suspend fun deleteDeck(deckId: String) {

@@ -9,6 +9,7 @@ fun main() {
             onCloseRequest = ::exitApplication,
             title = "welk",
         ) {
+            window.minimumSize = java.awt.Dimension(1024, 800)
             App()
         }
     }
