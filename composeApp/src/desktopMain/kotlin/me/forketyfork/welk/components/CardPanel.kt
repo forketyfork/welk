@@ -152,25 +152,25 @@ fun CardPanel(modifier: Modifier = Modifier) {
             .fillMaxSize()
             .background(MaterialTheme.colors.background)
             .testTag(CardPanelTestTags.CARD_PANEL)
-            .onKeyEvent { event: KeyEvent ->
+            .onPreviewKeyEvent { event: KeyEvent ->
                 logger.d { "Card got key event: $event" }
-                
+
                 // Handle grade button shortcuts (1-4 keys)
                 if (event.type == KeyEventType.KeyDown && hasCards.value && !isEditing.value) {
                     when (event.key) {
-                        Key.One -> {
+                        Key.One, Key.NumPad1 -> {
                             coroutineScope.launch { cardViewModel.gradeCard(ReviewGrade.AGAIN) }
                             true
                         }
-                        Key.Two -> {
+                        Key.Two, Key.NumPad2 -> {
                             coroutineScope.launch { cardViewModel.gradeCard(ReviewGrade.HARD) }
                             true
                         }
-                        Key.Three -> {
+                        Key.Three, Key.NumPad3 -> {
                             coroutineScope.launch { cardViewModel.gradeCard(ReviewGrade.GOOD) }
                             true
                         }
-                        Key.Four -> {
+                        Key.Four, Key.NumPad4 -> {
                             coroutineScope.launch { cardViewModel.gradeCard(ReviewGrade.EASY) }
                             true
                         }
