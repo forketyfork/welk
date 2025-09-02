@@ -52,3 +52,4 @@ For local development:
 - [ ] Spelling / writing modes
 - [ ] Import from other similar tools (Anki, Mochi...)
 - [ ] A word card should show connections to related words
+- [ ] Kanji writing order on iPad
