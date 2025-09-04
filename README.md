@@ -1,5 +1,9 @@
 # welk
 
+[![Build status](https://github.com/forketyfork/welk/actions/workflows/build.yml/badge.svg)](https://github.com/forketyfork/welk/actions/workflows/build.yml)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Kotlin](https://img.shields.io/badge/language-Kotlin-purple.svg)](https://kotlinlang.org/)
+
 ## About
 
 welk is a cross-platform flashcard application written in Compose Multiplatform, currently in development. 
