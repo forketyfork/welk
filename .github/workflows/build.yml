@@ -33,7 +33,7 @@ jobs:
           echo "$FIREBASE_PROPERTIES_CONTENT" > ./shared/src/jvmMain/resources/firebase.properties
 
       - name: Assemble Desktop App
-        run: ./gradlew :composeApp:assemble
+        run: ./gradlew :composeApp:assemble --warning-mode fail
 
       - name: Run Desktop Tests
         env:
