@@ -5,6 +5,7 @@ import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
+import me.forketyfork.welk.domain.ReviewGrade
 import me.forketyfork.welk.presentation.CardAction
 
 /**
@@ -28,6 +29,10 @@ class DefaultCardInteractionManager : CardInteractionManager {
             Key.Enter -> CardAction.SaveEdit
             Key.Escape -> CardAction.CancelEdit
             Key.N -> CardAction.CreateNewCardInCurrentDeck
+            Key.One, Key.NumPad1 -> CardAction.GradeCard(ReviewGrade.AGAIN)
+            Key.Two, Key.NumPad2 -> CardAction.GradeCard(ReviewGrade.HARD)
+            Key.Three, Key.NumPad3 -> CardAction.GradeCard(ReviewGrade.GOOD)
+            Key.Four, Key.NumPad4 -> CardAction.GradeCard(ReviewGrade.EASY)
             else -> CardAction.NoAction
         }
     }

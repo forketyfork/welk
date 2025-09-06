@@ -1,5 +1,7 @@
 package me.forketyfork.welk.domain
 
+import kotlin.time.Instant
+
 interface CardRepository {
     /**
      * Gets all cards for a specific deck.
@@ -12,9 +14,13 @@ interface CardRepository {
     suspend fun createCard(deckId: String, front: String, back: String): Card
 
     /**
-     * Updates a card's learned status.
+     * Adds a review to a card's history and updates the next review timestamp.
+     * @param cardId ID of the card being reviewed
+     * @param deckId ID of the deck containing the card
+     * @param grade User's assessment of how well they knew the card
+     * @return The calculated next review timestamp
      */
-    suspend fun updateCardLearnedStatus(cardId: String, deckId: String, learned: Boolean)
+    suspend fun addCardReview(cardId: String, deckId: String, grade: ReviewGrade): Instant
 
     /**
      * Updates a card's content (front and back text).

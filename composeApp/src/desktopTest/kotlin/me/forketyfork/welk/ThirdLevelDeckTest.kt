@@ -5,19 +5,19 @@ import me.forketyfork.welk.components.DeckItemTestTags
 import me.forketyfork.welk.components.SidePanelTestTags
 import org.junit.Test
 import org.koin.test.KoinTest
+import kotlin.time.Clock
 
 class ThirdLevelDeckTest : KoinTest {
 
-    @OptIn(ExperimentalTestApi::class)
     @Test
     fun testThirdLevelDeckVisibility() = runComposeUiTest {
         // This test verifies that third-level decks are visible in the UI
-        val timestamp = System.currentTimeMillis()
+        val timestamp = Clock.System.now().toEpochMilliseconds()
         val level1Name = "Level 1 ($timestamp)"
         val level2Name = "Level 2 ($timestamp)"
         val level3Name = "Level 3 ($timestamp)"
 
-        // Get test credentials and set up the app with clean database
+        // Get test credentials and set up the app with a clean database
         val (testUsername, testPassword) = getTestCredentials()
         setupAppWithCleanDatabase(this, testUsername, testPassword)
 
@@ -51,6 +51,7 @@ class ThirdLevelDeckTest : KoinTest {
 
             // Clean up - delete the top-level deck (which should cascade delete all children)
             deleteTestDeck(level1DeckId)
+            waitUntilDoesNotExist(hasTextExactly("Test Parent Deck"))
             level1DeckId = null // Mark as deleted
 
         } finally {
@@ -58,6 +59,7 @@ class ThirdLevelDeckTest : KoinTest {
             level1DeckId?.let { deckId ->
                 try {
                     deleteTestDeck(deckId)
+                    waitUntilDoesNotExist(hasTextExactly("Test Parent Deck"))
                 } catch (e: Exception) {
                     println("Failed to clean up deck $deckId: ${e.message}")
                     e.printStackTrace()

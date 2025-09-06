@@ -26,6 +26,7 @@ import me.forketyfork.welk.presentation.CardAction
 import me.forketyfork.welk.vm.DesktopCardViewModel
 import me.forketyfork.welk.vm.DesktopLoginViewModel
 import me.forketyfork.welk.vm.ThemeViewModel
+import me.forketyfork.welk.theme.AppTheme
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.desktop.ui.tooling.preview.Preview
 
@@ -62,7 +63,7 @@ fun SidePanel(
         modifier = modifier
             .width(width.dp)
             .fillMaxHeight()
-            .background(MaterialTheme.colors.surface)
+            .background(AppTheme.colors.transparent)
     ) {
         Column(
             modifier = Modifier
@@ -76,8 +77,8 @@ fun SidePanel(
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
                     .testTag(SidePanelTestTags.APP_TITLE),
-                style = MaterialTheme.typography.h1,
-                color = MaterialTheme.colors.primary,
+                style = AppTheme.typography.h1,
+                color = AppTheme.colors.primary,
                 textAlign = TextAlign.Center
             )
 
@@ -87,8 +88,8 @@ fun SidePanel(
             // Deck list title
             Text(
                 text = "Decks",
-                style = MaterialTheme.typography.h3,
-                color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
+                style = AppTheme.typography.h3,
+                color = AppTheme.colors.textSecondary,
                 modifier = Modifier.testTag(SidePanelTestTags.DECK_LIST_TITLE)
             )
 
@@ -170,7 +171,7 @@ fun SidePanel(
                     Icon(
                         imageVector = themeMode.icon,
                         contentDescription = themeMode.contentDescription,
-                        tint = MaterialTheme.colors.primary
+                        tint = AppTheme.colors.primary
                     )
                 }
 
@@ -182,7 +183,7 @@ fun SidePanel(
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Add Deck",
-                        tint = MaterialTheme.colors.primary
+                        tint = AppTheme.colors.primary
                     )
                 }
 
@@ -199,7 +200,7 @@ fun SidePanel(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                         contentDescription = "Logout",
-                        tint = MaterialTheme.colors.primary
+                        tint = AppTheme.colors.primary
                     )
                 }
             }
@@ -311,7 +312,7 @@ fun SidePanel(
                         }
                     }
                 )
-                .background(MaterialTheme.colors.onSurface.copy(alpha = 0.12f))
+                .background(AppTheme.colors.divider)
         )
     }
 }

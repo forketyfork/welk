@@ -3,6 +3,7 @@ package me.forketyfork.welk.vm
 import kotlinx.coroutines.flow.StateFlow
 import me.forketyfork.welk.domain.Card
 import me.forketyfork.welk.domain.Deck
+import me.forketyfork.welk.domain.ReviewGrade
 import me.forketyfork.welk.presentation.CardAction
 
 interface CardViewModel : InitializableViewModel {
@@ -15,13 +16,16 @@ interface CardViewModel : InitializableViewModel {
     val currentDeckCards: StateFlow<List<Card>>
     val isNewCard: StateFlow<Boolean>
     val isDeleteConfirmationShowing: StateFlow<Boolean>
-    val learnedCardCount: StateFlow<Int>
+    val reviewedCardCount: StateFlow<Int>
+    val dueCardCount: StateFlow<Int>
     val totalCardCount: StateFlow<Int>
     val expandedDeckIds: StateFlow<Set<String>>
+    val showAllCards: StateFlow<Boolean>
 
     fun flipCard()
     suspend fun nextCard()
     suspend fun selectDeck(deckId: String)
+    suspend fun gradeCard(grade: ReviewGrade)
     fun processAction(action: CardAction): Boolean
     fun updateEditContent(front: String, back: String)
     suspend fun saveCardEdit()
@@ -34,6 +38,7 @@ interface CardViewModel : InitializableViewModel {
     fun hideDeleteConfirmation()
     fun toggleDeckExpansion(deckId: String)
     fun isDeckExpanded(deckId: String): Boolean
+    fun toggleShowAllCards()
     fun startSession()
     fun stopSession()
 }

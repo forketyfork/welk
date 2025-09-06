@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.forketyfork.welk.components.CardPanel
@@ -41,7 +40,7 @@ fun App(module: Module = appModule) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(MaterialTheme.colors.background),
+                        .background(AppTheme.colors.transparent),
                     contentAlignment = Alignment.Center
                 ) {
                     LoginView()
@@ -52,7 +51,7 @@ fun App(module: Module = appModule) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(MaterialTheme.colors.background)
+                        .background(AppTheme.colors.transparent)
                 ) {
                     // Use Row for the layout
                     Row(modifier = Modifier.fillMaxSize()) {
