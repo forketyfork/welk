@@ -12,17 +12,18 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
-val appModule = module {
+val appModule =
+    module {
 
-    singleOf(::FirestoreRepository) { bind<CardRepository>() }
-    singleOf(::FirestoreRepository) { bind<DeckRepository>() }
-    singleOf(::DesktopCardAnimationManager) { bind<CardAnimationManager>() }
-    singleOf(::FirestoreAuthService) { bind<AuthService>() }
-    singleOf(::DefaultCardInteractionManager) { bind<CardInteractionManager>() }
+        singleOf(::FirestoreRepository) { bind<CardRepository>() }
+        singleOf(::FirestoreRepository) { bind<DeckRepository>() }
+        singleOf(::DesktopCardAnimationManager) { bind<CardAnimationManager>() }
+        singleOf(::FirestoreAuthService) { bind<AuthService>() }
+        singleOf(::DefaultCardInteractionManager) { bind<CardInteractionManager>() }
 
-    viewModelOf(::DesktopCardViewModel)
-    viewModelOf(::DesktopLoginViewModel)
-    viewModelOf(::ThemeViewModel)
+        viewModelOf(::DesktopCardViewModel)
+        viewModelOf(::DesktopLoginViewModel)
+        viewModelOf(::ThemeViewModel)
 
-    factory { getPlatform() }
-}
+        factory { getPlatform() }
+    }

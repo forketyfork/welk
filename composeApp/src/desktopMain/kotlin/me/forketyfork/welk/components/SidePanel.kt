@@ -1,12 +1,13 @@
 package me.forketyfork.welk.components
 
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
@@ -27,7 +28,6 @@ import me.forketyfork.welk.vm.DesktopCardViewModel
 import me.forketyfork.welk.vm.DesktopLoginViewModel
 import me.forketyfork.welk.vm.ThemeViewModel
 import org.koin.compose.viewmodel.koinViewModel
-import androidx.compose.desktop.ui.tooling.preview.Preview
 
 @Preview
 @Composable
@@ -36,7 +36,6 @@ fun SidePanel(
     modifier: Modifier = Modifier,
     onWidthChange: (Int) -> Unit = {},
 ) {
-
     val loginViewModel = koinViewModel<DesktopLoginViewModel>()
     val cardViewModel = koinViewModel<DesktopCardViewModel>()
     val themeViewModel = koinViewModel<ThemeViewModel>()
@@ -57,28 +56,30 @@ fun SidePanel(
     var deckIdToDelete by remember { mutableStateOf<String?>(null) }
     val deckListScrollState = rememberScrollState()
 
-
     Box(
-        modifier = modifier
-            .width(width.dp)
-            .fillMaxHeight()
-            .background(MaterialTheme.colors.surface)
+        modifier =
+            modifier
+                .width(width.dp)
+                .fillMaxHeight()
+                .background(MaterialTheme.colors.surface),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(16.dp)
+            modifier =
+                Modifier
+                    .fillMaxHeight()
+                    .padding(16.dp),
         ) {
             // App name with custom font
             Text(
                 text = "Welk\uD83C\uDF42",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-                    .testTag(SidePanelTestTags.APP_TITLE),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                        .testTag(SidePanelTestTags.APP_TITLE),
                 style = MaterialTheme.typography.h1,
                 color = MaterialTheme.colors.primary,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
 
             Divider()
@@ -89,16 +90,17 @@ fun SidePanel(
                 text = "Decks",
                 style = MaterialTheme.typography.h3,
                 color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
-                modifier = Modifier.testTag(SidePanelTestTags.DECK_LIST_TITLE)
+                modifier = Modifier.testTag(SidePanelTestTags.DECK_LIST_TITLE),
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             // Scrollable list of decks
             Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(deckListScrollState)
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .verticalScroll(deckListScrollState),
             ) {
                 // Filter top-level decks (those with no parent)
                 val topLevelDecks = decks.filter { it.value.parentId == null }
@@ -142,7 +144,7 @@ fun SidePanel(
                         onToggleExpansion = { deckId ->
                             cardViewModel.toggleDeckExpansion(deckId)
                         },
-                        expandedDeckIds = expandedDeckIds
+                        expandedDeckIds = expandedDeckIds,
                     )
                 }
             }
@@ -155,34 +157,35 @@ fun SidePanel(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .padding(vertical = 8.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .padding(vertical = 8.dp),
             ) {
                 // Theme toggle button
                 IconButton(
                     onClick = {
                         themeViewModel.toggleThemeMode()
                     },
-                    modifier = Modifier.testTag(SidePanelTestTags.THEME_TOGGLE_BUTTON)
+                    modifier = Modifier.testTag(SidePanelTestTags.THEME_TOGGLE_BUTTON),
                 ) {
                     Icon(
                         imageVector = themeMode.icon,
                         contentDescription = themeMode.contentDescription,
-                        tint = MaterialTheme.colors.primary
+                        tint = MaterialTheme.colors.primary,
                     )
                 }
 
                 // Add deck button
                 IconButton(
                     onClick = { showAddDeckDialog = true },
-                    modifier = Modifier.testTag(SidePanelTestTags.ADD_DECK_BUTTON)
+                    modifier = Modifier.testTag(SidePanelTestTags.ADD_DECK_BUTTON),
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Add Deck",
-                        tint = MaterialTheme.colors.primary
+                        tint = MaterialTheme.colors.primary,
                     )
                 }
 
@@ -194,23 +197,24 @@ fun SidePanel(
                             loginViewModel.signOut()
                         }
                     },
-                    modifier = Modifier.testTag(SidePanelTestTags.LOGOUT_BUTTON)
+                    modifier = Modifier.testTag(SidePanelTestTags.LOGOUT_BUTTON),
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                         contentDescription = "Logout",
-                        tint = MaterialTheme.colors.primary
+                        tint = MaterialTheme.colors.primary,
                     )
                 }
             }
 
             if (showAddDeckDialog) {
-                val dialogTitle = if (parentDeckId != null) {
-                    val parentDeck = decks.find { it.value.id == parentDeckId }?.value
-                    "Add Deck to ${parentDeck?.name ?: "Parent"}"
-                } else {
-                    "Add Top-Level Deck"
-                }
+                val dialogTitle =
+                    if (parentDeckId != null) {
+                        val parentDeck = decks.find { it.value.id == parentDeckId }?.value
+                        "Add Deck to ${parentDeck?.name ?: "Parent"}"
+                    } else {
+                        "Add Top-Level Deck"
+                    }
 
                 AlertDialog(
                     onDismissRequest = {
@@ -224,9 +228,11 @@ fun SidePanel(
                                 value = newDeckName,
                                 onValueChange = { newDeckName = it },
                                 label = { Text("Name") },
-                                modifier = Modifier.fillMaxWidth()
-                                    .focusRequester(deckNameFocusRequester)
-                                    .testTag(SidePanelTestTags.NEW_DECK_NAME),
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .focusRequester(deckNameFocusRequester)
+                                        .testTag(SidePanelTestTags.NEW_DECK_NAME),
                                 singleLine = true,
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -234,8 +240,10 @@ fun SidePanel(
                                 value = newDeckDescription,
                                 onValueChange = { newDeckDescription = it },
                                 label = { Text("Description") },
-                                modifier = Modifier.fillMaxWidth()
-                                    .testTag(SidePanelTestTags.NEW_DECK_DESCRIPTION),
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .testTag(SidePanelTestTags.NEW_DECK_DESCRIPTION),
                                 singleLine = true,
                             )
 
@@ -258,7 +266,7 @@ fun SidePanel(
                                 newDeckDescription = ""
                                 parentDeckId = null
                                 showAddDeckDialog = false
-                            }
+                            },
                         ) { Text("Save") }
                     },
                     dismissButton = {
@@ -266,7 +274,7 @@ fun SidePanel(
                             showAddDeckDialog = false
                             parentDeckId = null
                         }) { Text("Cancel") }
-                    }
+                    },
                 )
             }
 
@@ -286,32 +294,33 @@ fun SidePanel(
                                 }
                                 deckIdToDelete = null
                             },
-                            modifier = Modifier.testTag(SidePanelTestTags.CONFIRM_DELETE_BUTTON)
+                            modifier = Modifier.testTag(SidePanelTestTags.CONFIRM_DELETE_BUTTON),
                         ) { Text("Delete") }
                     },
                     dismissButton = {
                         TextButton(onClick = { deckIdToDelete = null }) { Text("Cancel") }
-                    }
+                    },
                 )
             }
         }
 
         // Draggable handle to resize the panel
         Box(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .fillMaxHeight()
-                .width(4.dp)
-                .draggable(
-                    orientation = Orientation.Horizontal,
-                    state = rememberDraggableState { delta ->
-                        val newWidth = (width + delta).toInt().coerceIn(150, 500)
-                        if (newWidth != width) {
-                            onWidthChange(newWidth)
-                        }
-                    }
-                )
-                .background(MaterialTheme.colors.onSurface.copy(alpha = 0.12f))
+            modifier =
+                Modifier
+                    .align(Alignment.CenterEnd)
+                    .fillMaxHeight()
+                    .width(4.dp)
+                    .draggable(
+                        orientation = Orientation.Horizontal,
+                        state =
+                            rememberDraggableState { delta ->
+                                val newWidth = (width + delta).toInt().coerceIn(150, 500)
+                                if (newWidth != width) {
+                                    onWidthChange(newWidth)
+                                }
+                            },
+                    ).background(MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
         )
     }
 }

@@ -9,21 +9,36 @@ interface CardRepository {
     /**
      * Creates a new card in the specified deck.
      */
-    suspend fun createCard(deckId: String, front: String, back: String): Card
+    suspend fun createCard(
+        deckId: String,
+        front: String,
+        back: String,
+    ): Card
 
     /**
      * Updates a card's learned status.
      */
-    suspend fun updateCardLearnedStatus(cardId: String, deckId: String, learned: Boolean)
+    suspend fun updateCardLearnedStatus(
+        cardId: String,
+        deckId: String,
+        learned: Boolean,
+    )
 
     /**
      * Updates a card's content (front and back text).
      */
-    suspend fun updateCardContent(cardId: String, deckId: String, front: String, back: String)
+    suspend fun updateCardContent(
+        cardId: String,
+        deckId: String,
+        front: String,
+        back: String,
+    )
 
     /**
      * Deletes a card.
      */
-    suspend fun deleteCard(cardId: String, deckId: String)
+    suspend fun deleteCard(
+        cardId: String,
+        deckId: String,
+    )
 }
-

@@ -29,84 +29,95 @@ private val surfaceColorDark = Color(0xFF1E1E1E)
 private val onSurfaceColorDark = Color.White
 
 // Light theme colors
-private val LightColors = lightColors(
-    primary = primaryColor,
-    primaryVariant = primaryVariant,
-    secondary = secondaryColor,
-    secondaryVariant = secondaryVariant,
-    background = backgroundColorLight,
-    surface = surfaceColorLight,
-    onSurface = onSurfaceColorLight
-)
+private val LightColors =
+    lightColors(
+        primary = primaryColor,
+        primaryVariant = primaryVariant,
+        secondary = secondaryColor,
+        secondaryVariant = secondaryVariant,
+        background = backgroundColorLight,
+        surface = surfaceColorLight,
+        onSurface = onSurfaceColorLight,
+    )
 
-private val DarkColors = darkColors(
-    primary = primaryColor,
-    primaryVariant = primaryVariant,
-    secondary = secondaryColor,
-    secondaryVariant = secondaryVariant,
-    background = backgroundColorDark,
-    surface = surfaceColorDark,
-    onSurface = onSurfaceColorDark
-)
+private val DarkColors =
+    darkColors(
+        primary = primaryColor,
+        primaryVariant = primaryVariant,
+        secondary = secondaryColor,
+        secondaryVariant = secondaryVariant,
+        background = backgroundColorDark,
+        surface = surfaceColorDark,
+        onSurface = onSurfaceColorDark,
+    )
 
 // Typography settings using our custom fonts
-private val appTypography = Typography(
-    h1 = TextStyle(
-        fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.Bold,
-        fontSize = 32.sp
-    ),
-    h2 = TextStyle(
-        fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 26.sp
-    ),
-    h3 = TextStyle(
-        fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 22.sp
-    ),
-    h4 = TextStyle(
-        fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 18.sp
-    ),
-    h5 = TextStyle(
-        fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 16.sp
-    ),
-    h6 = TextStyle(
-        fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 14.sp
-    ),
-    body1 = TextStyle(
-        fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp
-    ),
-    body2 = TextStyle(
-        fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.Normal,
-        fontSize = 14.sp
-    ),
-    button = TextStyle(
-        fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.Medium,
-        fontSize = 14.sp
-    ),
-    caption = TextStyle(
-        fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.Normal,
-        fontSize = 12.sp
+private val appTypography =
+    Typography(
+        h1 =
+            TextStyle(
+                fontFamily = AppFonts.openSans,
+                fontWeight = FontWeight.Bold,
+                fontSize = 32.sp,
+            ),
+        h2 =
+            TextStyle(
+                fontFamily = AppFonts.openSans,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 26.sp,
+            ),
+        h3 =
+            TextStyle(
+                fontFamily = AppFonts.openSans,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 22.sp,
+            ),
+        h4 =
+            TextStyle(
+                fontFamily = AppFonts.openSans,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 18.sp,
+            ),
+        h5 =
+            TextStyle(
+                fontFamily = AppFonts.openSans,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+            ),
+        h6 =
+            TextStyle(
+                fontFamily = AppFonts.openSans,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp,
+            ),
+        body1 =
+            TextStyle(
+                fontFamily = AppFonts.openSans,
+                fontWeight = FontWeight.Normal,
+                fontSize = 16.sp,
+            ),
+        body2 =
+            TextStyle(
+                fontFamily = AppFonts.openSans,
+                fontWeight = FontWeight.Normal,
+                fontSize = 14.sp,
+            ),
+        button =
+            TextStyle(
+                fontFamily = AppFonts.openSans,
+                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp,
+            ),
+        caption =
+            TextStyle(
+                fontFamily = AppFonts.openSans,
+                fontWeight = FontWeight.Normal,
+                fontSize = 12.sp,
+            ),
     )
-)
 
 @Composable
-fun AppTheme(
-    content: @Composable () -> Unit
-) {
+fun AppTheme(content: @Composable () -> Unit) {
     val themeViewModel = koinViewModel<ThemeViewModel>()
     val themeMode = themeViewModel.themeMode.collectAsStateWithLifecycle()
 
@@ -115,6 +126,6 @@ fun AppTheme(
     MaterialTheme(
         colors = if (darkTheme) DarkColors else LightColors,
         typography = appTypography,
-        content = content
+        content = content,
     )
 }

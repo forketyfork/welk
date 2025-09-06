@@ -11,12 +11,18 @@ import androidx.compose.ui.unit.dp
 import me.forketyfork.welk.domain.Deck
 
 @Composable
-fun DeckInfoPanel(deck: Deck, totalCount: Int, learnedCount: Int, modifier: Modifier = Modifier) {
+fun DeckInfoPanel(
+    deck: Deck,
+    totalCount: Int,
+    learnedCount: Int,
+    modifier: Modifier = Modifier,
+) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .testTag(DeckInfoPanelTestTags.DECK_INFO_PANEL)
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .testTag(DeckInfoPanelTestTags.DECK_INFO_PANEL),
     ) {
         Divider()
         Spacer(modifier = Modifier.height(8.dp))
@@ -24,14 +30,14 @@ fun DeckInfoPanel(deck: Deck, totalCount: Int, learnedCount: Int, modifier: Modi
             Text(
                 deck.description,
                 style = MaterialTheme.typography.body2,
-                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
             )
             Spacer(modifier = Modifier.height(4.dp))
         }
         Text(
             "$totalCount cards, $learnedCount learned",
             style = MaterialTheme.typography.caption,
-            color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+            color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
         )
     }
 }

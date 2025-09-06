@@ -7,11 +7,13 @@ import dev.gitlive.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
-import kotlin.time.Clock
 import me.forketyfork.welk.Platform
+import kotlin.time.Clock
 
-class FirestoreRepository(val platform: Platform) : CardRepository, DeckRepository {
-
+class FirestoreRepository(
+    val platform: Platform,
+) : CardRepository,
+    DeckRepository {
     companion object {
         private val logger = Logger.Companion.withTag("FirestoreRepository")
     }
@@ -20,16 +22,24 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
     private val users = firestore.collection("users")
 
     private val userDocument
-        get() = Firebase.auth.currentUser?.uid?.let { userId ->
-            users.document(userId)
-        } ?: throw IllegalStateException("User must be logged in to access data")
+        get() =
+            Firebase.auth.currentUser?.uid?.let { userId ->
+                users.document(userId)
+            } ?: throw IllegalStateException("User must be logged in to access data")
 
     private val decksCollection
         get() = userDocument.collection("decks")
 
-    private suspend fun getCardById(deckId: String, cardId: String): Card {
+    private suspend fun getCardById(
+        deckId: String,
+        cardId: String,
+    ): Card {
         val cardsCollection = decksCollection.document(deckId).collection("cards")
-        return cardsCollection.document(cardId).get().data<Card>().apply { id = cardId }
+        return cardsCollection
+            .document(cardId)
+            .get()
+            .data<Card>()
+            .apply { id = cardId }
     }
 
     private suspend fun getCardCount(deckId: String): Int {
@@ -39,8 +49,9 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
 
     // DECK REPOSITORY IMPLEMENTATION
 
-    override suspend fun flowDeckFlows(): Flow<List<Flow<Deck>>> {
-        return decksCollection.snapshots.map { it.documents }
+    override suspend fun flowDeckFlows(): Flow<List<Flow<Deck>>> =
+        decksCollection.snapshots
+            .map { it.documents }
             .map { documentSnapshots ->
                 documentSnapshots.map { documentSnapshot ->
                     documentSnapshot.reference.snapshots.mapNotNull { it ->
@@ -48,25 +59,30 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
                     }
                 }
             }
-    }
 
-    suspend fun getDeckById(deckId: String): Deck {
-        return decksCollection.document(deckId).get().data<Deck>().apply { id = deckId }
-    }
+    suspend fun getDeckById(deckId: String): Deck =
+        decksCollection.document(deckId).get().data<Deck>().apply {
+            id = deckId
+        }
 
     override fun flowDeck(deckId: String): Flow<Deck> =
         decksCollection.document(deckId).snapshots.mapNotNull { it.data<Deck?>()?.apply { id = deckId } }
 
-    override suspend fun createDeck(name: String, description: String, parentId: String?) {
+    override suspend fun createDeck(
+        name: String,
+        description: String,
+        parentId: String?,
+    ) {
         val timestamp = Clock.System.now().toEpochMilliseconds()
-        val newDeck = Deck(
-            name = name,
-            description = description,
-            cardCount = 0,
-            lastModified = timestamp,
-            created = timestamp,
-            parentId = parentId
-        )
+        val newDeck =
+            Deck(
+                name = name,
+                description = description,
+                cardCount = 0,
+                lastModified = timestamp,
+                created = timestamp,
+                parentId = parentId,
+            )
         decksCollection.add(newDeck)
     }
 
@@ -91,19 +107,20 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
     }
 
     override suspend fun getChildDecks(parentId: String?): List<Deck> {
-        val allDecks = decksCollection.get().documents.map { doc ->
-            doc.data<Deck>().apply { id = doc.id }
-        }
+        val allDecks =
+            decksCollection.get().documents.map { doc ->
+                doc.data<Deck>().apply { id = doc.id }
+            }
         return allDecks.filter { deck -> deck.parentId == parentId }
     }
 
-    override fun flowChildDecks(parentId: String?): Flow<List<Deck>> {
-        return decksCollection.snapshots.map { snapshot ->
-            snapshot.documents.map { doc ->
-                doc.data<Deck>().apply { id = doc.id }
-            }.filter { deck -> deck.parentId == parentId }
+    override fun flowChildDecks(parentId: String?): Flow<List<Deck>> =
+        decksCollection.snapshots.map { snapshot ->
+            snapshot.documents
+                .map { doc ->
+                    doc.data<Deck>().apply { id = doc.id }
+                }.filter { deck -> deck.parentId == parentId }
         }
-    }
 
     // CARD REPOSITORY IMPLEMENTATION
 
@@ -112,18 +129,23 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         return cardsCollection.get().documents.map { it.data<Card>().apply { id = it.id } }
     }
 
-    override suspend fun createCard(deckId: String, front: String, back: String): Card {
+    override suspend fun createCard(
+        deckId: String,
+        front: String,
+        back: String,
+    ): Card {
         val cardsCollection = decksCollection.document(deckId).collection("cards")
 
         // Get the current card count to determine position
         val cardCount = getCardCount(deckId)
 
-        val newCard = Card(
-            deckId = deckId,
-            front = front,
-            back = back,
-            position = cardCount // Position it at the end of the deck
-        )
+        val newCard =
+            Card(
+                deckId = deckId,
+                front = front,
+                back = back,
+                position = cardCount, // Position it at the end of the deck
+            )
 
         // Add the card to Firestore and get the generated document reference
         val docRef = cardsCollection.add(newCard)
@@ -133,17 +155,22 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
 
         // Update the deck's card count
         val deck = getDeckById(deckId)
-        val updatedDeck = deck.copy(
-            cardCount = cardCount + 1,
-            lastModified = Clock.System.now().toEpochMilliseconds()
-        )
+        val updatedDeck =
+            deck.copy(
+                cardCount = cardCount + 1,
+                lastModified = Clock.System.now().toEpochMilliseconds(),
+            )
         decksCollection.document(deckId).set(updatedDeck)
 
         // Return the card with the proper ID
         return cardWithId
     }
 
-    override suspend fun updateCardLearnedStatus(cardId: String, deckId: String, learned: Boolean) {
+    override suspend fun updateCardLearnedStatus(
+        cardId: String,
+        deckId: String,
+        learned: Boolean,
+    ) {
         // Check if card ID or deck ID are invalid
         if (cardId.isEmpty() || deckId.isEmpty()) {
             logger.e { "Error: Cannot update card with empty ID or deckId" }
@@ -168,7 +195,7 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         cardId: String,
         deckId: String,
         front: String,
-        back: String
+        back: String,
     ) {
         // Check if card ID or deck ID are invalid
         if (cardId.isEmpty() || deckId.isEmpty()) {
@@ -189,7 +216,10 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         decksCollection.document(deckId).set(updatedDeck)
     }
 
-    override suspend fun deleteCard(cardId: String, deckId: String) {
+    override suspend fun deleteCard(
+        cardId: String,
+        deckId: String,
+    ) {
         // Check if card ID or deck ID are invalid
         if (cardId.isEmpty() || deckId.isEmpty()) {
             logger.e { "Cannot delete card with empty ID or deckId" }
@@ -202,10 +232,11 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         // Update the deck's card count
         val cardCount = getCardCount(deckId)
         val deck = getDeckById(deckId)
-        val updatedDeck = deck.copy(
-            cardCount = cardCount,
-            lastModified = Clock.System.now().toEpochMilliseconds()
-        )
+        val updatedDeck =
+            deck.copy(
+                cardCount = cardCount,
+                lastModified = Clock.System.now().toEpochMilliseconds(),
+            )
         decksCollection.document(deckId).set(updatedDeck)
     }
 }

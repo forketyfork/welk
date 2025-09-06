@@ -5,10 +5,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.forketyfork.welk.components.CardPanel
@@ -26,9 +26,8 @@ fun App(module: Module = appModule) {
     KoinApplication(
         application = {
             modules(module)
-        }
+        },
     ) {
-
         val loginViewModel = koinViewModel<DesktopLoginViewModel>()
 
         // userId is null if the user is not logged in
@@ -39,10 +38,11 @@ fun App(module: Module = appModule) {
             if (userId.value == null) {
                 // show the login screen
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colors.background),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colors.background),
+                    contentAlignment = Alignment.Center,
                 ) {
                     LoginView()
                 }
@@ -50,9 +50,10 @@ fun App(module: Module = appModule) {
                 // show the main application screen
                 // Use Box as parent to manage z-index
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colors.background)
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colors.background),
                 ) {
                     // Use Row for the layout
                     Row(modifier = Modifier.fillMaxSize()) {
@@ -60,7 +61,7 @@ fun App(module: Module = appModule) {
                         SidePanel(
                             width = sidePanelWidth,
                             modifier = Modifier.zIndex(10f), // Keep above other content
-                            onWidthChange = { sidePanelWidth = it }
+                            onWidthChange = { sidePanelWidth = it },
                         )
 
                         // Spacer to push the card panel to the center
@@ -69,7 +70,7 @@ fun App(module: Module = appModule) {
                         // The main content area with the card should get the focus by default
                         CardPanel(
                             // Use weight to center it
-                            modifier = Modifier.weight(2f)
+                            modifier = Modifier.weight(2f),
                         )
 
                         // Spacer to center the card

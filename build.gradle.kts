@@ -23,10 +23,13 @@ allprojects {
         buildUponDefaultConfig = true
         allRules = false
         config.from("$rootDir/config/detekt/detekt.yml")
-        baseline = file("$rootDir/config/detekt/baseline.xml")
     }
 
     tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+        setSource(files("src"))
+        include("**/*.kt")
+        exclude("**/build/**", "**/generated/**")
+
         reports {
             html.required.set(true)
             xml.required.set(true)

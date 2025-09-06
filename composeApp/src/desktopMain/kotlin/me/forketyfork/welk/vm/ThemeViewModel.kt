@@ -18,41 +18,41 @@ enum class ThemeMode(
 ) {
     SYSTEM(
         icon = Icons.Default.SettingsBrightness,
-        contentDescription = "System theme (click to change)"
+        contentDescription = "System theme (click to change)",
     ) {
         @Composable
         override fun isDarkTheme(): Boolean = isSystemInDarkTheme()
     },
     LIGHT(
         icon = Icons.Default.LightMode,
-        contentDescription = "Light theme (click to change)"
+        contentDescription = "Light theme (click to change)",
     ) {
         @Composable
         override fun isDarkTheme(): Boolean = false
     },
     DARK(
         icon = Icons.Default.DarkMode,
-        contentDescription = "Dark theme (click to change)"
+        contentDescription = "Dark theme (click to change)",
     ) {
         @Composable
         override fun isDarkTheme(): Boolean = true
-    };
+    }, ;
 
     @Composable
     abstract fun isDarkTheme(): Boolean
 
-    fun next(): ThemeMode = when (this) {
-        SYSTEM -> LIGHT
-        LIGHT -> DARK
-        DARK -> SYSTEM
-    }
+    fun next(): ThemeMode =
+        when (this) {
+            SYSTEM -> LIGHT
+            LIGHT -> DARK
+            DARK -> SYSTEM
+        }
 }
 
 /**
  * ViewModel for managing theme preferences.
  */
 class ThemeViewModel : ViewModel() {
-
     private val _themeMode = MutableStateFlow(ThemeMode.SYSTEM)
     val themeMode: StateFlow<ThemeMode> = _themeMode.asStateFlow()
 
@@ -62,5 +62,4 @@ class ThemeViewModel : ViewModel() {
     fun toggleThemeMode() {
         _themeMode.value = _themeMode.value.next()
     }
-
 }
