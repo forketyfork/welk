@@ -10,11 +10,12 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlin.time.Instant
 import me.forketyfork.welk.Platform
 import me.forketyfork.welk.domain.sra.SimpleIntervalAlgorithm
+import kotlin.time.Clock
 
 class FirestoreRepository(val platform: Platform) : CardRepository, DeckRepository {
 
     companion object {
-        private val logger = Logger.Companion.withTag("FirestoreRepository")
+        private val logger = Logger.withTag("FirestoreRepository")
     }
 
     private val firestore: FirebaseFirestore = platform.initializeFirestore()
@@ -45,7 +46,7 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         return decksCollection.snapshots.map { it.documents }
             .map { documentSnapshots ->
                 documentSnapshots.map { documentSnapshot ->
-                    documentSnapshot.reference.snapshots.mapNotNull { it ->
+                    documentSnapshot.reference.snapshots.mapNotNull {
                         it.data<Deck?>()?.apply { id = documentSnapshot.id }
                     }
                 }
@@ -60,7 +61,7 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         decksCollection.document(deckId).snapshots.mapNotNull { it.data<Deck?>()?.apply { id = deckId } }
 
     override suspend fun createDeck(name: String, description: String, parentId: String?) {
-        val timestamp = System.currentTimeMillis()
+        val timestamp = Clock.System.now().toEpochMilliseconds()
         val newDeck = Deck(
             name = name,
             description = description,
@@ -137,7 +138,7 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         val deck = getDeckById(deckId)
         val updatedDeck = deck.copy(
             cardCount = cardCount + 1,
-            lastModified = System.currentTimeMillis()
+            lastModified = Clock.System.now().toEpochMilliseconds()
         )
         decksCollection.document(deckId).set(updatedDeck)
 
@@ -154,15 +155,15 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
 
         val cardsCollection = decksCollection.document(deckId).collection("cards")
         val card = getCardById(deckId, cardId)
-        val currentTime = Instant.fromEpochMilliseconds(System.currentTimeMillis())
+        val currentTime = Instant.fromEpochMilliseconds(Clock.System.now().toEpochMilliseconds())
         
-        // Create new review record
+        // Create a new review record
         val newReview = CardReview(timestamp = currentTime, grade = grade)
         
-        // Add review to existing reviews list (maintaining chronological order)
+        // Add a review to the existing reviews list (maintaining chronological order)
         val updatedReviews = card.reviews + newReview
         
-        // Calculate next review time using the algorithm
+        // Calculate the next review time using the algorithm
         val nextReviewTime = spacedRepetitionAlgorithm.calculateNextReview(
             reviews = updatedReviews,
             currentGrade = grade,
@@ -180,7 +181,7 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
 
         // Update the deck's last modified timestamp
         val deck = getDeckById(deckId)
-        val updatedDeck = deck.copy(lastModified = System.currentTimeMillis())
+        val updatedDeck = deck.copy(lastModified = Clock.System.now().toEpochMilliseconds())
         decksCollection.document(deckId).set(updatedDeck)
         
         return nextReviewTime
@@ -207,7 +208,7 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
 
         // Update the deck's last modified timestamp
         val deck = getDeckById(deckId)
-        val updatedDeck = deck.copy(lastModified = System.currentTimeMillis())
+        val updatedDeck = deck.copy(lastModified = Clock.System.now().toEpochMilliseconds())
         decksCollection.document(deckId).set(updatedDeck)
     }
 
@@ -226,7 +227,7 @@ class FirestoreRepository(val platform: Platform) : CardRepository, DeckReposito
         val deck = getDeckById(deckId)
         val updatedDeck = deck.copy(
             cardCount = cardCount,
-            lastModified = System.currentTimeMillis()
+            lastModified = Clock.System.now().toEpochMilliseconds()
         )
         decksCollection.document(deckId).set(updatedDeck)
     }

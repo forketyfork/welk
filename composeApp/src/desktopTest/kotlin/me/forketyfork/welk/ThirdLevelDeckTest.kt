@@ -5,13 +5,14 @@ import me.forketyfork.welk.components.DeckItemTestTags
 import me.forketyfork.welk.components.SidePanelTestTags
 import org.junit.Test
 import org.koin.test.KoinTest
+import kotlin.time.Clock
 
 class ThirdLevelDeckTest : KoinTest {
 
     @Test
     fun testThirdLevelDeckVisibility() = runComposeUiTest {
         // This test verifies that third-level decks are visible in the UI
-        val timestamp = System.currentTimeMillis()
+        val timestamp = Clock.System.now().toEpochMilliseconds()
         val level1Name = "Level 1 ($timestamp)"
         val level2Name = "Level 2 ($timestamp)"
         val level3Name = "Level 3 ($timestamp)"

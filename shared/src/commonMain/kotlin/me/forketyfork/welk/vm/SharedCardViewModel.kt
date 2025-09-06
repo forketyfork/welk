@@ -239,7 +239,7 @@ open class SharedCardViewModel(
         }
 
         try {
-            updateGradeAndMoveToNextCard(currentCardId, currentCard, grade)
+            updateGradeAndMoveToNextCard(currentCard, grade)
         } catch (e: Exception) {
             logger.e(e) { "Error grading card: ${e.message}" }
         }
@@ -255,12 +255,12 @@ open class SharedCardViewModel(
             .filter { it.idx != -1 } // skipping initial value
             .collect {
                 val currentCard = _currentCard.value
-                val currentCardId = currentCard?.id ?: error("Card ID is null")
+                    ?: error("Current card isn't supposed to be null on animation completion")
 
                 // Convert learned status to grade (backward compatibility)
                 val grade = if (it.learned) ReviewGrade.GOOD else ReviewGrade.AGAIN
 
-                updateGradeAndMoveToNextCard(currentCardId, currentCard, grade)
+                updateGradeAndMoveToNextCard(currentCard, grade)
 
                 // Reset the animation trigger
                 cardAnimationManager.reset()
@@ -268,13 +268,12 @@ open class SharedCardViewModel(
     }
 
     private suspend fun updateGradeAndMoveToNextCard(
-        currentCardId: String,
         currentCard: Card,
         grade: ReviewGrade
     ) {
         // Add a review to the current card
         val nextReviewTime = cardRepository.addCardReview(
-            currentCardId,
+            currentCard.id ?: error("Attempting to grade a card that wasn't persisted"),
             currentCard.deckId,
             grade
         )

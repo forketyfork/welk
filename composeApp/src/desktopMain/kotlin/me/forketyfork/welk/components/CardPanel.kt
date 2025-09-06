@@ -38,6 +38,7 @@ import me.forketyfork.welk.vm.DesktopCardAnimationManager
 import me.forketyfork.welk.vm.DesktopCardViewModel
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.time.Clock
 import kotlin.time.Instant
 
 private val logger = Logger.withTag("CardPanel")
@@ -154,9 +155,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                 logger.d { "Card got key event: $event" }
 
                 val action = cardInteractionManager.handleKeyEvent(event)
-                val handled = cardViewModel.processAction(action)
-                
-                handled
+                cardViewModel.processAction(action)
             }
             .focusRequester(focusRequester)
             .focusable()
@@ -430,7 +429,7 @@ fun ReviewStatusIndicator(nextReview: Instant?) {
         text = "New"
         color = Color.Green
     } else {
-        val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
+        val now = Instant.fromEpochMilliseconds(Clock.System.now().toEpochMilliseconds())
         if (nextReview <= now) {
             text = "Due now"
             color = Color.Green
