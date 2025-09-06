@@ -12,7 +12,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.rotate
@@ -43,7 +42,6 @@ import kotlin.time.Instant
 
 private val logger = Logger.withTag("CardPanel")
 
-@OptIn(kotlin.time.ExperimentalTime::class)
 @Composable
 fun CardPanel(modifier: Modifier = Modifier) {
 
@@ -437,7 +435,6 @@ fun CardPanel(modifier: Modifier = Modifier) {
 
 // For multiline fields, Tab doesn't work as expected, so we need to move focus manually
 // see https://github.com/JetBrains/compose-multiplatform/blob/master/tutorials/Tab_Navigation/README.md#a-possible-workaround
-@OptIn(ExperimentalComposeUiApi::class)
 fun Modifier.moveFocusOnTab() = composed {
     val focusManager = LocalFocusManager.current
     onPreviewKeyEvent {
@@ -452,7 +449,6 @@ fun Modifier.moveFocusOnTab() = composed {
     }
 }
 
-@OptIn(kotlin.time.ExperimentalTime::class)
 @Composable
 fun ReviewStatusIndicator(nextReview: Instant?) {
     val text: String

@@ -9,11 +9,10 @@ import org.koin.test.KoinTest
 
 class CreateNewCardTest : KoinTest {
 
-    @OptIn(ExperimentalTestApi::class)
     @Test
     fun canCreateNewCard() = runComposeUiTest {
 
-        // Get test credentials and set up the app with clean database
+        // Get test credentials and set up the app with a clean database
         val (testUsername, testPassword) = getTestCredentials()
         setupAppWithCleanDatabase(this, testUsername, testPassword)
 

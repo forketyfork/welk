@@ -10,7 +10,6 @@ import me.forketyfork.welk.components.DeckItemTestTags
 import org.junit.Test
 import org.koin.test.KoinTest
 
-@OptIn(ExperimentalTestApi::class)
 class CardInteractionTest : KoinTest {
 
     @Test

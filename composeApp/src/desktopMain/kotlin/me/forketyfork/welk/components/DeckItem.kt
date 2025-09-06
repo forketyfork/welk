@@ -1,6 +1,9 @@
 package me.forketyfork.welk.components
 
-import androidx.compose.foundation.*
+import androidx.compose.foundation.TooltipArea
+import androidx.compose.foundation.TooltipPlacement
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -22,7 +25,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.StateFlow
 import me.forketyfork.welk.domain.Deck
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DeckItem(
     deck: StateFlow<Deck>,

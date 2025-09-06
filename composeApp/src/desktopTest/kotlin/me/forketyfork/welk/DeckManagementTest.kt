@@ -12,11 +12,10 @@ import org.koin.test.KoinTest
 
 class DeckManagementTest : KoinTest {
 
-    @OptIn(ExperimentalTestApi::class)
     @Test
     fun canCreateAndDeleteDeck() = runComposeUiTest {
 
-        // Get test credentials and set up the app with clean database
+        // Get test credentials and set up the app with a clean database
         val (testUsername, testPassword) = getTestCredentials()
         setupAppWithCleanDatabase(this, testUsername, testPassword)
 
@@ -90,10 +89,9 @@ class DeckManagementTest : KoinTest {
 
             // Clean up initial decks
             deleteTestDeck(initialDeck1)
-            deleteTestDeck(initialDeck2)
-
-            // Verify initial decks are deleted
             waitUntilDoesNotExist(hasTextExactly("Initial Deck 1"))
+
+            deleteTestDeck(initialDeck2)
             waitUntilDoesNotExist(hasTextExactly("Initial Deck 2"))
 
         } finally {

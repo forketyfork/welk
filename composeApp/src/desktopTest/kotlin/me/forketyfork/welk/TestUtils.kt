@@ -1,7 +1,6 @@
 package me.forketyfork.welk
 
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.*
@@ -34,7 +33,6 @@ class TestViewModelStoreOwner : ViewModelStoreOwner {
 /**
  * Gets test credentials from environment variables and fails if they're not set
  */
-@OptIn(ExperimentalTestApi::class)
 fun getTestCredentials(): Pair<String, String> {
     val testUsername = System.getenv("WELK_TEST_USERNAME") ?: System.getProperty("WELK_TEST_USERNAME") ?: "user@test"
     val testPassword = System.getenv("WELK_TEST_PASSWORD") ?: System.getProperty("WELK_TEST_PASSWORD") ?: "password"
@@ -69,7 +67,6 @@ fun KoinTest.cleanupTestUserDatabase() {
 /**
  * Sets up the composition with the App composable
  */
-@OptIn(ExperimentalTestApi::class)
 fun ComposeUiTest.setupApp() {
     setContent {
         CompositionLocalProvider(
@@ -85,7 +82,6 @@ fun ComposeUiTest.setupApp() {
  * Sets up the app, logs in with the provided credentials, and cleans up the database beforehand.
  * This is the recommended way to start tests to ensure a clean database state.
  */
-@OptIn(ExperimentalTestApi::class)
 fun KoinTest.setupAppWithCleanDatabase(composeTest: ComposeUiTest, username: String, password: String) {
     // Set up the app
     composeTest.setupApp()
@@ -112,7 +108,6 @@ fun KoinTest.setupAppWithCleanDatabase(composeTest: ComposeUiTest, username: Str
 /**
  * Logs in with the provided credentials and cleans up the database beforehand
  */
-@OptIn(ExperimentalTestApi::class)
 fun ComposeUiTest.login(username: String, password: String) {
     onNodeWithTag(LoginViewTestTags.USERNAME_INPUT).performTextInput(username)
     onNodeWithTag(LoginViewTestTags.PASSWORD_INPUT).performTextInput(password)
@@ -123,7 +118,6 @@ fun ComposeUiTest.login(username: String, password: String) {
 /**
  * Verifies that basic UI elements are visible after login
  */
-@OptIn(ExperimentalTestApi::class)
 fun ComposeUiTest.verifyBasicUiElements() {
     waitUntilExactlyOneExists(hasTestTag(SidePanelTestTags.APP_TITLE), timeoutMillis = 10000)
     onNodeWithTag(SidePanelTestTags.APP_TITLE).assertTextEquals("Welk\uD83C\uDF42")
@@ -134,7 +128,6 @@ fun ComposeUiTest.verifyBasicUiElements() {
 /**
  * Logs out and verifies that the login screen is shown
  */
-@OptIn(ExperimentalTestApi::class)
 fun ComposeUiTest.logout() {
     waitUntilExactlyOneExists(hasTestTag(SidePanelTestTags.LOGOUT_BUTTON), timeoutMillis = 10000)
     onNodeWithTag(SidePanelTestTags.LOGOUT_BUTTON).performClick()
@@ -145,7 +138,6 @@ fun ComposeUiTest.logout() {
 }
 
 @Suppress("unused") // a handy function for debugging
-@OptIn(ExperimentalTestApi::class, InternalComposeUiApi::class)
 fun ComposeUiTest.printSemanticNodeState() {
     println()
     onAllNodes(SemanticsMatcher("all nodes") { true }).fetchSemanticsNodes().forEach { node ->
@@ -159,7 +151,6 @@ fun ComposeUiTest.printSemanticNodeState() {
     }
 }
 
-@OptIn(ExperimentalTestApi::class, InternalComposeUiApi::class)
 fun ComposeUiTest.getDeckIdByName(name: String): String {
     val tag = onNodeWithText(name)
         .fetchSemanticsNode()
@@ -171,7 +162,6 @@ fun ComposeUiTest.getDeckIdByName(name: String): String {
 /**
  * Creates a test deck through the UI and returns its ID
  */
-@OptIn(ExperimentalTestApi::class)
 fun ComposeUiTest.createTestDeck(name: String, description: String): String {
     // Click the "Add deck" button
     onNodeWithTag(SidePanelTestTags.ADD_DECK_BUTTON).performClick()
@@ -196,7 +186,6 @@ fun ComposeUiTest.createTestDeck(name: String, description: String): String {
 /**
  * Creates a test card in the specified deck through the UI
  */
-@OptIn(ExperimentalTestApi::class)
 fun ComposeUiTest.createTestCard(deckId: String, front: String, back: String) {
     // Add a card to the deck using its test tag
     onNodeWithTag(DeckItemTestTags.ADD_CARD_BUTTON_TEMPLATE.format(deckId)).performClick()
@@ -219,7 +208,6 @@ fun ComposeUiTest.createTestCard(deckId: String, front: String, back: String) {
 /**
  * Deletes a test deck through the UI
  */
-@OptIn(ExperimentalTestApi::class)
 fun ComposeUiTest.deleteTestDeck(deckId: String) {
     // Delete the deck via the delete button tagged with the deck id
     onNodeWithTag(DeckItemTestTags.DELETE_DECK_BUTTON_TEMPLATE.format(deckId)).performClick()
