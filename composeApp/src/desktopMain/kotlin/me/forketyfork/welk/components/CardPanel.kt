@@ -153,39 +153,10 @@ fun CardPanel(modifier: Modifier = Modifier) {
             .onPreviewKeyEvent { event: KeyEvent ->
                 logger.d { "Card got key event: $event" }
 
-                // Handle grade button shortcuts (1-4 keys)
-                if (event.type == KeyEventType.KeyDown && hasCards.value && !isEditing.value) {
-                    when (event.key) {
-                        Key.One, Key.NumPad1 -> {
-                            coroutineScope.launch { cardViewModel.gradeCard(ReviewGrade.AGAIN) }
-                            true
-                        }
-
-                        Key.Two, Key.NumPad2 -> {
-                            coroutineScope.launch { cardViewModel.gradeCard(ReviewGrade.HARD) }
-                            true
-                        }
-
-                        Key.Three, Key.NumPad3 -> {
-                            coroutineScope.launch { cardViewModel.gradeCard(ReviewGrade.GOOD) }
-                            true
-                        }
-
-                        Key.Four, Key.NumPad4 -> {
-                            coroutineScope.launch { cardViewModel.gradeCard(ReviewGrade.EASY) }
-                            true
-                        }
-
-                        else -> {
-                            // Fall back to normal card interaction handling
-                            val action = cardInteractionManager.handleKeyEvent(event)
-                            cardViewModel.processAction(action)
-                        }
-                    }
-                } else {
-                    val action = cardInteractionManager.handleKeyEvent(event)
-                    cardViewModel.processAction(action)
-                }
+                val action = cardInteractionManager.handleKeyEvent(event)
+                val handled = cardViewModel.processAction(action)
+                
+                handled
             }
             .focusRequester(focusRequester)
             .focusable()
