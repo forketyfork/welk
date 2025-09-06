@@ -192,7 +192,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
             .focusRequester(focusRequester)
             .focusable()
     ) {
-        // Show all cards checkbox in top-right corner
+        // Show all cards checkbox in the top-right corner
         Row(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -389,15 +389,14 @@ fun CardPanel(modifier: Modifier = Modifier) {
                                     )
                                 }
 
-                                // Review status indicator in bottom-right corner
+                                // A review status indicator in the bottom-right corner
                                 Spacer(modifier = Modifier.weight(1f))
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.End
                                 ) {
                                     ReviewStatusIndicator(
-                                        nextReview = card.nextReview,
-                                        isReviewed = card.reviews.isNotEmpty()
+                                        nextReview = card.nextReview
                                     )
                                 }
                             }
@@ -455,10 +454,7 @@ fun Modifier.moveFocusOnTab() = composed {
 
 @OptIn(kotlin.time.ExperimentalTime::class)
 @Composable
-fun ReviewStatusIndicator(
-    nextReview: Instant?,
-    isReviewed: Boolean
-) {
+fun ReviewStatusIndicator(nextReview: Instant?) {
     val text: String
     val color: Color
 
