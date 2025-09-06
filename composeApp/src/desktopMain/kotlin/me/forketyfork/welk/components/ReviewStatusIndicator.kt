@@ -5,8 +5,14 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
+import java.time.Instant.ofEpochMilli
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import kotlin.time.Clock
 import kotlin.time.Instant
+
+private val FORMATTER = DateTimeFormatter.ofPattern("MMM d, HH:mm")
 
 @Composable
 fun ReviewStatusIndicator(nextReview: Instant?) {
@@ -25,12 +31,8 @@ fun ReviewStatusIndicator(nextReview: Instant?) {
         } else {
             // Format the date and time for display
             val epochMillis = nextReview.toEpochMilliseconds()
-            val date = java.time.LocalDateTime.ofInstant(
-                java.time.Instant.ofEpochMilli(epochMillis),
-                java.time.ZoneId.systemDefault()
-            )
-            val formatter = java.time.format.DateTimeFormatter.ofPattern("MMM d, HH:mm")
-            text = date.format(formatter)
+            val date = LocalDateTime.ofInstant(ofEpochMilli(epochMillis), ZoneId.systemDefault())
+            text = date.format(FORMATTER)
             color = Color.Blue
         }
     }
