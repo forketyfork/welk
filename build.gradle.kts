@@ -4,11 +4,48 @@ plugins {
     alias(libs.plugins.composeMultiplatform) apply false
     alias(libs.plugins.composeCompiler) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.ktlint)
 }
 
 buildscript {
     repositories {
         google()
         mavenCentral()
+    }
+}
+
+allprojects {
+    apply(plugin = "io.gitlab.arturbosch.detekt")
+    apply(plugin = "org.jlleitschuh.gradle.ktlint")
+
+    detekt {
+        buildUponDefaultConfig = true
+        allRules = false
+        config.from("$rootDir/config/detekt/detekt.yml")
+        baseline = file("$rootDir/config/detekt/baseline.xml")
+    }
+
+    tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+        reports {
+            html.required.set(true)
+            xml.required.set(true)
+            txt.required.set(true)
+            sarif.required.set(true)
+            md.required.set(true)
+        }
+    }
+
+    ktlint {
+        version.set("1.4.1")
+        ignoreFailures.set(false)
+        reporters {
+            reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
+            reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
+        }
+        filter {
+            exclude("**/generated/**")
+            include("**/kotlin/**")
+        }
     }
 }

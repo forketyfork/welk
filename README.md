@@ -23,6 +23,36 @@ For local development:
   firebase.appId=
   ```
 
+## Code Quality Tools
+
+This project uses the following code quality tools:
+
+### detekt
+Static code analysis for Kotlin. Configuration is in `config/detekt/detekt.yml`.
+
+```bash
+# Run detekt analysis on all modules
+./gradlew detekt
+
+# Run detekt on specific targets
+./gradlew shared:detektJvmMain
+./gradlew composeApp:detektDesktopMain
+
+# Generate baseline to ignore existing issues
+./gradlew detektBaseline
+```
+
+### ktlint
+Code formatting and style checking for Kotlin. Configuration is in `.editorconfig`.
+
+```bash
+# Check code formatting
+./gradlew ktlintCheck
+
+# Auto-format code
+./gradlew ktlintFormat
+```
+
 ## Roadmap
 
 ### Done

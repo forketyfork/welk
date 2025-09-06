@@ -12,6 +12,8 @@ firebase-kotlin-sdk = "2.3.0" # https://github.com/GitLiveApp/firebase-kotlin-sd
 compose-material = "1.8.2" # https://search.maven.org/artifact/org.jetbrains.compose.material/material
 kermit = "2.0.8" # https://github.com/touchlab/Kermit/releases/
 koin = "4.1.1" # https://github.com/InsertKoinIO/koin/releases
+detekt = "1.23.8" # https://github.com/detekt/detekt/releases
+ktlint-gradle = "12.2.0" # https://github.com/JLLeitschuh/ktlint-gradle/releases
 
 [libraries]
 
@@ -55,3 +57,5 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotilnSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 skie = { id = "co.touchlab.skie", version.ref = "skie" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint-gradle" }

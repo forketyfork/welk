@@ -1,0 +1,22 @@
+root = true
+
+[*.{kt,kts}]
+# Use 4 spaces for indentation
+indent_style = space
+indent_size = 4
+# Trim trailing whitespace
+trim_trailing_whitespace = true
+# Insert final newline
+insert_final_newline = true
+# Max line length
+max_line_length = 120
+
+# Kotlin-specific rules
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = true
+
+# Disable rules not suitable for Compose and Kotlin Multiplatform projects
+ktlint_standard_no-wildcard-imports = disabled
+ktlint_standard_function-naming = disabled
+ktlint_standard_filename = disabled
+ktlint_standard_backing-property-naming = disabled
