@@ -31,15 +31,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.launch
-import me.forketyfork.welk.domain.ReviewGrade
 import me.forketyfork.welk.presentation.CardAction
 import me.forketyfork.welk.vm.CardInteractionManager
 import me.forketyfork.welk.vm.DesktopCardAnimationManager
 import me.forketyfork.welk.vm.DesktopCardViewModel
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import kotlin.time.Clock
-import kotlin.time.Instant
 
 private val logger = Logger.withTag("CardPanel")
 
@@ -415,96 +412,6 @@ fun Modifier.moveFocusOnTab() = composed {
             true
         } else {
             false
-        }
-    }
-}
-
-@Composable
-fun ReviewStatusIndicator(nextReview: Instant?) {
-    val text: String
-    val color: Color
-
-    if (nextReview == null) {
-        // Never reviewed
-        text = "New"
-        color = Color.Green
-    } else {
-        val now = Instant.fromEpochMilliseconds(Clock.System.now().toEpochMilliseconds())
-        if (nextReview <= now) {
-            text = "Due now"
-            color = Color.Green
-        } else {
-            // Format the date and time for display
-            val epochMillis = nextReview.toEpochMilliseconds()
-            val date = java.time.LocalDateTime.ofInstant(
-                java.time.Instant.ofEpochMilli(epochMillis),
-                java.time.ZoneId.systemDefault()
-            )
-            val formatter = java.time.format.DateTimeFormatter.ofPattern("MMM d, HH:mm")
-            text = date.format(formatter)
-            color = Color.Blue
-        }
-    }
-
-    Text(
-        text = text,
-        style = MaterialTheme.typography.caption,
-        color = color,
-        fontSize = 12.sp
-    )
-}
-
-@Composable
-fun GradeButtons(
-    onGrade: (ReviewGrade) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 32.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Button(
-            onClick = { onGrade(ReviewGrade.AGAIN) },
-            modifier = Modifier.weight(1f).defaultMinSize(minWidth = 100.dp),
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color.Red.copy(alpha = 0.2f),
-                contentColor = MaterialTheme.colors.onSurface
-            )
-        ) {
-            Text("Again (1)", maxLines = 1, fontSize = 14.sp)
-        }
-        Button(
-            onClick = { onGrade(ReviewGrade.HARD) },
-            modifier = Modifier.weight(1f).defaultMinSize(minWidth = 100.dp),
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color.Yellow.copy(alpha = 0.2f),
-                contentColor = MaterialTheme.colors.onSurface
-            )
-        ) {
-            Text("Hard (2)", maxLines = 1, fontSize = 14.sp)
-        }
-        Button(
-            onClick = { onGrade(ReviewGrade.GOOD) },
-            modifier = Modifier.weight(1f).defaultMinSize(minWidth = 100.dp),
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color.Green.copy(alpha = 0.2f),
-                contentColor = MaterialTheme.colors.onSurface
-            )
-        ) {
-            Text("Good (3)", maxLines = 1, fontSize = 14.sp)
-        }
-        Button(
-            onClick = { onGrade(ReviewGrade.EASY) },
-            modifier = Modifier.weight(1f).defaultMinSize(minWidth = 100.dp),
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color.Blue.copy(alpha = 0.2f),
-                contentColor = MaterialTheme.colors.onSurface
-            )
-        ) {
-            Text("Easy (4)", maxLines = 1, fontSize = 14.sp)
         }
     }
 }
