@@ -260,3 +260,4 @@ When making changes to iOS code:
 
 - Always extract all typography and color settings to `AppTheme`
 - Always use `AppTheme` instead of referencing `MaterialTheme` directly
+- Always provide both the light and the dark theme colors

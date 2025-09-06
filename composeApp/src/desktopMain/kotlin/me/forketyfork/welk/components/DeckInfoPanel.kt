@@ -2,13 +2,13 @@ package me.forketyfork.welk.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Divider
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import me.forketyfork.welk.domain.Deck
+import me.forketyfork.welk.theme.AppTheme
 
 @Composable
 fun DeckInfoPanel(deck: Deck, totalCount: Int, reviewedCount: Int, dueCount: Int, modifier: Modifier = Modifier) {
@@ -23,15 +23,15 @@ fun DeckInfoPanel(deck: Deck, totalCount: Int, reviewedCount: Int, dueCount: Int
         if (deck.description.isNotEmpty()) {
             Text(
                 deck.description,
-                style = MaterialTheme.typography.body2,
-                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                style = AppTheme.typography.body2,
+                color = AppTheme.colors.textDisabled
             )
             Spacer(modifier = Modifier.height(4.dp))
         }
         Text(
             "$totalCount cards, $reviewedCount reviewed, $dueCount due",
-            style = MaterialTheme.typography.caption,
-            color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+            style = AppTheme.typography.caption,
+            color = AppTheme.colors.textDisabled
         )
     }
 }
