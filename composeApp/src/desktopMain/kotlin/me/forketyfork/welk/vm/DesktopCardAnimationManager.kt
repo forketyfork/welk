@@ -18,7 +18,7 @@ import kotlin.math.roundToInt
 
 class DesktopCardAnimationManager : CommonCardAnimationManager() {
     private val _cardAnimationState = MutableStateFlow(CardAnimationState())
-    private val cardAnimationState = _cardAnimationState.asStateFlow()
+    val cardAnimationState = _cardAnimationState.asStateFlow()
 
     @Composable
     fun animateOffset() =
@@ -31,8 +31,7 @@ class DesktopCardAnimationManager : CommonCardAnimationManager() {
                 LaunchedEffect(animatedOffset.value) {
                     if (animatedOffset.value == 1600.dp || animatedOffset.value == (-1600).dp) {
                         // TODO eww
-                        _animationCompleteTrigger.value =
-                            AnimationCompleteOutcome(value.idx, animatedOffset.value == 1600.dp)
+                        animationCompleted(AnimationCompleteOutcome(value.idx, animatedOffset.value == 1600.dp))
                     }
                 }
             }.let { animatedOffset ->

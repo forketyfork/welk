@@ -31,7 +31,7 @@ open class SharedCardViewModel(
         get() = sessionScope ?: viewModelScope
 
     // Current position within the deck
-    private val _currentCardPosition = MutableStateFlow(0)
+    private val currentCardPosition = MutableStateFlow(0)
 
     // Current selected deck
     private val _currentDeck = MutableStateFlow<StateFlow<Deck>?>(null)
@@ -86,7 +86,7 @@ open class SharedCardViewModel(
      * and the position resets to 0. Updates the UI accordingly.
      */
     private suspend fun collectCurrentCardPositionChanges() {
-        _currentCardPosition.collect { position ->
+        currentCardPosition.collect { position ->
             updateCurrentCardFromPosition()
         }
     }
@@ -103,7 +103,7 @@ open class SharedCardViewModel(
                 val deckId = deck.value.id ?: error("Deck ID is null for a persistent deck")
                 _currentDeckCards.value = getAllCardsForDeck(deckId)
                 // Reset to the first card in the deck
-                _currentCardPosition.value = 0
+                currentCardPosition.value = 0
                 updateCurrentCardFromPosition()
             }
         }
@@ -120,7 +120,7 @@ open class SharedCardViewModel(
             return
         }
 
-        val position = _currentCardPosition.value.coerceIn(0, cards.size - 1)
+        val position = currentCardPosition.value.coerceIn(0, cards.size - 1)
         _currentCard.value = cards.getOrNull(position)
     }
 
@@ -174,7 +174,7 @@ open class SharedCardViewModel(
             _currentDeckCards.value = cards
 
             // Reset position and flip state
-            _currentCardPosition.value = 0
+            currentCardPosition.value = 0
             _isFlipped.value = false
 
             logger.i { "Deck selected: ${deck.value.name}, card count: ${cards.size}" }
@@ -191,7 +191,7 @@ open class SharedCardViewModel(
     override suspend fun nextCard() {
         val cardCount = _currentDeckCards.value.size
         if (cardCount > 0) {
-            _currentCardPosition.value = (_currentCardPosition.value + 1) % cardCount
+            currentCardPosition.value = (currentCardPosition.value + 1) % cardCount
             _isFlipped.value = false
         }
     }
@@ -215,7 +215,7 @@ open class SharedCardViewModel(
                 )
 
                 // Update the local card list with the new learned status
-                val idx = _currentCardPosition.value
+                val idx = currentCardPosition.value
                 val updatedCards = _currentDeckCards.value.toMutableList()
                 if (idx in updatedCards.indices) {
                     val updated = updatedCards[idx].copy(learned = it.learned)
@@ -274,7 +274,7 @@ open class SharedCardViewModel(
                 val updatedCards = _currentDeckCards.value.toMutableList()
                 updatedCards.add(newCard)
                 _currentDeckCards.value = updatedCards
-                _currentCardPosition.value = updatedCards.size - 1
+                currentCardPosition.value = updatedCards.size - 1
 
                 // Mark as no longer a new card since it's been saved
                 _isNewCard.value = false
@@ -291,7 +291,7 @@ open class SharedCardViewModel(
             _currentCard.value = updatedCard
 
             // Also update the cached list of cards
-            val currentPosition = _currentCardPosition.value
+            val currentPosition = currentCardPosition.value
             val updatedCards = _currentDeckCards.value.toMutableList()
             if (currentPosition < updatedCards.size) {
                 updatedCards[currentPosition] = updatedCard
@@ -315,7 +315,7 @@ open class SharedCardViewModel(
 
             CardAction.SwipeRight -> {
                 if (!_isEditing.value && !_isDeleteConfirmationShowing.value) {
-                    cardAnimationManager.swipeRight(_currentCardPosition.value)
+                    cardAnimationManager.swipeRight(currentCardPosition.value)
                     true
                 } else {
                     false
@@ -324,7 +324,7 @@ open class SharedCardViewModel(
 
             CardAction.SwipeLeft -> {
                 if (!_isEditing.value && !_isDeleteConfirmationShowing.value) {
-                    cardAnimationManager.swipeLeft(_currentCardPosition.value)
+                    cardAnimationManager.swipeLeft(currentCardPosition.value)
                     true
                 } else {
                     false
@@ -493,7 +493,7 @@ open class SharedCardViewModel(
 
                     // Set position to the first card if available
                     if (freshCards.isNotEmpty()) {
-                        _currentCardPosition.value = 0
+                        currentCardPosition.value = 0
                         _currentCard.value = freshCards[0]
                         logger.d { "Set current card to first card in deck: ${freshCards[0].id}" }
                     } else {
@@ -562,7 +562,7 @@ open class SharedCardViewModel(
         availableDecks.value = emptyList()
         _currentDeckCards.value = emptyList()
         _currentCard.value = null
-        _currentCardPosition.value = 0
+        currentCardPosition.value = 0
         _isFlipped.value = false
         _isEditing.value = false
         _editCardContent.value = "" to ""
@@ -577,7 +577,7 @@ open class SharedCardViewModel(
 
         check(card.deckId.isNotEmpty()) { "Card deckId should not be empty when deleting a card" }
 
-        val currentPosition = _currentCardPosition.value
+        val currentPosition = currentCardPosition.value
 
         try {
             // Delete the card from the repository
@@ -591,8 +591,8 @@ open class SharedCardViewModel(
             // Set position to the next card or first card if we're at the end
             if (updatedCards.isNotEmpty()) {
                 // Keep the same position unless we were at the end of the list
-                _currentCardPosition.value = currentPosition.coerceAtMost(updatedCards.size - 1)
-                _currentCard.value = updatedCards[_currentCardPosition.value]
+                currentCardPosition.value = currentPosition.coerceAtMost(updatedCards.size - 1)
+                _currentCard.value = updatedCards[currentCardPosition.value]
             } else {
                 // No cards left
                 _currentCard.value = null
