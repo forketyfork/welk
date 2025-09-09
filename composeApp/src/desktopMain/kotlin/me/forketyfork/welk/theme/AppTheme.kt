@@ -55,13 +55,13 @@ object AppColors {
     val gradeBlueDark = Color(0xFF222244)
 
     // Status indicator colors
-    val statusGreenLight = Color.Green
+    val statusGreenLight = Color(0xFF2E7D32)
     val statusGreenDark = Color(0xFF4CAF50)
     val statusBlueLight = Color.Blue
     val statusBlueDark = Color(0xFF2196F3)
 
     // Animation colors
-    val animationGreenLight = Color.Green
+    val animationGreenLight = Color(0xFF2E7D32)
     val animationGreenDark = Color(0xFF4CAF50)
     val animationRedLight = Color.Red
     val animationRedDark = Color(0xFFF44336)
