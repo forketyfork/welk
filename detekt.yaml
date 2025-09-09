@@ -39,3 +39,10 @@ exceptions:
   active: true
   SwallowedException:
     active: false  # Often legitimate in Kotlin
+
+# Compose-specific rules
+Compose:
+  CompositionLocalAllowlist:
+    active: true
+    # Allow our custom CompositionLocal for extended theme colors
+    allowedCompositionLocals: LocalExtendedColors
