@@ -8,6 +8,7 @@ repository.
 - Always implement complete, working code; never write stub comments instead of actual implementation
 - Verify that changes don't break the build by running `./gradlew :composeApp:build`
 - Run desktop tests with `./gradlew :composeApp:desktopTest` before finalizing tasks
+- Run code quality checks with `./gradlew ktlintCheck detekt` before finalizing tasks
 - Plan your approach first, then execute systematically
 - Stay focused on the requested task — avoid scope creep or unrelated changes
 
@@ -156,15 +157,66 @@ Available log levels:
 - Run desktop tests: `./gradlew :composeApp:desktopTest`
 - Always run tests before finalizing any task or feature
 
+## Code Quality Tools
+
+This project uses the following code quality tools to maintain code standards:
+
+### detekt
+Static code analysis for Kotlin. Configuration is in `detekt.yaml`.
+
+**Key Features:**
+- Code smell detection
+- Complexity analysis
+- Naming convention checks
+- Best practice enforcement
+- Compose-friendly configuration with `@Composable` function naming exceptions
+
+**Commands:**
+```bash
+# Run detekt analysis on all modules
+./gradlew detekt
+
+# Run detekt on specific targets
+./gradlew shared:detektJvmMain
+./gradlew composeApp:detektDesktopMain
+```
+
+### ktlint
+Code formatting and style checking for Kotlin. Configuration is in `.editorconfig`.
+
+**Key Features:**
+- Automatic code formatting
+- Style consistency enforcement
+- 120-character line length limit
+- Disabled wildcard import restrictions (common in Kotlin projects)
+- Compose-friendly function naming (allows PascalCase for `@Composable` functions)
+
+**Commands:**
+```bash
+# Check code formatting
+./gradlew ktlintCheck
+
+# Auto-format code
+./gradlew ktlintFormat
+```
+
+**Integration in Development Process:**
+- Run both tools before committing code changes
+- ktlint can auto-fix most formatting issues
+- detekt identifies code quality issues that require manual fixes
+- Both tools are configured to work well with Kotlin Multiplatform and Compose code patterns
+
 ## Development Flow
 
 ### General Process
 
 1. **Plan**: Understand the requirements and plan your approach
 2. **Implement**: Write code following the established patterns
-3. **Build**: Verify the application builds with `./gradlew :composeApp:build`
-4. **Test**: Run desktop tests with `./gradlew :composeApp:desktopTest`
-5. **Review**: Ensure code follows project conventions
+3. **Format**: Auto-format code with `./gradlew ktlintFormat`
+4. **Quality**: Check code quality with `./gradlew ktlintCheck detekt`
+5. **Build**: Verify the application builds with `./gradlew :composeApp:build`
+6. **Test**: Run desktop tests with `./gradlew :composeApp:desktopTest`
+7. **Review**: Ensure code follows project conventions
 
 ### Code Organization
 

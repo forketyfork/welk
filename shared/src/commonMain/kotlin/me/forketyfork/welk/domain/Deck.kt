@@ -25,5 +25,5 @@ data class Deck(
     val parentId: String? = null,
     // Flag to track expanded/collapsed state in UI (not stored in Firestore)
     @Transient
-    var isExpanded: Boolean = false
+    var isExpanded: Boolean = false,
 )

@@ -1,5 +1,9 @@
 # welk
 
+[![Build status](https://github.com/forketyfork/welk/actions/workflows/build.yml/badge.svg)](https://github.com/forketyfork/welk/actions/workflows/build.yml)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Kotlin](https://img.shields.io/badge/language-Kotlin-purple.svg)](https://kotlinlang.org/)
+
 ## About
 
 welk is a cross-platform flashcard application written in Compose Multiplatform, currently in development. 
@@ -18,6 +22,33 @@ For local development:
   firebase.messagingSenderId=
   firebase.appId=
   ```
+
+## Code Quality Tools
+
+This project uses the following code quality tools:
+
+### detekt
+Static code analysis for Kotlin. Configuration is in `detekt.yaml`.
+
+```bash
+# Run detekt analysis on all modules
+./gradlew detekt
+
+# Run detekt on specific targets
+./gradlew shared:detektJvmMain
+./gradlew composeApp:detektDesktopMain
+```
+
+### ktlint
+Code formatting and style checking for Kotlin. Configuration is in `.editorconfig`.
+
+```bash
+# Check code formatting
+./gradlew ktlintCheck
+
+# Auto-format code
+./gradlew ktlintFormat
+```
 
 ## Roadmap
 

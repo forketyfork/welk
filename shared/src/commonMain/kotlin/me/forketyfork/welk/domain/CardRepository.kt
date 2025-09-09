@@ -11,7 +11,11 @@ interface CardRepository {
     /**
      * Creates a new card in the specified deck.
      */
-    suspend fun createCard(deckId: String, front: String, back: String): Card
+    suspend fun createCard(
+        deckId: String,
+        front: String,
+        back: String,
+    ): Card
 
     /**
      * Adds a review to a card's history and updates the next review timestamp.
@@ -20,16 +24,27 @@ interface CardRepository {
      * @param grade User's assessment of how well they knew the card
      * @return The calculated next review timestamp
      */
-    suspend fun addCardReview(cardId: String, deckId: String, grade: ReviewGrade): Instant
+    suspend fun addCardReview(
+        cardId: String,
+        deckId: String,
+        grade: ReviewGrade,
+    ): Instant
 
     /**
      * Updates a card's content (front and back text).
      */
-    suspend fun updateCardContent(cardId: String, deckId: String, front: String, back: String)
+    suspend fun updateCardContent(
+        cardId: String,
+        deckId: String,
+        front: String,
+        back: String,
+    )
 
     /**
      * Deletes a card.
      */
-    suspend fun deleteCard(cardId: String, deckId: String)
+    suspend fun deleteCard(
+        cardId: String,
+        deckId: String,
+    )
 }
-

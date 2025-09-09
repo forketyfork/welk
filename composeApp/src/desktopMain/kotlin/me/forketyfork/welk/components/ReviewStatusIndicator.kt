@@ -2,20 +2,24 @@ package me.forketyfork.welk.components
 
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
+import me.forketyfork.welk.theme.AppTheme
 import java.time.Instant.ofEpochMilli
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.time.Clock
 import kotlin.time.Instant
-import me.forketyfork.welk.theme.AppTheme
 
 private val FORMATTER = DateTimeFormatter.ofPattern("MMM d, HH:mm")
 
 @Composable
-fun ReviewStatusIndicator(nextReview: Instant?) {
+fun ReviewStatusIndicator(
+    nextReview: Instant?,
+    modifier: Modifier = Modifier,
+) {
     val text: String
     val color: Color
 
@@ -41,6 +45,7 @@ fun ReviewStatusIndicator(nextReview: Instant?) {
         text = text,
         style = AppTheme.typography.caption,
         color = color,
-        fontSize = 12.sp
+        fontSize = 12.sp,
+        modifier = modifier,
     )
 }

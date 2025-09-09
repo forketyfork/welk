@@ -1,6 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import java.io.FileInputStream
-import java.util.*
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -75,7 +75,7 @@ compose.desktop {
             macOS {
                 iconFile.set(project.file("welk_icon.icns"))
                 jvmArgs(
-                    "-Dapple.awt.application.appearance=system"
+                    "-Dapple.awt.application.appearance=system",
                 )
             }
         }

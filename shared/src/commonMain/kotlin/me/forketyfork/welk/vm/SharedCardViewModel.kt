@@ -1,9 +1,25 @@
 package me.forketyfork.welk.vm
 
 import co.touchlab.kermit.Logger
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
-import me.forketyfork.welk.domain.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import me.forketyfork.welk.domain.Card
+import me.forketyfork.welk.domain.CardRepository
+import me.forketyfork.welk.domain.CardReview
+import me.forketyfork.welk.domain.Deck
+import me.forketyfork.welk.domain.DeckRepository
+import me.forketyfork.welk.domain.ReviewGrade
 import me.forketyfork.welk.presentation.CardAction
 import kotlin.time.Clock
 
@@ -11,8 +27,8 @@ open class SharedCardViewModel(
     private val cardAnimationManager: CardAnimationManager,
     private val cardRepository: CardRepository,
     private val deckRepository: DeckRepository,
-) : CardViewModel, BaseInitializableViewModel() {
-
+) : BaseInitializableViewModel(),
+    CardViewModel {
     companion object {
         private val logger = Logger.withTag("CommonCardViewModel")
     }
@@ -25,7 +41,7 @@ open class SharedCardViewModel(
         get() = sessionScope ?: viewModelScope
 
     // Current position within the deck
-    private val _currentCardPosition = MutableStateFlow(0)
+    private val currentCardPosition = MutableStateFlow(0)
 
     // Current selected deck
     private val _currentDeck = MutableStateFlow<StateFlow<Deck>?>(null)
@@ -73,8 +89,7 @@ open class SharedCardViewModel(
                 cards.count { card ->
                     card.nextReview == null || card.nextReview <= now
                 }
-            }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 0)
+            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 0)
     }
 
     override val totalCardCount: StateFlow<Int> by lazy {
@@ -108,7 +123,7 @@ open class SharedCardViewModel(
      * and the position resets to 0. Updates the UI accordingly.
      */
     private suspend fun collectCurrentCardPositionChanges() {
-        _currentCardPosition.collect { position ->
+        currentCardPosition.collect { position ->
             updateCurrentCardFromPosition(position)
         }
     }
@@ -125,7 +140,7 @@ open class SharedCardViewModel(
                 val deckId = deck.value.id ?: error("Deck ID is null for a persistent deck")
                 _currentDeckCards.value = getAllCardsForDeck(deckId)
                 // Reset to the first card in the deck
-                _currentCardPosition.value = 0
+                currentCardPosition.value = 0
                 updateCurrentCardFromPosition(0)
             }
         }
@@ -195,7 +210,7 @@ open class SharedCardViewModel(
             _currentDeckCards.value = cards
 
             // Reset position and flip state
-            _currentCardPosition.value = 0
+            currentCardPosition.value = 0
             _isFlipped.value = false
 
             logger.i { "Deck selected: ${deck.value.name}, card count: ${cards.size}" }
@@ -212,7 +227,7 @@ open class SharedCardViewModel(
     override suspend fun nextCard() {
         val cardCount = _currentDeckCards.value.size
         if (cardCount > 0) {
-            _currentCardPosition.value = (_currentCardPosition.value + 1) % cardCount
+            currentCardPosition.value = (currentCardPosition.value + 1) % cardCount
             _isFlipped.value = false
         }
     }
@@ -227,7 +242,7 @@ open class SharedCardViewModel(
         }
 
         // Trigger animation based on grade
-        val currentPosition = _currentCardPosition.value
+        val currentPosition = currentCardPosition.value
         when (grade) {
             ReviewGrade.AGAIN, ReviewGrade.HARD -> {
                 cardAnimationManager.swipeLeft(currentPosition)
@@ -254,8 +269,9 @@ open class SharedCardViewModel(
         cardAnimationManager.animationCompleteTrigger
             .filter { it.idx != -1 } // skipping initial value
             .collect {
-                val currentCard = _currentCard.value
-                    ?: error("Current card isn't supposed to be null on animation completion")
+                val currentCard =
+                    _currentCard.value
+                        ?: error("Current card isn't supposed to be null on animation completion")
 
                 // Convert learned status to grade (backward compatibility)
                 val grade = if (it.learned) ReviewGrade.GOOD else ReviewGrade.AGAIN
@@ -269,25 +285,27 @@ open class SharedCardViewModel(
 
     private suspend fun updateGradeAndMoveToNextCard(
         currentCard: Card,
-        grade: ReviewGrade
+        grade: ReviewGrade,
     ) {
         // Add a review to the current card
-        val nextReviewTime = cardRepository.addCardReview(
-            currentCard.id ?: error("Attempting to grade a card that wasn't persisted"),
-            currentCard.deckId,
-            grade
-        )
+        val nextReviewTime =
+            cardRepository.addCardReview(
+                currentCard.id ?: error("Attempting to grade a card that wasn't persisted"),
+                currentCard.deckId,
+                grade,
+            )
 
         // Update the local card list with the new review data
-        val idx = _currentCardPosition.value
+        val idx = currentCardPosition.value
         val updatedCards = _currentDeckCards.value.toMutableList()
         if (idx in updatedCards.indices) {
             val currentTime = Clock.System.now()
             val newReview = CardReview(currentTime, grade)
-            val updated = updatedCards[idx].copy(
-                reviews = updatedCards[idx].reviews + newReview,
-                nextReview = nextReviewTime
-            )
+            val updated =
+                updatedCards[idx].copy(
+                    reviews = updatedCards[idx].reviews + newReview,
+                    nextReview = nextReviewTime,
+                )
             updatedCards[idx] = updated
             _currentDeckCards.value = updatedCards
         }
@@ -296,7 +314,10 @@ open class SharedCardViewModel(
         nextCard()
     }
 
-    override fun updateEditContent(front: String, back: String) {
+    override fun updateEditContent(
+        front: String,
+        back: String,
+    ) {
         _editCardContent.value = Pair(front, back)
     }
 
@@ -307,7 +328,6 @@ open class SharedCardViewModel(
         try {
             // If the content is empty, don't save (optional validation)
             if (front.isBlank() && back.isBlank()) {
-
                 logger.w("Not saving card with empty content")
                 if (_isNewCard.value) {
                     // If this is a new card with empty content, cancel it
@@ -324,11 +344,12 @@ open class SharedCardViewModel(
                 val deckId = currentCard?.deckId ?: _currentDeck.value?.value?.id ?: error("No deck ID")
 
                 // Create a new card in the repository with the edited content
-                val newCard = cardRepository.createCard(
-                    deckId = deckId,
-                    front = front,
-                    back = back
-                )
+                val newCard =
+                    cardRepository.createCard(
+                        deckId = deckId,
+                        front = front,
+                        back = back,
+                    )
 
                 // Update the view model with the new card
                 _currentCard.value = newCard
@@ -337,7 +358,7 @@ open class SharedCardViewModel(
                 val updatedCards = _currentDeckCards.value.toMutableList()
                 updatedCards.add(newCard)
                 _currentDeckCards.value = updatedCards
-                _currentCardPosition.value = updatedCards.size - 1
+                currentCardPosition.value = updatedCards.size - 1
 
                 // Mark as no longer a new card since it's been saved
                 _isNewCard.value = false
@@ -354,7 +375,7 @@ open class SharedCardViewModel(
             _currentCard.value = updatedCard
 
             // Also update the cached list of cards
-            val currentPosition = _currentCardPosition.value
+            val currentPosition = currentCardPosition.value
             val updatedCards = _currentDeckCards.value.toMutableList()
             if (currentPosition < updatedCards.size) {
                 updatedCards[currentPosition] = updatedCard
@@ -365,27 +386,33 @@ open class SharedCardViewModel(
         }
     }
 
-    override fun processAction(action: CardAction): Boolean {
-        return when (action) {
+    override fun processAction(action: CardAction): Boolean =
+        when (action) {
             CardAction.Flip -> {
                 if (!_isEditing.value && !_isDeleteConfirmationShowing.value) {
                     flipCard()
                     true
-                } else false
+                } else {
+                    false
+                }
             }
 
             CardAction.SwipeRight -> {
                 if (!_isEditing.value && !_isDeleteConfirmationShowing.value) {
-                    cardAnimationManager.swipeRight(_currentCardPosition.value)
+                    cardAnimationManager.swipeRight(currentCardPosition.value)
                     true
-                } else false
+                } else {
+                    false
+                }
             }
 
             CardAction.SwipeLeft -> {
                 if (!_isEditing.value && !_isDeleteConfirmationShowing.value) {
-                    cardAnimationManager.swipeLeft(_currentCardPosition.value)
+                    cardAnimationManager.swipeLeft(currentCardPosition.value)
                     true
-                } else false
+                } else {
+                    false
+                }
             }
 
             CardAction.Edit -> {
@@ -394,7 +421,9 @@ open class SharedCardViewModel(
                     val card = _currentCard.value ?: error("No current card")
                     _editCardContent.value = Pair(card.front, card.back)
                     true
-                } else false
+                } else {
+                    false
+                }
             }
 
             CardAction.SaveEdit -> {
@@ -426,7 +455,9 @@ open class SharedCardViewModel(
                 if (!_isEditing.value && !_isDeleteConfirmationShowing.value) {
                     showDeleteConfirmation()
                     true
-                } else false
+                } else {
+                    false
+                }
             }
 
             CardAction.ConfirmDelete -> {
@@ -436,14 +467,18 @@ open class SharedCardViewModel(
                         deleteCurrentCard()
                     }
                     true
-                } else false
+                } else {
+                    false
+                }
             }
 
             CardAction.CancelDelete -> {
                 if (_isDeleteConfirmationShowing.value) {
                     hideDeleteConfirmation()
                     true
-                } else false
+                } else {
+                    false
+                }
             }
 
             is CardAction.CreateNewCard -> {
@@ -469,12 +504,13 @@ open class SharedCardViewModel(
                         gradeCard(action.grade)
                     }
                     true
-                } else false
+                } else {
+                    false
+                }
             }
 
             CardAction.NoAction -> false
         }
-    }
 
     /**
      * Creates a new temporary card in the UI (not in the database) and switches to edit mode
@@ -486,7 +522,7 @@ open class SharedCardViewModel(
 
         // Store the original deck for reference
         val originalDeck = _currentDeck.value?.value
-        logger.d { "Original deck: ${originalDeck?.name} (ID: ${originalDeckId})" }
+        logger.d { "Original deck: ${originalDeck?.name} (ID: $originalDeckId)" }
 
         // If we're creating a card for a different deck, save the original deck ID
         // so we can remember where we came from
@@ -499,15 +535,16 @@ open class SharedCardViewModel(
 
         // Create a temporary card in memory (not in the repository)
         // We'll create it in the repository only when the user saves it
-        val tempCard = Card(
-            id = "",  // Empty ID means it's not yet in the database
-            deckId = deckId,
-            front = "",
-            back = "",
-            reviews = emptyList(),
-            nextReview = null,
-            position = _currentDeckCards.value.size  // Will be the last card
-        )
+        val tempCard =
+            Card(
+                id = "", // Empty ID means it's not yet in the database
+                deckId = deckId,
+                front = "",
+                back = "",
+                reviews = emptyList(),
+                nextReview = null,
+                position = _currentDeckCards.value.size, // Will be the last card
+            )
 
         logger.d { "Created temporary card for deck $deckId" }
 
@@ -553,7 +590,7 @@ open class SharedCardViewModel(
 
                     // Set position to the first card if available
                     if (freshCards.isNotEmpty()) {
-                        _currentCardPosition.value = 0
+                        currentCardPosition.value = 0
                         _currentCard.value = freshCards[0]
                         logger.d { "Set current card to first card in deck: ${freshCards[0].id}" }
                     } else {
@@ -586,12 +623,13 @@ open class SharedCardViewModel(
         logger.d { "Installing card view model collectors" }
         sessionJob?.cancel()
         sessionScope = coroutineScope
-        sessionJob = coroutineScope.launch {
-            launch { collectCardAnimationCompletion() }
-            launch { collectCurrentCardPositionChanges() }
-            launch { collectCurrentDeckChanges() }
-            launch { collectDeckListChanges() }
-        }
+        sessionJob =
+            coroutineScope.launch {
+                launch { collectCardAnimationCompletion() }
+                launch { collectCurrentCardPositionChanges() }
+                launch { collectCurrentDeckChanges() }
+                launch { collectDeckListChanges() }
+            }
     }
 
     override fun initialize(viewModelScope: CoroutineScope) {
@@ -621,7 +659,7 @@ open class SharedCardViewModel(
         availableDecks.value = emptyList()
         _currentDeckCards.value = emptyList()
         _currentCard.value = null
-        _currentCardPosition.value = 0
+        currentCardPosition.value = 0
         _isFlipped.value = false
         _isEditing.value = false
         _editCardContent.value = "" to ""
@@ -637,7 +675,7 @@ open class SharedCardViewModel(
 
         check(card.deckId.isNotEmpty()) { "Card deckId should not be empty when deleting a card" }
 
-        val currentPosition = _currentCardPosition.value
+        val currentPosition = currentCardPosition.value
 
         try {
             // Delete the card from the repository
@@ -651,8 +689,8 @@ open class SharedCardViewModel(
             // Set position to the next card or first card if we're at the end
             if (updatedCards.isNotEmpty()) {
                 // Keep the same position unless we were at the end of the list
-                _currentCardPosition.value = currentPosition.coerceAtMost(updatedCards.size - 1)
-                _currentCard.value = updatedCards[_currentCardPosition.value]
+                currentCardPosition.value = currentPosition.coerceAtMost(updatedCards.size - 1)
+                _currentCard.value = updatedCards[currentCardPosition.value]
             } else {
                 // No cards left
                 _currentCard.value = null
@@ -664,7 +702,11 @@ open class SharedCardViewModel(
         }
     }
 
-    override suspend fun createDeck(name: String, description: String, parentId: String?) {
+    override suspend fun createDeck(
+        name: String,
+        description: String,
+        parentId: String?,
+    ) {
         try {
             deckRepository.createDeck(name, description, parentId)
 
@@ -719,9 +761,7 @@ open class SharedCardViewModel(
     /**
      * Checks if a deck is expanded
      */
-    override fun isDeckExpanded(deckId: String): Boolean {
-        return _expandedDeckIds.value.contains(deckId)
-    }
+    override fun isDeckExpanded(deckId: String): Boolean = _expandedDeckIds.value.contains(deckId)
 
     override fun toggleShowAllCards() {
         _showAllCards.value = !_showAllCards.value

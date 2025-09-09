@@ -1,7 +1,7 @@
 package me.forketyfork.welk.domain
 
-import kotlin.time.Instant
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 /**
  * Record of a single review session for a flashcard.
@@ -10,5 +10,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CardReview(
     val timestamp: Instant,
-    val grade: ReviewGrade
+    val grade: ReviewGrade,
 )

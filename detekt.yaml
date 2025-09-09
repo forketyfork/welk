@@ -1,0 +1,41 @@
+# Build configuration - Controls build failure conditions
+build:
+  # Maximum number of issues allowed before the build fails
+  # 0 = fail on any issue found
+  maxIssues: 0
+  # Whether to exclude issues that can be auto-corrected from the issue count
+  # false = include auto-correctable issues in the count
+  excludeCorrectable: false
+
+# Config validation - Verifies detekt configuration file correctness
+config:
+  # Validates that all rule configurations are correct and recognized
+  # true = fail build on invalid configuration
+  validation: true
+
+complexity:
+  active: true
+  ComplexCondition:
+    threshold: 4
+  LongMethod:
+    threshold: 60
+  LongParameterList:
+    functionThreshold: 6
+  TooManyFunctions:
+    thresholdInClasses: 20
+
+style:
+  active: true
+  MagicNumber:
+    active: false  # Too noisy for typical projects
+
+naming:
+  FunctionNaming:
+    excludes: ["**/test/**", "**/androidTest/**"]
+    functionPattern: '[a-zA-Z][a-zA-Z0-9]*' # Allow functions to start with uppercase letter, since it's typical for Jetpack Compose components
+    excludeClassPattern: '.*Composable.*'
+
+exceptions:
+  active: true
+  SwallowedException:
+    active: false  # Often legitimate in Kotlin

@@ -7,7 +7,12 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.TextFieldDefaults
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -26,8 +31,7 @@ import org.koin.compose.viewmodel.koinViewModel
  * Login screen with username and password input.
  */
 @Composable
-fun LoginView() {
-
+fun LoginView(modifier: Modifier = Modifier) {
     val viewModel: LoginViewModel = koinViewModel<DesktopLoginViewModel>()
 
     var username by remember { mutableStateOf("") }
@@ -40,50 +44,57 @@ fun LoginView() {
     }
 
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier,
     ) {
         Text(
             text = "Welkome\uD83C\uDF42",
             style = AppTheme.typography.h1,
             color = AppTheme.colors.primary,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
         OutlinedTextField(
             value = username,
-            colors = TextFieldDefaults.textFieldColors(
-                textColor = AppTheme.colors.onSurface
-            ),
+            colors =
+                TextFieldDefaults.textFieldColors(
+                    textColor = AppTheme.colors.onSurface,
+                ),
             onValueChange = { username = it },
             label = { Text("Username") },
             singleLine = true,
-            modifier = Modifier.width(300.dp)
-                .focusRequester(usernameFocusRequester)
-                .testTag(LoginViewTestTags.USERNAME_INPUT),
+            modifier =
+                Modifier
+                    .width(300.dp)
+                    .focusRequester(usernameFocusRequester)
+                    .testTag(LoginViewTestTags.USERNAME_INPUT),
         )
         OutlinedTextField(
             value = password,
-            colors = TextFieldDefaults.textFieldColors(
-                textColor = AppTheme.colors.onSurface
-            ),
+            colors =
+                TextFieldDefaults.textFieldColors(
+                    textColor = AppTheme.colors.onSurface,
+                ),
             onValueChange = { password = it },
             label = { Text("Password") },
             singleLine = true,
-            modifier = Modifier.width(300.dp)
-                .testTag(LoginViewTestTags.PASSWORD_INPUT),
-            visualTransformation = PasswordVisualTransformation()
+            modifier =
+                Modifier
+                    .width(300.dp)
+                    .testTag(LoginViewTestTags.PASSWORD_INPUT),
+            visualTransformation = PasswordVisualTransformation(),
         )
         TextButton(
             onClick = {
                 viewModel.signIn(username, password)
             },
-            modifier = Modifier.testTag(LoginViewTestTags.SIGN_IN_BUTTON)
+            modifier = Modifier.testTag(LoginViewTestTags.SIGN_IN_BUTTON),
         ) {
             Text("Sign in")
         }
         Text(
             text = if (loginError.value) "Invalid username or password" else "",
             color = AppTheme.colors.error,
-            modifier = Modifier.padding(vertical = 16.dp)
+            modifier = Modifier.padding(vertical = 16.dp),
         )
     }
 }

@@ -1,8 +1,8 @@
 package me.forketyfork.welk.domain
 
-import kotlin.time.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlin.time.Instant
 
 /**
  * Data class representing a single flashcard with front and back.
@@ -21,5 +21,5 @@ data class Card(
     // Nullable timestamp indicating when the card should next be reviewed
     val nextReview: Instant? = null,
     // Position within the deck for ordering
-    val position: Int = 0
+    val position: Int = 0,
 )

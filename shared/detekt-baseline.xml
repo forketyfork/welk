@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:SharedCardViewModel.kt$SharedCardViewModel$override fun processAction(action: CardAction): Boolean</ID>
+    <ID>LongMethod:SharedCardViewModel.kt$SharedCardViewModel$override fun processAction(action: CardAction): Boolean</ID>
+    <ID>NestedBlockDepth:SharedCardViewModel.kt$SharedCardViewModel$override suspend fun cancelNewCard()</ID>
+    <ID>TooGenericExceptionCaught:FirestoreAuthService.kt$FirestoreAuthService$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:SharedCardViewModel.kt$SharedCardViewModel$e: Exception</ID>
+    <ID>TooManyFunctions:CardViewModel.kt$CardViewModel : InitializableViewModel</ID>
+    <ID>TooManyFunctions:SharedCardViewModel.kt$SharedCardViewModel : BaseInitializableViewModelCardViewModel</ID>
+  </CurrentIssues>
+</SmellBaseline>

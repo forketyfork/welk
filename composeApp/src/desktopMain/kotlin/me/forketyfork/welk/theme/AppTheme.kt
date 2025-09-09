@@ -85,83 +85,96 @@ object AppColors {
 }
 
 // Light theme colors
-private val LightColors = lightColors(
-    primary = AppColors.primaryLight,
-    primaryVariant = AppColors.primaryVariantLight,
-    secondary = AppColors.secondaryLight,
-    secondaryVariant = AppColors.secondaryVariantLight,
-    background = AppColors.backgroundLight,
-    surface = AppColors.surfaceLight,
-    onSurface = AppColors.onSurfaceLight,
-    error = AppColors.errorLight,
-    onError = AppColors.onErrorLight
-)
+private val LightColors =
+    lightColors(
+        primary = AppColors.primaryLight,
+        primaryVariant = AppColors.primaryVariantLight,
+        secondary = AppColors.secondaryLight,
+        secondaryVariant = AppColors.secondaryVariantLight,
+        background = AppColors.backgroundLight,
+        surface = AppColors.surfaceLight,
+        onSurface = AppColors.onSurfaceLight,
+        error = AppColors.errorLight,
+        onError = AppColors.onErrorLight,
+    )
 
-private val DarkColors = darkColors(
-    primary = AppColors.primaryDark,
-    primaryVariant = AppColors.primaryVariantDark,
-    secondary = AppColors.secondaryDark,
-    secondaryVariant = AppColors.secondaryVariantDark,
-    background = AppColors.backgroundDark,
-    surface = AppColors.surfaceDark,
-    onSurface = AppColors.onSurfaceDark,
-    error = AppColors.errorDark,
-    onError = AppColors.onErrorDark
-)
+private val DarkColors =
+    darkColors(
+        primary = AppColors.primaryDark,
+        primaryVariant = AppColors.primaryVariantDark,
+        secondary = AppColors.secondaryDark,
+        secondaryVariant = AppColors.secondaryVariantDark,
+        background = AppColors.backgroundDark,
+        surface = AppColors.surfaceDark,
+        onSurface = AppColors.onSurfaceDark,
+        error = AppColors.errorDark,
+        onError = AppColors.onErrorDark,
+    )
 
 // Typography settings using our custom fonts
-private val appTypography = Typography(
-    h1 = TextStyle(
-        fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.Bold,
-        fontSize = 32.sp
-    ),
-    h2 = TextStyle(
-        fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 26.sp
-    ),
-    h3 = TextStyle(
-        fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 22.sp
-    ),
-    h4 = TextStyle(
-        fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 18.sp
-    ),
-    h5 = TextStyle(
-        fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 16.sp
-    ),
-    h6 = TextStyle(
-        fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 14.sp
-    ),
-    body1 = TextStyle(
-        fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp
-    ),
-    body2 = TextStyle(
-        fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.Normal,
-        fontSize = 14.sp
-    ),
-    button = TextStyle(
-        fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.Medium,
-        fontSize = 14.sp
-    ),
-    caption = TextStyle(
-        fontFamily = AppFonts.openSans,
-        fontWeight = FontWeight.Normal,
-        fontSize = 12.sp
+private val appTypography =
+    Typography(
+        h1 =
+            TextStyle(
+                fontFamily = AppFonts.openSans,
+                fontWeight = FontWeight.Bold,
+                fontSize = 32.sp,
+            ),
+        h2 =
+            TextStyle(
+                fontFamily = AppFonts.openSans,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 26.sp,
+            ),
+        h3 =
+            TextStyle(
+                fontFamily = AppFonts.openSans,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 22.sp,
+            ),
+        h4 =
+            TextStyle(
+                fontFamily = AppFonts.openSans,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 18.sp,
+            ),
+        h5 =
+            TextStyle(
+                fontFamily = AppFonts.openSans,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+            ),
+        h6 =
+            TextStyle(
+                fontFamily = AppFonts.openSans,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp,
+            ),
+        body1 =
+            TextStyle(
+                fontFamily = AppFonts.openSans,
+                fontWeight = FontWeight.Normal,
+                fontSize = 16.sp,
+            ),
+        body2 =
+            TextStyle(
+                fontFamily = AppFonts.openSans,
+                fontWeight = FontWeight.Normal,
+                fontSize = 14.sp,
+            ),
+        button =
+            TextStyle(
+                fontFamily = AppFonts.openSans,
+                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp,
+            ),
+        caption =
+            TextStyle(
+                fontFamily = AppFonts.openSans,
+                fontWeight = FontWeight.Normal,
+                fontSize = 12.sp,
+            ),
     )
-)
 
 // Extension properties for custom colors
 data class ExtendedColors(
@@ -181,7 +194,7 @@ data class ExtendedColors(
     val onSurface: Color,
     val error: Color,
     val primary: Color,
-    val secondary: Color
+    val secondary: Color,
 )
 
 object AppTheme {
@@ -194,58 +207,8 @@ object AppTheme {
         get() = MaterialTheme.typography
 }
 
-private val LocalExtendedColors = staticCompositionLocalOf {
-    ExtendedColors(
-        gradeRed = AppColors.gradeRedLight,
-        gradeYellow = AppColors.gradeYellowLight,
-        gradeGreen = AppColors.gradeGreenLight,
-        gradeBlue = AppColors.gradeBlueLight,
-        statusGreen = AppColors.statusGreenLight,
-        statusBlue = AppColors.statusBlueLight,
-        animationGreen = AppColors.animationGreenLight,
-        animationRed = AppColors.animationRedLight,
-        transparent = AppColors.transparent,
-        divider = AppColors.dividerLight,
-        selection = AppColors.selectionLight,
-        textSecondary = AppColors.textSecondaryLight,
-        textDisabled = AppColors.textDisabledLight,
-        onSurface = AppColors.onSurfaceLight,
-        error = AppColors.errorLight,
-        primary = AppColors.primaryLight,
-        secondary = AppColors.secondaryLight
-    )
-}
-
-@Composable
-fun AppTheme(
-    content: @Composable () -> Unit
-) {
-    val themeViewModel = koinViewModel<ThemeViewModel>()
-    val themeMode = themeViewModel.themeMode.collectAsStateWithLifecycle()
-
-    val darkTheme = themeMode.value.isDarkTheme()
-
-    val extendedColors = if (darkTheme) {
-        ExtendedColors(
-            gradeRed = AppColors.gradeRedDark,
-            gradeYellow = AppColors.gradeYellowDark,
-            gradeGreen = AppColors.gradeGreenDark,
-            gradeBlue = AppColors.gradeBlueDark,
-            statusGreen = AppColors.statusGreenDark,
-            statusBlue = AppColors.statusBlueDark,
-            animationGreen = AppColors.animationGreenDark,
-            animationRed = AppColors.animationRedDark,
-            transparent = AppColors.transparent,
-            divider = AppColors.dividerDark,
-            selection = AppColors.selectionDark,
-            textSecondary = AppColors.textSecondaryDark,
-            textDisabled = AppColors.textDisabledDark,
-            onSurface = AppColors.onSurfaceDark,
-            error = AppColors.errorDark,
-            primary = AppColors.primaryDark,
-            secondary = AppColors.secondaryDark
-        )
-    } else {
+private val LocalExtendedColors =
+    staticCompositionLocalOf {
         ExtendedColors(
             gradeRed = AppColors.gradeRedLight,
             gradeYellow = AppColors.gradeYellowLight,
@@ -263,17 +226,67 @@ fun AppTheme(
             onSurface = AppColors.onSurfaceLight,
             error = AppColors.errorLight,
             primary = AppColors.primaryLight,
-            secondary = AppColors.secondaryLight
+            secondary = AppColors.secondaryLight,
         )
     }
 
+@Composable
+fun AppTheme(content: @Composable () -> Unit) {
+    val themeViewModel = koinViewModel<ThemeViewModel>()
+    val themeMode = themeViewModel.themeMode.collectAsStateWithLifecycle()
+
+    val darkTheme = themeMode.value.isDarkTheme()
+
+    val extendedColors =
+        if (darkTheme) {
+            ExtendedColors(
+                gradeRed = AppColors.gradeRedDark,
+                gradeYellow = AppColors.gradeYellowDark,
+                gradeGreen = AppColors.gradeGreenDark,
+                gradeBlue = AppColors.gradeBlueDark,
+                statusGreen = AppColors.statusGreenDark,
+                statusBlue = AppColors.statusBlueDark,
+                animationGreen = AppColors.animationGreenDark,
+                animationRed = AppColors.animationRedDark,
+                transparent = AppColors.transparent,
+                divider = AppColors.dividerDark,
+                selection = AppColors.selectionDark,
+                textSecondary = AppColors.textSecondaryDark,
+                textDisabled = AppColors.textDisabledDark,
+                onSurface = AppColors.onSurfaceDark,
+                error = AppColors.errorDark,
+                primary = AppColors.primaryDark,
+                secondary = AppColors.secondaryDark,
+            )
+        } else {
+            ExtendedColors(
+                gradeRed = AppColors.gradeRedLight,
+                gradeYellow = AppColors.gradeYellowLight,
+                gradeGreen = AppColors.gradeGreenLight,
+                gradeBlue = AppColors.gradeBlueLight,
+                statusGreen = AppColors.statusGreenLight,
+                statusBlue = AppColors.statusBlueLight,
+                animationGreen = AppColors.animationGreenLight,
+                animationRed = AppColors.animationRedLight,
+                transparent = AppColors.transparent,
+                divider = AppColors.dividerLight,
+                selection = AppColors.selectionLight,
+                textSecondary = AppColors.textSecondaryLight,
+                textDisabled = AppColors.textDisabledLight,
+                onSurface = AppColors.onSurfaceLight,
+                error = AppColors.errorLight,
+                primary = AppColors.primaryLight,
+                secondary = AppColors.secondaryLight,
+            )
+        }
+
     CompositionLocalProvider(
-        LocalExtendedColors provides extendedColors
+        LocalExtendedColors provides extendedColors,
     ) {
         MaterialTheme(
             colors = if (darkTheme) DarkColors else LightColors,
             typography = appTypography,
-            content = content
+            content = content,
         )
     }
 }

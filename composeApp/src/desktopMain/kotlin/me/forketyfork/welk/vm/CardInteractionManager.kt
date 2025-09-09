@@ -16,7 +16,6 @@ interface CardInteractionManager {
 }
 
 class DefaultCardInteractionManager : CardInteractionManager {
-
     override fun handleKeyEvent(keyEvent: KeyEvent): CardAction {
         if (keyEvent.type != KeyEventType.KeyUp) {
             return CardAction.NoAction
@@ -36,5 +35,4 @@ class DefaultCardInteractionManager : CardInteractionManager {
             else -> CardAction.NoAction
         }
     }
-
 }

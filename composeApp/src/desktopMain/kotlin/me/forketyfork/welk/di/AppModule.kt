@@ -6,23 +6,30 @@ import me.forketyfork.welk.domain.FirestoreRepository
 import me.forketyfork.welk.getPlatform
 import me.forketyfork.welk.service.auth.AuthService
 import me.forketyfork.welk.service.auth.FirestoreAuthService
-import me.forketyfork.welk.vm.*
+import me.forketyfork.welk.vm.CardAnimationManager
+import me.forketyfork.welk.vm.CardInteractionManager
+import me.forketyfork.welk.vm.DefaultCardInteractionManager
+import me.forketyfork.welk.vm.DesktopCardAnimationManager
+import me.forketyfork.welk.vm.DesktopCardViewModel
+import me.forketyfork.welk.vm.DesktopLoginViewModel
+import me.forketyfork.welk.vm.ThemeViewModel
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
-val appModule = module {
+val appModule =
+    module {
 
-    singleOf(::FirestoreRepository) { bind<CardRepository>() }
-    singleOf(::FirestoreRepository) { bind<DeckRepository>() }
-    singleOf(::DesktopCardAnimationManager) { bind<CardAnimationManager>() }
-    singleOf(::FirestoreAuthService) { bind<AuthService>() }
-    singleOf(::DefaultCardInteractionManager) { bind<CardInteractionManager>() }
+        singleOf(::FirestoreRepository) { bind<CardRepository>() }
+        singleOf(::FirestoreRepository) { bind<DeckRepository>() }
+        singleOf(::DesktopCardAnimationManager) { bind<CardAnimationManager>() }
+        singleOf(::FirestoreAuthService) { bind<AuthService>() }
+        singleOf(::DefaultCardInteractionManager) { bind<CardInteractionManager>() }
 
-    viewModelOf(::DesktopCardViewModel)
-    viewModelOf(::DesktopLoginViewModel)
-    viewModelOf(::ThemeViewModel)
+        viewModelOf(::DesktopCardViewModel)
+        viewModelOf(::DesktopLoginViewModel)
+        viewModelOf(::ThemeViewModel)
 
-    factory { getPlatform() }
-}
+        factory { getPlatform() }
+    }

@@ -32,8 +32,14 @@ jobs:
         run: |
           echo "$FIREBASE_PROPERTIES_CONTENT" > ./shared/src/jvmMain/resources/firebase.properties
 
+      - name: Run ktlint Check
+        run: ./gradlew ktlintCheck
+
+      - name: Run detekt
+        run: ./gradlew detekt
+
       - name: Assemble Desktop App
-        run: ./gradlew :composeApp:assemble
+        run: ./gradlew :composeApp:assemble --warning-mode fail
 
       - name: Run Desktop Tests
         env:
