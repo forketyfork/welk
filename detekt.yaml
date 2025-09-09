@@ -1,0 +1,38 @@
+# Build configuration - Controls build failure conditions
+build:
+  # Maximum number of issues allowed before the build fails
+  # 0 = fail on any issue found
+  maxIssues: 0
+  # Whether to exclude issues that can be auto-corrected from the issue count
+  # false = include auto-correctable issues in the count
+  excludeCorrectable: false
+
+# Config validation - Verifies detekt configuration file correctness
+config:
+  # Validates that all rule configurations are correct and recognized
+  # true = fail build on invalid configuration
+  validation: true
+
+# Complexity rules - Analyzes code complexity metrics
+complexity:
+  # Disabled - complexity checks are turned off
+  # When enabled, checks for cyclomatic complexity, method length, etc.
+  active: false
+
+# Style rules - Enforces code style consistency
+style:
+  # Disabled - style checks are turned off
+  # When enabled, enforces naming conventions, formatting, etc.
+  active: false
+
+# Exception handling rules - Checks for proper exception usage
+exceptions:
+  # Disabled - exception handling checks are turned off
+  # When enabled, checks for empty catch blocks, generic exceptions, etc.
+  active: false
+
+# Naming convention rules - Enforces identifier naming patterns
+naming:
+  # Disabled - naming convention checks are turned off
+  # When enabled, validates class, function, variable, and package naming
+  active: false

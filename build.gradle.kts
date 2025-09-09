@@ -1,3 +1,5 @@
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+
 plugins {
     // this is necessary to avoid the plugins to be loaded multiple times
     // in each subproject's classloader
@@ -22,7 +24,7 @@ allprojects {
     detekt {
         buildUponDefaultConfig = true
         allRules = false
-        config.from("$rootDir/config/detekt/detekt.yml")
+        config.from("$rootDir/detekt.yaml")
     }
 
     tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
@@ -40,11 +42,11 @@ allprojects {
     }
 
     ktlint {
-        version.set("1.4.1")
+        version.set("1.7.1")
         ignoreFailures.set(false)
         reporters {
-            reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
-            reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
+            reporter(ReporterType.PLAIN)
+            reporter(ReporterType.CHECKSTYLE)
         }
         filter {
             exclude("**/generated/**")

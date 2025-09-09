@@ -160,7 +160,7 @@ Available log levels:
 This project uses the following code quality tools to maintain code standards:
 
 ### detekt
-Static code analysis for Kotlin. Configuration is in `config/detekt/detekt.yml`.
+Static code analysis for Kotlin. Configuration is in `detekt.yaml`.
 
 **Key Features:**
 - Code smell detection
@@ -177,9 +177,6 @@ Static code analysis for Kotlin. Configuration is in `config/detekt/detekt.yml`.
 # Run detekt on specific targets
 ./gradlew shared:detektJvmMain
 ./gradlew composeApp:detektDesktopMain
-
-# Generate baseline to ignore existing issues
-./gradlew detektBaseline
 ```
 
 ### ktlint
