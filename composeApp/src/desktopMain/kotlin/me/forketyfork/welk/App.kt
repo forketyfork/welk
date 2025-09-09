@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -47,7 +48,7 @@ fun App(
                     modifier =
                         modifier
                             .fillMaxSize()
-                            .background(AppTheme.colors.transparent),
+                            .background(MaterialTheme.colors.background),
                     contentAlignment = Alignment.Center,
                 ) {
                     LoginView()
@@ -59,7 +60,7 @@ fun App(
                     modifier =
                         modifier
                             .fillMaxSize()
-                            .background(AppTheme.colors.transparent),
+                            .background(MaterialTheme.colors.background),
                 ) {
                     // Use Row for the layout
                     Row(modifier = Modifier.fillMaxSize()) {

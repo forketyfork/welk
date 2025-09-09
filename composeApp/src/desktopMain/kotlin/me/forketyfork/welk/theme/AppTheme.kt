@@ -26,9 +26,9 @@ object AppColors {
 
     // Secondary colors
     val secondaryLight = Color(0xFFCE93D8)
-    val secondaryDark = Color(0xFFE1BEE7)
+    val secondaryDark = Color(0xFF8E24AA)
     val secondaryVariantLight = Color(0xFFAB47BC)
-    val secondaryVariantDark = Color(0xFFCE93D8)
+    val secondaryVariantDark = Color(0xFF6A1B9A)
 
     // Background and surface colors
     val backgroundLight = Color(0xFFF3E5F5)
