@@ -18,5 +18,5 @@ ij_kotlin_allow_trailing_comma_on_call_site = true
 # Disable rules not suitable for Compose and Kotlin Multiplatform projects
 ktlint_standard_no-wildcard-imports = disabled
 ktlint_standard_function-naming = disabled
-ktlint_standard_filename = disabled
+# ktlint_standard_filename = disabled
 ktlint_standard_backing-property-naming = disabled
