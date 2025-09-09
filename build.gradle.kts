@@ -17,9 +17,17 @@ buildscript {
     }
 }
 
+dependencies {
+    detektPlugins(libs.detekt.compose.rules)
+}
+
 allprojects {
     apply(plugin = "io.gitlab.arturbosch.detekt")
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
+
+    dependencies {
+        detektPlugins(rootProject.libs.detekt.compose.rules)
+    }
 
     detekt {
         buildUponDefaultConfig = true
@@ -42,7 +50,10 @@ allprojects {
     }
 
     ktlint {
-        version.set("1.7.1")
+        version.set(
+            rootProject.libs.versions.ktlint.version
+                .get(),
+        )
         ignoreFailures.set(false)
         reporters {
             reporter(ReporterType.PLAIN)

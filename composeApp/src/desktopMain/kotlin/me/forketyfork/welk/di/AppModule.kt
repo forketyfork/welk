@@ -6,7 +6,13 @@ import me.forketyfork.welk.domain.FirestoreRepository
 import me.forketyfork.welk.getPlatform
 import me.forketyfork.welk.service.auth.AuthService
 import me.forketyfork.welk.service.auth.FirestoreAuthService
-import me.forketyfork.welk.vm.*
+import me.forketyfork.welk.vm.CardAnimationManager
+import me.forketyfork.welk.vm.CardInteractionManager
+import me.forketyfork.welk.vm.DefaultCardInteractionManager
+import me.forketyfork.welk.vm.DesktopCardAnimationManager
+import me.forketyfork.welk.vm.DesktopCardViewModel
+import me.forketyfork.welk.vm.DesktopLoginViewModel
+import me.forketyfork.welk.vm.ThemeViewModel
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf

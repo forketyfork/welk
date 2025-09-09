@@ -1,9 +1,25 @@
 package me.forketyfork.welk.components
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.TooltipArea
+import androidx.compose.foundation.TooltipPlacement
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
@@ -31,9 +47,10 @@ fun DeckItem(
     onAddCard: ((String) -> Unit),
     onAddDeck: ((String) -> Unit),
     onDeleteDeck: ((String) -> Unit),
+    modifier: Modifier = Modifier,
     childDecks: List<StateFlow<Deck>> = emptyList(),
     level: Int = 0,
-    onChildDeckSelected: ((String) -> Unit) = {},
+    onSelectChildDeck: ((String) -> Unit) = {},
     onChildAddCard: ((String) -> Unit) = {},
     onChildAddDeck: ((String) -> Unit) = {},
     onChildDeleteDeck: ((String) -> Unit) = {},
@@ -45,7 +62,7 @@ fun DeckItem(
     val deckId = deckState.id ?: ""
     val isExpanded = expandedDeckIds.contains(deckId)
 
-    Column {
+    Column(modifier = modifier) {
         Box(
             modifier =
                 Modifier
@@ -202,14 +219,14 @@ fun DeckItem(
                     deck = childDeck,
                     isSelected = isSelected && childDeckState.id == deckState.id,
                     onClick = {
-                        childDeckState.id?.let { onChildDeckSelected(it) }
+                        childDeckState.id?.let { onSelectChildDeck(it) }
                     },
                     onAddCard = onChildAddCard,
                     onAddDeck = onChildAddDeck,
                     onDeleteDeck = onChildDeleteDeck,
                     childDecks = childDecksOfChild,
                     level = level + 1,
-                    onChildDeckSelected = onChildDeckSelected,
+                    onSelectChildDeck = onSelectChildDeck,
                     onChildAddCard = onChildAddCard,
                     onChildAddDeck = onChildAddDeck,
                     onChildDeleteDeck = onChildDeleteDeck,

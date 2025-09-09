@@ -13,26 +13,29 @@ config:
   # true = fail build on invalid configuration
   validation: true
 
-# Complexity rules - Analyzes code complexity metrics
 complexity:
-  # Disabled - complexity checks are turned off
-  # When enabled, checks for cyclomatic complexity, method length, etc.
-  active: false
+  active: true
+  ComplexCondition:
+    threshold: 4
+  LongMethod:
+    threshold: 60
+  LongParameterList:
+    functionThreshold: 6
+  TooManyFunctions:
+    thresholdInClasses: 20
 
-# Style rules - Enforces code style consistency
 style:
-  # Disabled - style checks are turned off
-  # When enabled, enforces naming conventions, formatting, etc.
-  active: false
+  active: true
+  MagicNumber:
+    active: false  # Too noisy for typical projects
 
-# Exception handling rules - Checks for proper exception usage
-exceptions:
-  # Disabled - exception handling checks are turned off
-  # When enabled, checks for empty catch blocks, generic exceptions, etc.
-  active: false
-
-# Naming convention rules - Enforces identifier naming patterns
 naming:
-  # Disabled - naming convention checks are turned off
-  # When enabled, validates class, function, variable, and package naming
-  active: false
+  FunctionNaming:
+    excludes: ["**/test/**", "**/androidTest/**"]
+    functionPattern: '[a-zA-Z][a-zA-Z0-9]*' # Allow functions to start with uppercase letter, since it's typical for Jetpack Compose components
+    excludeClassPattern: '.*Composable.*'
+
+exceptions:
+  active: true
+  SwallowedException:
+    active: false  # Often legitimate in Kotlin

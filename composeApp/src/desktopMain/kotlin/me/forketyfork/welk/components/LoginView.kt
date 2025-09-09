@@ -31,7 +31,7 @@ import org.koin.compose.viewmodel.koinViewModel
  * Login screen with username and password input.
  */
 @Composable
-fun LoginView() {
+fun LoginView(modifier: Modifier = Modifier) {
     val viewModel: LoginViewModel = koinViewModel<DesktopLoginViewModel>()
 
     var username by remember { mutableStateOf("") }
@@ -45,6 +45,7 @@ fun LoginView() {
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier,
     ) {
         Text(
             text = "Welkome\uD83C\uDF42",

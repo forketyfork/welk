@@ -25,7 +25,7 @@ class FirestoreRepository(
         get() =
             Firebase.auth.currentUser?.uid?.let { userId ->
                 users.document(userId)
-            } ?: throw IllegalStateException("User must be logged in to access data")
+            } ?: error("User must be logged in to access data")
 
     private val decksCollection
         get() = userDocument.collection("decks")
@@ -54,7 +54,7 @@ class FirestoreRepository(
             .map { it.documents }
             .map { documentSnapshots ->
                 documentSnapshots.map { documentSnapshot ->
-                    documentSnapshot.reference.snapshots.mapNotNull { it ->
+                    documentSnapshot.reference.snapshots.mapNotNull {
                         it.data<Deck?>()?.apply { id = documentSnapshot.id }
                     }
                 }

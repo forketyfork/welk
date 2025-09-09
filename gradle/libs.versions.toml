@@ -13,8 +13,9 @@ compose-material = "1.8.2" # https://search.maven.org/artifact/org.jetbrains.com
 kermit = "2.0.8" # https://github.com/touchlab/Kermit/releases/
 koin = "4.1.1" # https://github.com/InsertKoinIO/koin/releases
 detekt = "1.23.8" # https://github.com/detekt/detekt/releases
+detekt-compose = "0.4.27" # https://github.com/mrmans0n/compose-rules/releases
 ktlint-gradle = "13.1.0" # https://github.com/JLLeitschuh/ktlint-gradle/releases
-ktlint = "1.7.1" # https://github.com/pinterest/ktlint/releases - Note: Currently hardcoded in build.gradle.kts due to Gradle limitations
+ktlint-version = "1.7.1" # https://github.com/pinterest/ktlint/releases
 
 [libraries]
 
@@ -49,6 +50,9 @@ koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
 koin-compose-viewmodel-navigation = { module = "io.insert-koin:koin-compose-viewmodel-navigation", version.ref = "koin" }
+
+# Code quality
+detekt-compose-rules = { module = "io.nlopez.compose.rules:detekt", version.ref = "detekt-compose" }
 koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
 
 [plugins]
