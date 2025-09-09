@@ -17,5 +17,5 @@ data class Card(
     val back: String,
     var learned: Boolean = false,
     // Position within the deck for ordering
-    val position: Int = 0
+    val position: Int = 0,
 )

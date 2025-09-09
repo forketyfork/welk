@@ -4,8 +4,23 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
-import androidx.compose.ui.test.*
-import androidx.lifecycle.*
+import androidx.compose.ui.test.ComposeUiTest
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.hasTextExactly
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.waitUntilExactlyOneExists
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import kotlinx.coroutines.runBlocking
@@ -22,9 +37,10 @@ import org.koin.test.get
  * Fake implementation of [LifecycleOwner] to be used in the tests
  */
 class TestLifecycleOwner : LifecycleOwner {
-    override val lifecycle: Lifecycle = LifecycleRegistry(this).apply {
-        currentState = Lifecycle.State.RESUMED
-    }
+    override val lifecycle: Lifecycle =
+        LifecycleRegistry(this).apply {
+            currentState = Lifecycle.State.RESUMED
+        }
 }
 
 class TestViewModelStoreOwner : ViewModelStoreOwner {
@@ -74,7 +90,7 @@ fun ComposeUiTest.setupApp() {
     setContent {
         CompositionLocalProvider(
             LocalLifecycleOwner provides TestLifecycleOwner(),
-            LocalViewModelStoreOwner provides TestViewModelStoreOwner()
+            LocalViewModelStoreOwner provides TestViewModelStoreOwner(),
         ) {
             App()
         }
@@ -86,7 +102,11 @@ fun ComposeUiTest.setupApp() {
  * This is the recommended way to start tests to ensure a clean database state.
  */
 @OptIn(ExperimentalTestApi::class)
-fun KoinTest.setupAppWithCleanDatabase(composeTest: ComposeUiTest, username: String, password: String) {
+fun KoinTest.setupAppWithCleanDatabase(
+    composeTest: ComposeUiTest,
+    username: String,
+    password: String,
+) {
     // Set up the app
     composeTest.setupApp()
 
@@ -113,7 +133,10 @@ fun KoinTest.setupAppWithCleanDatabase(composeTest: ComposeUiTest, username: Str
  * Logs in with the provided credentials and cleans up the database beforehand
  */
 @OptIn(ExperimentalTestApi::class)
-fun ComposeUiTest.login(username: String, password: String) {
+fun ComposeUiTest.login(
+    username: String,
+    password: String,
+) {
     onNodeWithTag(LoginViewTestTags.USERNAME_INPUT).performTextInput(username)
     onNodeWithTag(LoginViewTestTags.PASSWORD_INPUT).performTextInput(password)
     onNodeWithTag(LoginViewTestTags.SIGN_IN_BUTTON).performClick()
@@ -140,7 +163,7 @@ fun ComposeUiTest.logout() {
     onNodeWithTag(SidePanelTestTags.LOGOUT_BUTTON).performClick()
     waitUntilExactlyOneExists(
         hasTestTag(LoginViewTestTags.USERNAME_INPUT),
-        timeoutMillis = 10000
+        timeoutMillis = 10000,
     )
 }
 
@@ -151,20 +174,22 @@ fun ComposeUiTest.printSemanticNodeState() {
     onAllNodes(SemanticsMatcher("all nodes") { true }).fetchSemanticsNodes().forEach { node ->
         println(
             "Node: Text = ${node.config.getOrNull(SemanticsProperties.Text)}, " +
-                    "Tag = ${node.config.getOrNull(SemanticsProperties.TestTag)}, " +
-                    "Role = ${node.config.getOrNull(SemanticsProperties.Role)}, " +
-                    "Description = ${node.config.getOrNull(SemanticsProperties.ContentDescription)}, " +
-                    "Focused = ${node.config.getOrNull(SemanticsProperties.Focused)}"
+                "Tag = ${node.config.getOrNull(SemanticsProperties.TestTag)}, " +
+                "Role = ${node.config.getOrNull(SemanticsProperties.Role)}, " +
+                "Description = ${node.config.getOrNull(SemanticsProperties.ContentDescription)}, " +
+                "Focused = ${node.config.getOrNull(SemanticsProperties.Focused)}",
         )
     }
 }
 
 @OptIn(ExperimentalTestApi::class, InternalComposeUiApi::class)
 fun ComposeUiTest.getDeckIdByName(name: String): String {
-    val tag = onNodeWithText(name)
-        .fetchSemanticsNode()
-        .config.getOrNull(SemanticsProperties.TestTag)
-        ?: error("Deck tag not found for $name")
+    val tag =
+        onNodeWithText(name)
+            .fetchSemanticsNode()
+            .config
+            .getOrNull(SemanticsProperties.TestTag)
+            ?: error("Deck tag not found for $name")
     return tag.removePrefix("deck_name_")
 }
 
@@ -172,7 +197,10 @@ fun ComposeUiTest.getDeckIdByName(name: String): String {
  * Creates a test deck through the UI and returns its ID
  */
 @OptIn(ExperimentalTestApi::class)
-fun ComposeUiTest.createTestDeck(name: String, description: String): String {
+fun ComposeUiTest.createTestDeck(
+    name: String,
+    description: String,
+): String {
     // Click the "Add deck" button
     onNodeWithTag(SidePanelTestTags.ADD_DECK_BUTTON).performClick()
 
@@ -197,7 +225,11 @@ fun ComposeUiTest.createTestDeck(name: String, description: String): String {
  * Creates a test card in the specified deck through the UI
  */
 @OptIn(ExperimentalTestApi::class)
-fun ComposeUiTest.createTestCard(deckId: String, front: String, back: String) {
+fun ComposeUiTest.createTestCard(
+    deckId: String,
+    front: String,
+    back: String,
+) {
     // Add a card to the deck using its test tag
     onNodeWithTag(DeckItemTestTags.ADD_CARD_BUTTON_TEMPLATE.format(deckId)).performClick()
 

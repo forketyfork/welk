@@ -22,7 +22,11 @@ interface DeckRepository {
      * @param description The description of the deck
      * @param parentId The ID of the parent deck, or null for a top-level deck
      */
-    suspend fun createDeck(name: String, description: String, parentId: String? = null)
+    suspend fun createDeck(
+        name: String,
+        description: String,
+        parentId: String? = null,
+    )
 
     /**
      * Deletes a deck, all its cards, and all its child decks.

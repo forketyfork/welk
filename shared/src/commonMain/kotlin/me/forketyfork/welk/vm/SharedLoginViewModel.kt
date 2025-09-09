@@ -12,8 +12,8 @@ import me.forketyfork.welk.service.auth.AuthService
  */
 class SharedLoginViewModel(
     private val authService: AuthService,
-) : LoginViewModel, BaseInitializableViewModel() {
-
+) : BaseInitializableViewModel(),
+    LoginViewModel {
     private val _userId = MutableStateFlow(null as String?)
     override val userId: StateFlow<String?> = _userId.asStateFlow()
 
@@ -25,7 +25,10 @@ class SharedLoginViewModel(
         _userId.value = authService.currentUserId()
     }
 
-    override fun signIn(username: String, password: String) {
+    override fun signIn(
+        username: String,
+        password: String,
+    ) {
         viewModelScope.launch {
             val userId = authService.signIn(username, password)
             _userId.value = userId
@@ -39,5 +42,4 @@ class SharedLoginViewModel(
             _userId.value = null
         }
     }
-
 }

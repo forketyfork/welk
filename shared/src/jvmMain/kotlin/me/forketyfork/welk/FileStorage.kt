@@ -6,15 +6,19 @@ import java.io.File
  * Simple file-based key-value storage used for persisting Firebase auth data.
  * Each key is stored as a separate file inside the given directory.
  */
-class FileStorage(private val directory: File) {
-
+class FileStorage(
+    private val directory: File,
+) {
     init {
         if (!directory.exists()) {
             directory.mkdirs()
         }
     }
 
-    fun store(key: String, value: String) {
+    fun store(
+        key: String,
+        value: String,
+    ) {
         File(directory, key).writeText(value)
     }
 

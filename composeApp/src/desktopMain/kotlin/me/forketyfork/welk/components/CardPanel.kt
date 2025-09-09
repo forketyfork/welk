@@ -4,13 +4,39 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Button
+import androidx.compose.material.Divider
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -20,7 +46,14 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.*
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextRange
@@ -43,7 +76,6 @@ private val logger = Logger.withTag("CardPanel")
 
 @Composable
 fun CardPanel(modifier: Modifier = Modifier) {
-
     val cardInteractionManager = koinInject<CardInteractionManager>()
     val cardAnimationManager = koinInject<DesktopCardAnimationManager>()
 
@@ -65,7 +97,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
     LaunchedEffect(
         editCardContent.value,
         isEditing.value,
-        cardViewModel.isNewCard.value
+        cardViewModel.isNewCard.value,
     ) {
         // Only update the text values if we're in edit mode
         if (isEditing.value) {
@@ -84,11 +116,12 @@ fun CardPanel(modifier: Modifier = Modifier) {
 
     val currentDeck = cardViewModel.currentDeck.collectAsStateWithLifecycle()
     val currentCards = cardViewModel.currentDeckCards.collectAsStateWithLifecycle()
-    val hasCards = remember(currentCards.value) {
-        derivedStateOf {
-            currentCards.value.isNotEmpty()
+    val hasCards =
+        remember(currentCards.value) {
+            derivedStateOf {
+                currentCards.value.isNotEmpty()
+            }
         }
-    }
 
     val learnedCardCount = cardViewModel.learnedCardCount.collectAsStateWithLifecycle()
     val totalCardCount = cardViewModel.totalCardCount.collectAsStateWithLifecycle()
@@ -97,7 +130,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
     LaunchedEffect(
         currentCard.value,
         currentDeck.value,
-        hasCards.value
+        hasCards.value,
     ) {
         // Check if we have a deck and either have cards or are in edit mode
         if (currentDeck.value != null && (hasCards.value || isEditing.value)) {
@@ -127,64 +160,64 @@ fun CardPanel(modifier: Modifier = Modifier) {
                             cardViewModel.processAction(CardAction.ConfirmDelete)
                         }
                     },
-                    modifier = Modifier.testTag(CardPanelTestTags.CONFIRM_DELETE_BUTTON)
+                    modifier = Modifier.testTag(CardPanelTestTags.CONFIRM_DELETE_BUTTON),
                 ) {
                     Text("Delete")
                 }
             },
             dismissButton = {
                 TextButton(
-                    onClick = { cardViewModel.processAction(CardAction.CancelDelete) }
+                    onClick = { cardViewModel.processAction(CardAction.CancelDelete) },
                 ) {
                     Text("Cancel")
                 }
-            }
+            },
         )
     }
 
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colors.background)
-            .testTag(CardPanelTestTags.CARD_PANEL)
-            .onKeyEvent { event: KeyEvent ->
-                logger.d { "Card got key event: $event" }
-                val action = cardInteractionManager.handleKeyEvent(event)
-                cardViewModel.processAction(action)
-            }
-            .focusRequester(focusRequester)
-            .focusable()
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colors.background)
+                .testTag(CardPanelTestTags.CARD_PANEL)
+                .onKeyEvent { event: KeyEvent ->
+                    logger.d { "Card got key event: $event" }
+                    val action = cardInteractionManager.handleKeyEvent(event)
+                    cardViewModel.processAction(action)
+                }.focusRequester(focusRequester)
+                .focusable(),
     ) {
         // Main card content centered in the full available space
         Box(
             modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             if (currentDeck.value != null) {
                 if (!hasCards.value && !isEditing.value) {
                     // Show a message when there are no cards in the deck
                     Column(
-                        modifier = Modifier
-                            .width(315.dp)
-                            .height(440.dp)
-                            .border(
-                                width = 2.dp,
-                                color = MaterialTheme.colors.primary,
-                                shape = RoundedCornerShape(10.dp)
-                            )
-                            .background(color = MaterialTheme.colors.background)
-                            .padding(all = 20.dp),
+                        modifier =
+                            Modifier
+                                .width(315.dp)
+                                .height(440.dp)
+                                .border(
+                                    width = 2.dp,
+                                    color = MaterialTheme.colors.primary,
+                                    shape = RoundedCornerShape(10.dp),
+                                ).background(color = MaterialTheme.colors.background)
+                                .padding(all = 20.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         // Add flexible spacer to center content vertically
                         Spacer(modifier = Modifier.weight(1f))
-                        
+
                         Text(
                             "No cards in this deck",
                             style = TextStyle(fontSize = 18.sp),
                             textAlign = TextAlign.Center,
-                            color = MaterialTheme.colors.onSurface
+                            color = MaterialTheme.colors.onSurface,
                         )
                         Spacer(modifier = Modifier.height(20.dp))
                         Button(
@@ -194,66 +227,75 @@ fun CardPanel(modifier: Modifier = Modifier) {
                                     cardViewModel.processAction(CardAction.CreateNewCardInCurrentDeck)
                                 }
                             },
-                            modifier = Modifier.testTag(CardPanelTestTags.CREATE_FIRST_CARD_BUTTON)
+                            modifier = Modifier.testTag(CardPanelTestTags.CREATE_FIRST_CARD_BUTTON),
                         ) {
                             Text("Create a Card")
                         }
-                        
+
                         // Add flexible spacer to center content vertically
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 } else {
                     // Show the card
                     Column(
-                        modifier = Modifier
-                            .width(315.dp)
-                            .height(440.dp)
-                            .offset { animatedOffset }
-                            .rotate(animatedOffset.x / 80.0f)
-                            .border(
-                                width = 2.dp,
-                                color = MaterialTheme.colors.primary,
-                                shape = RoundedCornerShape(10.dp)
-                            )
-                            .background(
-                                color = if (animatedColor == Color.Transparent) {
-                                    MaterialTheme.colors.background
-                                } else {
-                                    animatedColor
-                                }
-                            )
-                            .padding(all = 20.dp),
+                        modifier =
+                            Modifier
+                                .width(315.dp)
+                                .height(440.dp)
+                                .offset { animatedOffset }
+                                .rotate(animatedOffset.x / 80.0f)
+                                .border(
+                                    width = 2.dp,
+                                    color = MaterialTheme.colors.primary,
+                                    shape = RoundedCornerShape(10.dp),
+                                ).background(
+                                    color =
+                                        if (animatedColor == Color.Transparent) {
+                                            MaterialTheme.colors.background
+                                        } else {
+                                            animatedColor
+                                        },
+                                ).padding(all = 20.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         if (isEditing.value) {
                             // Edit mode UI
                             OutlinedTextField(
                                 value = frontText,
-                                colors = TextFieldDefaults.textFieldColors(
-                                    textColor = MaterialTheme.colors.onSurface
-                                ),
+                                colors =
+                                    TextFieldDefaults.textFieldColors(
+                                        textColor = MaterialTheme.colors.onSurface,
+                                    ),
                                 onValueChange = { frontText = it },
                                 label = { Text("Front") },
-                                modifier = Modifier.fillMaxWidth().weight(1f)
-                                    .focusRequester(editFrontFocusRequester)
-                                    .testTag(CardPanelTestTags.EDIT_FRONT)
-                                    .moveFocusOnTab()
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f)
+                                        .focusRequester(editFrontFocusRequester)
+                                        .testTag(CardPanelTestTags.EDIT_FRONT)
+                                        .moveFocusOnTab(),
                             )
                             Divider()
                             OutlinedTextField(
                                 value = backText,
-                                colors = TextFieldDefaults.textFieldColors(
-                                    textColor = MaterialTheme.colors.onSurface
-                                ),
+                                colors =
+                                    TextFieldDefaults.textFieldColors(
+                                        textColor = MaterialTheme.colors.onSurface,
+                                    ),
                                 onValueChange = { backText = it },
                                 label = { Text("Back") },
-                                modifier = Modifier.fillMaxWidth().weight(1f)
-                                    .testTag(CardPanelTestTags.EDIT_BACK).moveFocusOnTab()
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f)
+                                        .testTag(CardPanelTestTags.EDIT_BACK)
+                                        .moveFocusOnTab(),
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End
+                                horizontalArrangement = Arrangement.End,
                             ) {
                                 Button(
                                     onClick = {
@@ -267,7 +309,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                                             focusRequester.requestFocus()
                                         }
                                     },
-                                    modifier = Modifier.testTag(CardPanelTestTags.EDIT_SAVE)
+                                    modifier = Modifier.testTag(CardPanelTestTags.EDIT_SAVE),
                                 ) {
                                     Text("Save")
                                 }
@@ -279,7 +321,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                                         // Return focus to the card for keyboard navigation
                                         focusRequester.requestFocus()
                                     },
-                                    modifier = Modifier.testTag(CardPanelTestTags.EDIT_CANCEL)
+                                    modifier = Modifier.testTag(CardPanelTestTags.EDIT_CANCEL),
                                 ) {
                                     Text("Cancel")
                                 }
@@ -291,37 +333,36 @@ fun CardPanel(modifier: Modifier = Modifier) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
-
-                                    ) {
+                                ) {
                                     Text(
                                         card.front,
                                         modifier = Modifier.weight(1f),
-                                        color = MaterialTheme.colors.onSurface
+                                        color = MaterialTheme.colors.onSurface,
                                     )
                                     Row(
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Edit,
                                             contentDescription = "Edit",
                                             tint = MaterialTheme.colors.primary,
-                                            modifier = Modifier
-                                                .size(24.dp)
-                                                .clickable {
-                                                    cardViewModel.processAction(CardAction.Edit)
-                                                }
-                                                .testTag(CardPanelTestTags.EDIT_BUTTON)
+                                            modifier =
+                                                Modifier
+                                                    .size(24.dp)
+                                                    .clickable {
+                                                        cardViewModel.processAction(CardAction.Edit)
+                                                    }.testTag(CardPanelTestTags.EDIT_BUTTON),
                                         )
                                         Icon(
                                             imageVector = Icons.Default.Delete,
                                             contentDescription = "Delete",
                                             tint = MaterialTheme.colors.error,
-                                            modifier = Modifier
-                                                .size(24.dp)
-                                                .clickable {
-                                                    cardViewModel.processAction(CardAction.Delete)
-                                                }
-                                                .testTag(CardPanelTestTags.DELETE_BUTTON)
+                                            modifier =
+                                                Modifier
+                                                    .size(24.dp)
+                                                    .clickable {
+                                                        cardViewModel.processAction(CardAction.Delete)
+                                                    }.testTag(CardPanelTestTags.DELETE_BUTTON),
                                         )
                                     }
                                 }
@@ -330,7 +371,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                                     Text(
                                         text = card.back,
                                         color = MaterialTheme.colors.onSurface,
-                                        modifier = Modifier.testTag(CardPanelTestTags.VIEW_BACK)
+                                        modifier = Modifier.testTag(CardPanelTestTags.VIEW_BACK),
                                     )
                                 }
                             }
@@ -338,16 +379,15 @@ fun CardPanel(modifier: Modifier = Modifier) {
                     }
                 }
             }
-
         }
-        
+
         // Position the DeckInfoPanel at the bottom, independent of card positioning
         currentDeck.value?.value?.let { deck ->
             DeckInfoPanel(
                 deck = deck,
                 totalCount = totalCardCount.value,
                 learnedCount = learnedCardCount.value,
-                modifier = Modifier.align(Alignment.BottomCenter)
+                modifier = Modifier.align(Alignment.BottomCenter),
             )
         }
     }
@@ -356,19 +396,20 @@ fun CardPanel(modifier: Modifier = Modifier) {
 // For multiline fields, Tab doesn't work as expected, so we need to move focus manually
 // see https://github.com/JetBrains/compose-multiplatform/blob/master/tutorials/Tab_Navigation/README.md#a-possible-workaround
 @OptIn(ExperimentalComposeUiApi::class)
-fun Modifier.moveFocusOnTab() = composed {
-    val focusManager = LocalFocusManager.current
-    onPreviewKeyEvent {
-        if (it.type == KeyEventType.KeyDown && it.key == Key.Tab) {
-            focusManager.moveFocus(
-                if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next
-            )
-            true
-        } else {
-            false
+fun Modifier.moveFocusOnTab() =
+    composed {
+        val focusManager = LocalFocusManager.current
+        onPreviewKeyEvent {
+            if (it.type == KeyEventType.KeyDown && it.key == Key.Tab) {
+                focusManager.moveFocus(
+                    if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next,
+                )
+                true
+            } else {
+                false
+            }
         }
     }
-}
 
 object CardPanelTestTags {
     const val VIEW_BACK = "card_view_back"

@@ -31,8 +31,7 @@ import org.koin.compose.viewmodel.koinViewModel
  * Login screen with username and password input.
  */
 @Composable
-fun LoginView() {
-
+fun LoginView(modifier: Modifier = Modifier) {
     val viewModel: LoginViewModel = koinViewModel<DesktopLoginViewModel>()
 
     var username by remember { mutableStateOf("") }
@@ -45,50 +44,57 @@ fun LoginView() {
     }
 
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier,
     ) {
         Text(
             text = "Welkome\uD83C\uDF42",
             style = MaterialTheme.typography.h1,
             color = MaterialTheme.colors.primary,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
         OutlinedTextField(
             value = username,
-            colors = TextFieldDefaults.textFieldColors(
-                textColor = MaterialTheme.colors.onSurface
-            ),
+            colors =
+                TextFieldDefaults.textFieldColors(
+                    textColor = MaterialTheme.colors.onSurface,
+                ),
             onValueChange = { username = it },
             label = { Text("Username") },
             singleLine = true,
-            modifier = Modifier.width(300.dp)
-                .focusRequester(usernameFocusRequester)
-                .testTag(LoginViewTestTags.USERNAME_INPUT),
+            modifier =
+                Modifier
+                    .width(300.dp)
+                    .focusRequester(usernameFocusRequester)
+                    .testTag(LoginViewTestTags.USERNAME_INPUT),
         )
         OutlinedTextField(
             value = password,
-            colors = TextFieldDefaults.textFieldColors(
-                textColor = MaterialTheme.colors.onSurface
-            ),
+            colors =
+                TextFieldDefaults.textFieldColors(
+                    textColor = MaterialTheme.colors.onSurface,
+                ),
             onValueChange = { password = it },
             label = { Text("Password") },
             singleLine = true,
-            modifier = Modifier.width(300.dp)
-                .testTag(LoginViewTestTags.PASSWORD_INPUT),
-            visualTransformation = PasswordVisualTransformation()
+            modifier =
+                Modifier
+                    .width(300.dp)
+                    .testTag(LoginViewTestTags.PASSWORD_INPUT),
+            visualTransformation = PasswordVisualTransformation(),
         )
         TextButton(
             onClick = {
                 viewModel.signIn(username, password)
             },
-            modifier = Modifier.testTag(LoginViewTestTags.SIGN_IN_BUTTON)
+            modifier = Modifier.testTag(LoginViewTestTags.SIGN_IN_BUTTON),
         ) {
             Text("Sign in")
         }
         Text(
             text = if (loginError.value) "Invalid username or password" else "",
             color = MaterialTheme.colors.error,
-            modifier = Modifier.padding(vertical = 16.dp)
+            modifier = Modifier.padding(vertical = 16.dp),
         )
     }
 }

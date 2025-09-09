@@ -1,9 +1,25 @@
 package me.forketyfork.welk.components
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.TooltipArea
+import androidx.compose.foundation.TooltipPlacement
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
@@ -31,9 +47,10 @@ fun DeckItem(
     onAddCard: ((String) -> Unit),
     onAddDeck: ((String) -> Unit),
     onDeleteDeck: ((String) -> Unit),
+    modifier: Modifier = Modifier,
     childDecks: List<StateFlow<Deck>> = emptyList(),
     level: Int = 0,
-    onChildDeckSelected: ((String) -> Unit) = {},
+    onSelectChildDeck: ((String) -> Unit) = {},
     onChildAddCard: ((String) -> Unit) = {},
     onChildAddDeck: ((String) -> Unit) = {},
     onChildDeleteDeck: ((String) -> Unit) = {},
@@ -45,21 +62,22 @@ fun DeckItem(
     val deckId = deckState.id ?: ""
     val isExpanded = expandedDeckIds.contains(deckId)
 
-    Column {
+    Column(modifier = modifier) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(if (isSelected) MaterialTheme.colors.primary.copy(alpha = 0.1f) else Color.Transparent)
-                .clickable { onClick() }
-                .padding(start = (12 + level * 16).dp, end = 12.dp, top = 8.dp, bottom = 8.dp)
-                .testTag(DeckItemTestTags.DECK_NAME_TEMPLATE.format(deckState.id))
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(if (isSelected) MaterialTheme.colors.primary.copy(alpha = 0.1f) else Color.Transparent)
+                    .clickable { onClick() }
+                    .padding(start = (12 + level * 16).dp, end = 12.dp, top = 8.dp, bottom = 8.dp)
+                    .testTag(DeckItemTestTags.DECK_NAME_TEMPLATE.format(deckState.id)),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 // Expand/collapse icon for decks with children
                 if (childDecks.isNotEmpty()) {
@@ -67,13 +85,18 @@ fun DeckItem(
                         onClick = {
                             onToggleExpansion(deckId)
                         },
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(24.dp),
                     ) {
                         Icon(
-                            imageVector = if (isExpanded) Icons.Default.KeyboardArrowDown else Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            imageVector =
+                                if (isExpanded) {
+                                    Icons.Default.KeyboardArrowDown
+                                } else {
+                                    Icons.AutoMirrored.Filled.KeyboardArrowRight
+                                },
                             contentDescription = if (isExpanded) "Collapse" else "Expand",
                             tint = MaterialTheme.colors.onSurface,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(16.dp),
                         )
                     }
                 } else {
@@ -83,37 +106,39 @@ fun DeckItem(
 
                 // The deck name with a tooltip for full text
                 Box(
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 ) {
                     TooltipArea(
                         tooltip = {
                             Surface(
                                 elevation = 4.dp,
                                 shape = RoundedCornerShape(4.dp),
-                                color = MaterialTheme.colors.surface
+                                color = MaterialTheme.colors.surface,
                             ) {
                                 Box(
-                                    modifier = Modifier
-                                        .padding(8.dp)
+                                    modifier =
+                                        Modifier
+                                            .padding(8.dp),
                                 ) {
                                     Text(
                                         text = deckState.name,
-                                        color = MaterialTheme.colors.onSurface
+                                        color = MaterialTheme.colors.onSurface,
                                     )
                                 }
                             }
                         },
                         delayMillis = 600,
-                        tooltipPlacement = TooltipPlacement.CursorPoint(
-                            alignment = Alignment.TopStart
-                        )
+                        tooltipPlacement =
+                            TooltipPlacement.CursorPoint(
+                                alignment = Alignment.TopStart,
+                            ),
                     ) {
                         Text(
                             text = deckState.name,
                             style = MaterialTheme.typography.body1,
                             color = if (isSelected) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                 }
@@ -121,7 +146,7 @@ fun DeckItem(
                 // Action buttons
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.End,
                 ) {
                     // "Add deck" icon button
                     IconButton(
@@ -129,15 +154,16 @@ fun DeckItem(
                             val deckId = deckState.id ?: error("Deck id is null for a persistent entity")
                             onAddDeck(deckId)
                         },
-                        modifier = Modifier
-                            .size(28.dp)
-                            .testTag(DeckItemTestTags.ADD_DECK_BUTTON_TEMPLATE.format(deckState.id))
+                        modifier =
+                            Modifier
+                                .size(28.dp)
+                                .testTag(DeckItemTestTags.ADD_DECK_BUTTON_TEMPLATE.format(deckState.id)),
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = "Add Deck",
                             tint = MaterialTheme.colors.secondary,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(18.dp),
                         )
                     }
 
@@ -147,15 +173,16 @@ fun DeckItem(
                             val deckId = deckState.id ?: error("Deck id is null for a persistent entity")
                             onAddCard(deckId)
                         },
-                        modifier = Modifier
-                            .size(28.dp)
-                            .testTag(DeckItemTestTags.ADD_CARD_BUTTON_TEMPLATE.format(deckState.id))
+                        modifier =
+                            Modifier
+                                .size(28.dp)
+                                .testTag(DeckItemTestTags.ADD_CARD_BUTTON_TEMPLATE.format(deckState.id)),
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = "Add Card",
                             tint = MaterialTheme.colors.primary,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(18.dp),
                         )
                     }
 
@@ -165,15 +192,16 @@ fun DeckItem(
                             val deckId = deckState.id ?: error("Deck id is null for a persistent entity")
                             onDeleteDeck(deckId)
                         },
-                        modifier = Modifier
-                            .size(28.dp)
-                            .testTag(DeckItemTestTags.DELETE_DECK_BUTTON_TEMPLATE.format(deckState.id))
+                        modifier =
+                            Modifier
+                                .size(28.dp)
+                                .testTag(DeckItemTestTags.DELETE_DECK_BUTTON_TEMPLATE.format(deckState.id)),
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = "Delete Deck",
                             tint = MaterialTheme.colors.error,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(18.dp),
                         )
                     }
                 }
@@ -191,20 +219,20 @@ fun DeckItem(
                     deck = childDeck,
                     isSelected = isSelected && childDeckState.id == deckState.id,
                     onClick = {
-                        childDeckState.id?.let { onChildDeckSelected(it) }
+                        childDeckState.id?.let { onSelectChildDeck(it) }
                     },
                     onAddCard = onChildAddCard,
                     onAddDeck = onChildAddDeck,
                     onDeleteDeck = onChildDeleteDeck,
                     childDecks = childDecksOfChild,
                     level = level + 1,
-                    onChildDeckSelected = onChildDeckSelected,
+                    onSelectChildDeck = onSelectChildDeck,
                     onChildAddCard = onChildAddCard,
                     onChildAddDeck = onChildAddDeck,
                     onChildDeleteDeck = onChildDeleteDeck,
                     allDecks = allDecks,
                     onToggleExpansion = onToggleExpansion,
-                    expandedDeckIds = expandedDeckIds
+                    expandedDeckIds = expandedDeckIds,
                 )
             }
         }
