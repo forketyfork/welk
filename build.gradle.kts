@@ -33,6 +33,7 @@ allprojects {
         buildUponDefaultConfig = true
         allRules = false
         config.from("$rootDir/detekt.yaml")
+        baseline = file("$projectDir/detekt-baseline.xml")
     }
 
     tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
@@ -47,6 +48,12 @@ allprojects {
             sarif.required.set(true)
             md.required.set(true)
         }
+    }
+
+    tasks.withType<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>().configureEach {
+        setSource(files("src"))
+        include("**/*.kt")
+        exclude("**/build/**", "**/generated/**")
     }
 
     ktlint {
