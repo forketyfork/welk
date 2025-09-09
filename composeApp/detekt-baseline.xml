@@ -3,40 +3,9 @@
     <ManuallySuppressedIssues/>
     <CurrentIssues>
         <ID>CyclomaticComplexMethod:CardPanel.kt$@Composable fun CardPanel(modifier: Modifier = Modifier)</ID>
-        <ID>CyclomaticComplexMethod:DeckItem.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun DeckItem( deck:
-            StateFlow&lt;Deck&gt;, isSelected: Boolean, onClick: () -&gt; Unit, onAddCard: ((String) -&gt; Unit),
-            onAddDeck: ((String) -&gt; Unit), onDeleteDeck: ((String) -&gt; Unit), modifier: Modifier = Modifier,
-            childDecks: List&lt;StateFlow&lt;Deck&gt;&gt; = emptyList(), level: Int = 0, onSelectChildDeck: ((String) -&gt;
-            Unit) = {}, onChildAddCard: ((String) -&gt; Unit) = {}, onChildAddDeck: ((String) -&gt; Unit) = {},
-            onChildDeleteDeck: ((String) -&gt; Unit) = {}, allDecks: List&lt;StateFlow&lt;Deck&gt;&gt; = emptyList(),
-            onToggleExpansion: ((String) -&gt; Unit) = {}, expandedDeckIds: Set&lt;String&gt; = emptySet(), )
-        </ID>
         <ID>LongMethod:CardPanel.kt$@Composable fun CardPanel(modifier: Modifier = Modifier)</ID>
-        <ID>LongMethod:DeckItem.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun DeckItem( deck: StateFlow&lt;Deck&gt;,
-            isSelected: Boolean, onClick: () -&gt; Unit, onAddCard: ((String) -&gt; Unit), onAddDeck: ((String) -&gt;
-            Unit), onDeleteDeck: ((String) -&gt; Unit), modifier: Modifier = Modifier, childDecks: List&lt;StateFlow&lt;Deck&gt;&gt;
-            = emptyList(), level: Int = 0, onSelectChildDeck: ((String) -&gt; Unit) = {}, onChildAddCard: ((String) -&gt;
-            Unit) = {}, onChildAddDeck: ((String) -&gt; Unit) = {}, onChildDeleteDeck: ((String) -&gt; Unit) = {},
-            allDecks: List&lt;StateFlow&lt;Deck&gt;&gt; = emptyList(), onToggleExpansion: ((String) -&gt; Unit) = {},
-            expandedDeckIds: Set&lt;String&gt; = emptySet(), )
-        </ID>
         <ID>LongMethod:LoginView.kt$@Composable fun LoginView(modifier: Modifier = Modifier)</ID>
-        <ID>LongMethod:SidePanel.kt$@Composable fun SidePanel( modifier: Modifier = Modifier, width: Int = 250,
-            onWidthChange: (Int) -&gt; Unit = {}, )
-        </ID>
-        <ID>LongParameterList:DeckItem.kt$( deck: StateFlow&lt;Deck&gt;, isSelected: Boolean, onClick: () -&gt; Unit,
-            onAddCard: ((String) -&gt; Unit), onAddDeck: ((String) -&gt; Unit), onDeleteDeck: ((String) -&gt; Unit),
-            modifier: Modifier = Modifier, childDecks: List&lt;StateFlow&lt;Deck&gt;&gt; = emptyList(), level: Int = 0,
-            onSelectChildDeck: ((String) -&gt; Unit) = {}, onChildAddCard: ((String) -&gt; Unit) = {}, onChildAddDeck:
-            ((String) -&gt; Unit) = {}, onChildDeleteDeck: ((String) -&gt; Unit) = {}, allDecks: List&lt;StateFlow&lt;Deck&gt;&gt;
-            = emptyList(), onToggleExpansion: ((String) -&gt; Unit) = {}, expandedDeckIds: Set&lt;String&gt; =
-            emptySet(), )
-        </ID>
         <ID>ModifierComposed:CardPanel.kt$moveFocusOnTab</ID>
-        <ID>RememberMissing:DesktopCardAnimationManager.kt$DesktopCardAnimationManager$derivedStateOf { val x =
-            animatedOffset.value.value val y = -((x * x) / 12000 - 100).absoluteValue IntOffset(x.roundToInt(),
-            y.roundToInt()) }
-        </ID>
         <ID>TooGenericExceptionCaught:TestUtils.kt$e: Exception</ID>
         <ID>TooGenericExceptionCaught:ThirdLevelDeckTest.kt$ThirdLevelDeckTest$e: Exception</ID>
         <ID>TooManyFunctions:TestUtils.kt$me.forketyfork.welk.TestUtils.kt</ID>
