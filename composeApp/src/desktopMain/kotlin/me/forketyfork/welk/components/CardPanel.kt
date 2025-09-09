@@ -19,9 +19,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
+import androidx.compose.material.Checkbox
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
@@ -38,20 +38,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalFocusManager
@@ -66,6 +63,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.launch
 import me.forketyfork.welk.presentation.CardAction
+import me.forketyfork.welk.theme.AppTheme
 import me.forketyfork.welk.vm.CardInteractionManager
 import me.forketyfork.welk.vm.DesktopCardAnimationManager
 import me.forketyfork.welk.vm.DesktopCardViewModel
@@ -123,8 +121,10 @@ fun CardPanel(modifier: Modifier = Modifier) {
             }
         }
 
-    val learnedCardCount = cardViewModel.learnedCardCount.collectAsStateWithLifecycle()
+    val reviewedCardCount = cardViewModel.reviewedCardCount.collectAsStateWithLifecycle()
+    val dueCardCount = cardViewModel.dueCardCount.collectAsStateWithLifecycle()
     val totalCardCount = cardViewModel.totalCardCount.collectAsStateWithLifecycle()
+    val showAllCards = cardViewModel.showAllCards.collectAsStateWithLifecycle()
 
     // Only request focus when we have cards or there's a deck selected
     LaunchedEffect(
@@ -179,15 +179,35 @@ fun CardPanel(modifier: Modifier = Modifier) {
         modifier =
             modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colors.background)
+                .background(AppTheme.colors.transparent)
                 .testTag(CardPanelTestTags.CARD_PANEL)
-                .onKeyEvent { event: KeyEvent ->
+                .onPreviewKeyEvent { event: KeyEvent ->
                     logger.d { "Card got key event: $event" }
+
                     val action = cardInteractionManager.handleKeyEvent(event)
                     cardViewModel.processAction(action)
                 }.focusRequester(focusRequester)
                 .focusable(),
     ) {
+        // Show all cards checkbox in the top-right corner
+        Row(
+            modifier =
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Checkbox(
+                checked = showAllCards.value,
+                onCheckedChange = { cardViewModel.toggleShowAllCards() },
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = "Show all",
+                style = AppTheme.typography.body2,
+                color = AppTheme.colors.onSurface,
+            )
+        }
         // Main card content centered in the full available space
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -203,9 +223,9 @@ fun CardPanel(modifier: Modifier = Modifier) {
                                 .height(440.dp)
                                 .border(
                                     width = 2.dp,
-                                    color = MaterialTheme.colors.primary,
+                                    color = AppTheme.colors.primary,
                                     shape = RoundedCornerShape(10.dp),
-                                ).background(color = MaterialTheme.colors.background)
+                                ).background(color = AppTheme.colors.transparent)
                                 .padding(all = 20.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -217,7 +237,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                             "No cards in this deck",
                             style = TextStyle(fontSize = 18.sp),
                             textAlign = TextAlign.Center,
-                            color = MaterialTheme.colors.onSurface,
+                            color = AppTheme.colors.onSurface,
                         )
                         Spacer(modifier = Modifier.height(20.dp))
                         Button(
@@ -246,16 +266,10 @@ fun CardPanel(modifier: Modifier = Modifier) {
                                 .rotate(animatedOffset.x / 80.0f)
                                 .border(
                                     width = 2.dp,
-                                    color = MaterialTheme.colors.primary,
+                                    color = AppTheme.colors.primary,
                                     shape = RoundedCornerShape(10.dp),
-                                ).background(
-                                    color =
-                                        if (animatedColor == Color.Transparent) {
-                                            MaterialTheme.colors.background
-                                        } else {
-                                            animatedColor
-                                        },
-                                ).padding(all = 20.dp),
+                                ).background(color = animatedColor)
+                                .padding(all = 20.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         if (isEditing.value) {
@@ -264,7 +278,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                                 value = frontText,
                                 colors =
                                     TextFieldDefaults.textFieldColors(
-                                        textColor = MaterialTheme.colors.onSurface,
+                                        textColor = AppTheme.colors.onSurface,
                                     ),
                                 onValueChange = { frontText = it },
                                 label = { Text("Front") },
@@ -281,7 +295,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                                 value = backText,
                                 colors =
                                     TextFieldDefaults.textFieldColors(
-                                        textColor = MaterialTheme.colors.onSurface,
+                                        textColor = AppTheme.colors.onSurface,
                                     ),
                                 onValueChange = { backText = it },
                                 label = { Text("Back") },
@@ -337,7 +351,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                                     Text(
                                         card.front,
                                         modifier = Modifier.weight(1f),
-                                        color = MaterialTheme.colors.onSurface,
+                                        color = AppTheme.colors.onSurface,
                                     )
                                     Row(
                                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -345,7 +359,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                                         Icon(
                                             imageVector = Icons.Default.Edit,
                                             contentDescription = "Edit",
-                                            tint = MaterialTheme.colors.primary,
+                                            tint = AppTheme.colors.primary,
                                             modifier =
                                                 Modifier
                                                     .size(24.dp)
@@ -356,7 +370,7 @@ fun CardPanel(modifier: Modifier = Modifier) {
                                         Icon(
                                             imageVector = Icons.Default.Delete,
                                             contentDescription = "Delete",
-                                            tint = MaterialTheme.colors.error,
+                                            tint = AppTheme.colors.error,
                                             modifier =
                                                 Modifier
                                                     .size(24.dp)
@@ -370,8 +384,19 @@ fun CardPanel(modifier: Modifier = Modifier) {
                                 if (isFlipped.value) {
                                     Text(
                                         text = card.back,
-                                        color = MaterialTheme.colors.onSurface,
+                                        color = AppTheme.colors.onSurface,
                                         modifier = Modifier.testTag(CardPanelTestTags.VIEW_BACK),
+                                    )
+                                }
+
+                                // A review status indicator in the bottom-right corner
+                                Spacer(modifier = Modifier.weight(1f))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.End,
+                                ) {
+                                    ReviewStatusIndicator(
+                                        nextReview = card.nextReview,
                                     )
                                 }
                             }
@@ -381,12 +406,29 @@ fun CardPanel(modifier: Modifier = Modifier) {
             }
         }
 
+        // Grade buttons positioned below the card area
+        if (hasCards.value && !isEditing.value && currentCard.value != null) {
+            GradeButtons(
+                onGrade = { grade ->
+                    coroutineScope.launch {
+                        cardViewModel.gradeCard(grade)
+                    }
+                },
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 80.dp), // Space for DeckInfoPanel below
+            )
+        }
+
         // Position the DeckInfoPanel at the bottom, independent of card positioning
         currentDeck.value?.value?.let { deck ->
             DeckInfoPanel(
                 deck = deck,
                 totalCount = totalCardCount.value,
-                learnedCount = learnedCardCount.value,
+                reviewedCount = reviewedCardCount.value,
+                dueCount = dueCardCount.value,
                 modifier = Modifier.align(Alignment.BottomCenter),
             )
         }
@@ -395,7 +437,6 @@ fun CardPanel(modifier: Modifier = Modifier) {
 
 // For multiline fields, Tab doesn't work as expected, so we need to move focus manually
 // see https://github.com/JetBrains/compose-multiplatform/blob/master/tutorials/Tab_Navigation/README.md#a-possible-workaround
-@OptIn(ExperimentalComposeUiApi::class)
 fun Modifier.moveFocusOnTab() =
     composed {
         val focusManager = LocalFocusManager.current

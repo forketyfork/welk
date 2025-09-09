@@ -1,5 +1,7 @@
 package me.forketyfork.welk.presentation
 
+import me.forketyfork.welk.domain.ReviewGrade
+
 sealed class CardAction {
     data object Flip : CardAction()
 
@@ -26,4 +28,8 @@ sealed class CardAction {
     ) : CardAction()
 
     data object CreateNewCardInCurrentDeck : CardAction()
+
+    data class GradeCard(
+        val grade: ReviewGrade,
+    ) : CardAction()
 }

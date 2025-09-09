@@ -3,7 +3,6 @@ package me.forketyfork.welk.components
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
@@ -23,6 +22,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import me.forketyfork.welk.theme.AppTheme
 import me.forketyfork.welk.vm.DesktopLoginViewModel
 import me.forketyfork.welk.vm.LoginViewModel
 import org.koin.compose.viewmodel.koinViewModel
@@ -49,15 +49,15 @@ fun LoginView(modifier: Modifier = Modifier) {
     ) {
         Text(
             text = "Welkome\uD83C\uDF42",
-            style = MaterialTheme.typography.h1,
-            color = MaterialTheme.colors.primary,
+            style = AppTheme.typography.h1,
+            color = AppTheme.colors.primary,
             textAlign = TextAlign.Center,
         )
         OutlinedTextField(
             value = username,
             colors =
                 TextFieldDefaults.textFieldColors(
-                    textColor = MaterialTheme.colors.onSurface,
+                    textColor = AppTheme.colors.onSurface,
                 ),
             onValueChange = { username = it },
             label = { Text("Username") },
@@ -72,7 +72,7 @@ fun LoginView(modifier: Modifier = Modifier) {
             value = password,
             colors =
                 TextFieldDefaults.textFieldColors(
-                    textColor = MaterialTheme.colors.onSurface,
+                    textColor = AppTheme.colors.onSurface,
                 ),
             onValueChange = { password = it },
             label = { Text("Password") },
@@ -93,7 +93,7 @@ fun LoginView(modifier: Modifier = Modifier) {
         }
         Text(
             text = if (loginError.value) "Invalid username or password" else "",
-            color = MaterialTheme.colors.error,
+            color = AppTheme.colors.error,
             modifier = Modifier.padding(vertical = 16.dp),
         )
     }

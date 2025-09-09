@@ -4,7 +4,6 @@ package me.forketyfork.welk
 
 import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasTextExactly
 import androidx.compose.ui.test.onNodeWithTag
@@ -23,7 +22,6 @@ import me.forketyfork.welk.components.DeckItemTestTags
 import org.junit.Test
 import org.koin.test.KoinTest
 
-@OptIn(ExperimentalTestApi::class)
 class CardInteractionTest : KoinTest {
     @Test
     fun canViewAndFlipCards() =

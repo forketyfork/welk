@@ -20,7 +20,6 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
@@ -44,6 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import me.forketyfork.welk.presentation.CardAction
+import me.forketyfork.welk.theme.AppTheme
 import me.forketyfork.welk.vm.DesktopCardViewModel
 import me.forketyfork.welk.vm.DesktopLoginViewModel
 import me.forketyfork.welk.vm.ThemeViewModel
@@ -80,7 +80,7 @@ fun SidePanel(
             modifier
                 .width(width.dp)
                 .fillMaxHeight()
-                .background(MaterialTheme.colors.surface),
+                .background(AppTheme.colors.transparent),
     ) {
         Column(
             modifier =
@@ -96,8 +96,8 @@ fun SidePanel(
                         .fillMaxWidth()
                         .padding(bottom = 16.dp)
                         .testTag(SidePanelTestTags.APP_TITLE),
-                style = MaterialTheme.typography.h1,
-                color = MaterialTheme.colors.primary,
+                style = AppTheme.typography.h1,
+                color = AppTheme.colors.primary,
                 textAlign = TextAlign.Center,
             )
 
@@ -107,8 +107,8 @@ fun SidePanel(
             // Deck list title
             Text(
                 text = "Decks",
-                style = MaterialTheme.typography.h3,
-                color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
+                style = AppTheme.typography.h3,
+                color = AppTheme.colors.textSecondary,
                 modifier = Modifier.testTag(SidePanelTestTags.DECK_LIST_TITLE),
             )
 
@@ -192,7 +192,7 @@ fun SidePanel(
                     Icon(
                         imageVector = themeMode.icon,
                         contentDescription = themeMode.contentDescription,
-                        tint = MaterialTheme.colors.primary,
+                        tint = AppTheme.colors.primary,
                     )
                 }
 
@@ -204,7 +204,7 @@ fun SidePanel(
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Add Deck",
-                        tint = MaterialTheme.colors.primary,
+                        tint = AppTheme.colors.primary,
                     )
                 }
 
@@ -221,7 +221,7 @@ fun SidePanel(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                         contentDescription = "Logout",
-                        tint = MaterialTheme.colors.primary,
+                        tint = AppTheme.colors.primary,
                     )
                 }
             }
@@ -341,7 +341,7 @@ fun SidePanel(
                                     onWidthChange(newWidth)
                                 }
                             },
-                    ).background(MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
+                    ).background(AppTheme.colors.divider),
         )
     }
 }

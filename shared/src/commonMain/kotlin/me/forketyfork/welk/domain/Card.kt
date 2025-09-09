@@ -2,6 +2,7 @@ package me.forketyfork.welk.domain
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlin.time.Instant
 
 /**
  * Data class representing a single flashcard with front and back.
@@ -15,7 +16,10 @@ data class Card(
     val deckId: String,
     val front: String,
     val back: String,
-    var learned: Boolean = false,
+    // Ordered list of review records, sorted by timestamp ascending
+    val reviews: List<CardReview> = emptyList(),
+    // Nullable timestamp indicating when the card should next be reviewed
+    val nextReview: Instant? = null,
     // Position within the deck for ordering
     val position: Int = 0,
 )

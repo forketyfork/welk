@@ -1,7 +1,6 @@
 package me.forketyfork.welk
 
 import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasTextExactly
 import androidx.compose.ui.test.onNodeWithTag
@@ -19,11 +18,10 @@ import org.junit.Test
 import org.koin.test.KoinTest
 
 class CreateNewCardTest : KoinTest {
-    @OptIn(ExperimentalTestApi::class)
     @Test
     fun canCreateNewCard() =
         runComposeUiTest {
-            // Get test credentials and set up the app with clean database
+            // Get test credentials and set up the app with a clean database
             val (testUsername, testPassword) = getTestCredentials()
             setupAppWithCleanDatabase(this, testUsername, testPassword)
 
@@ -42,7 +40,7 @@ class CreateNewCardTest : KoinTest {
                 onNodeWithTag(DeckItemTestTags.DECK_NAME_TEMPLATE.format(testDeckId)).performClick()
 
                 // Wait until the deck is selected and verify card count
-                waitUntilExactlyOneExists(hasTextExactly("3 cards, 0 learned"))
+                waitUntilExactlyOneExists(hasTextExactly("3 cards, 0 reviewed, 3 due"))
                 waitUntilExactlyOneExists(hasTextExactly("Test deck for card creation"))
 
                 // Add a new card to the deck
@@ -69,7 +67,7 @@ class CreateNewCardTest : KoinTest {
                 waitUntilExactlyOneExists(hasTextExactly("New Back Text"))
 
                 // Verify that the number of cards increased to 4
-                waitUntilExactlyOneExists(hasTextExactly("4 cards, 0 learned"))
+                waitUntilExactlyOneExists(hasTextExactly("4 cards, 0 reviewed, 4 due"))
                 waitUntilExactlyOneExists(hasTextExactly("Test deck for card creation"))
 
                 // Delete the newly created card
@@ -78,7 +76,7 @@ class CreateNewCardTest : KoinTest {
                 onNodeWithTag(CardPanelTestTags.CONFIRM_DELETE_BUTTON).performClick()
 
                 // Verify the number of cards is back to 3
-                waitUntilExactlyOneExists(hasTextExactly("3 cards, 0 learned"))
+                waitUntilExactlyOneExists(hasTextExactly("3 cards, 0 reviewed, 3 due"))
             } finally {
                 // Clean up: delete the test deck if it was created
                 testDeckId?.let { deckId ->

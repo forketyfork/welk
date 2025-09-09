@@ -1,6 +1,5 @@
 package me.forketyfork.welk.components
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.TooltipArea
 import androidx.compose.foundation.TooltipPlacement
 import androidx.compose.foundation.background
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -30,15 +28,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.StateFlow
 import me.forketyfork.welk.domain.Deck
+import me.forketyfork.welk.theme.AppTheme
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DeckItem(
     deck: StateFlow<Deck>,
@@ -69,7 +66,7 @@ fun DeckItem(
                     .fillMaxWidth()
                     .padding(vertical = 4.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(if (isSelected) MaterialTheme.colors.primary.copy(alpha = 0.1f) else Color.Transparent)
+                    .background(if (isSelected) AppTheme.colors.selection else AppTheme.colors.transparent)
                     .clickable { onClick() }
                     .padding(start = (12 + level * 16).dp, end = 12.dp, top = 8.dp, bottom = 8.dp)
                     .testTag(DeckItemTestTags.DECK_NAME_TEMPLATE.format(deckState.id)),
@@ -95,7 +92,7 @@ fun DeckItem(
                                     Icons.AutoMirrored.Filled.KeyboardArrowRight
                                 },
                             contentDescription = if (isExpanded) "Collapse" else "Expand",
-                            tint = MaterialTheme.colors.onSurface,
+                            tint = AppTheme.colors.onSurface,
                             modifier = Modifier.size(16.dp),
                         )
                     }
@@ -113,7 +110,7 @@ fun DeckItem(
                             Surface(
                                 elevation = 4.dp,
                                 shape = RoundedCornerShape(4.dp),
-                                color = MaterialTheme.colors.surface,
+                                color = AppTheme.colors.transparent,
                             ) {
                                 Box(
                                     modifier =
@@ -122,7 +119,7 @@ fun DeckItem(
                                 ) {
                                     Text(
                                         text = deckState.name,
-                                        color = MaterialTheme.colors.onSurface,
+                                        color = AppTheme.colors.onSurface,
                                     )
                                 }
                             }
@@ -135,8 +132,8 @@ fun DeckItem(
                     ) {
                         Text(
                             text = deckState.name,
-                            style = MaterialTheme.typography.body1,
-                            color = if (isSelected) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface,
+                            style = AppTheme.typography.body1,
+                            color = if (isSelected) AppTheme.colors.primary else AppTheme.colors.onSurface,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
@@ -162,7 +159,7 @@ fun DeckItem(
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = "Add Deck",
-                            tint = MaterialTheme.colors.secondary,
+                            tint = AppTheme.colors.secondary,
                             modifier = Modifier.size(18.dp),
                         )
                     }
@@ -181,7 +178,7 @@ fun DeckItem(
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = "Add Card",
-                            tint = MaterialTheme.colors.primary,
+                            tint = AppTheme.colors.primary,
                             modifier = Modifier.size(18.dp),
                         )
                     }
@@ -200,7 +197,7 @@ fun DeckItem(
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = "Delete Deck",
-                            tint = MaterialTheme.colors.error,
+                            tint = AppTheme.colors.error,
                             modifier = Modifier.size(18.dp),
                         )
                     }

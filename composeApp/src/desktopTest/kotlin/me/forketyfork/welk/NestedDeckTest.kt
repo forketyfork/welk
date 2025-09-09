@@ -1,6 +1,5 @@
 package me.forketyfork.welk
 
-import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.hasTextExactly
@@ -16,11 +15,10 @@ import org.junit.Test
 import org.koin.test.KoinTest
 
 class NestedDeckTest : KoinTest {
-    @OptIn(ExperimentalTestApi::class)
     @Test
     fun canCreateAndExpandNestedDecks() =
         runComposeUiTest {
-            // Get test credentials and set up the app with clean database
+            // Get test credentials and set up the app with a clean database
             val (testUsername, testPassword) = getTestCredentials()
             setupAppWithCleanDatabase(this, testUsername, testPassword)
 

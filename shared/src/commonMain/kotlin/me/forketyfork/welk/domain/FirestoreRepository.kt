@@ -8,18 +8,21 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import me.forketyfork.welk.Platform
+import me.forketyfork.welk.domain.sra.SimpleIntervalAlgorithm
 import kotlin.time.Clock
+import kotlin.time.Instant
 
 class FirestoreRepository(
     val platform: Platform,
 ) : CardRepository,
     DeckRepository {
     companion object {
-        private val logger = Logger.Companion.withTag("FirestoreRepository")
+        private val logger = Logger.withTag("FirestoreRepository")
     }
 
     private val firestore: FirebaseFirestore = platform.initializeFirestore()
     private val users = firestore.collection("users")
+    private val spacedRepetitionAlgorithm = SimpleIntervalAlgorithm()
 
     private val userDocument
         get() =
@@ -166,21 +169,41 @@ class FirestoreRepository(
         return cardWithId
     }
 
-    override suspend fun updateCardLearnedStatus(
+    override suspend fun addCardReview(
         cardId: String,
         deckId: String,
-        learned: Boolean,
-    ) {
+        grade: ReviewGrade,
+    ): Instant {
         // Check if card ID or deck ID are invalid
         if (cardId.isEmpty() || deckId.isEmpty()) {
-            logger.e { "Error: Cannot update card with empty ID or deckId" }
-            return
+            logger.e { "Error: Cannot add review to card with empty ID or deckId" }
+            throw IllegalArgumentException("Card ID and Deck ID cannot be empty")
         }
 
         val cardsCollection = decksCollection.document(deckId).collection("cards")
         val card = getCardById(deckId, cardId)
-        val updatedCard = card.copy()
-        updatedCard.learned = learned
+        val currentTime = Instant.fromEpochMilliseconds(Clock.System.now().toEpochMilliseconds())
+
+        // Create a new review record
+        val newReview = CardReview(timestamp = currentTime, grade = grade)
+
+        // Add a review to the existing reviews list (maintaining chronological order)
+        val updatedReviews = card.reviews + newReview
+
+        // Calculate the next review time using the algorithm
+        val nextReviewTime =
+            spacedRepetitionAlgorithm.calculateNextReview(
+                reviews = updatedReviews,
+                currentGrade = grade,
+                currentTime = currentTime,
+            )
+
+        // Update card with new review and next review time
+        val updatedCard =
+            card.copy(
+                reviews = updatedReviews,
+                nextReview = nextReviewTime,
+            )
 
         // Use `set` instead of `update` to ensure the operation works for all cards
         cardsCollection.document(cardId).set(updatedCard)
@@ -189,6 +212,8 @@ class FirestoreRepository(
         val deck = getDeckById(deckId)
         val updatedDeck = deck.copy(lastModified = Clock.System.now().toEpochMilliseconds())
         decksCollection.document(deckId).set(updatedDeck)
+
+        return nextReviewTime
     }
 
     override suspend fun updateCardContent(

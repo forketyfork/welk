@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import me.forketyfork.welk.theme.AppColors
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
@@ -62,7 +63,7 @@ class DesktopCardAnimationManager : CommonCardAnimationManager() {
             CardAnimationState(
                 idx = idx,
                 offset = (1600).dp,
-                targetColor = Color.Green,
+                targetColor = AppColors.animationGreenLight,
             )
     }
 
@@ -71,7 +72,7 @@ class DesktopCardAnimationManager : CommonCardAnimationManager() {
             CardAnimationState(
                 idx = idx,
                 offset = (-1600).dp,
-                targetColor = Color.Red,
+                targetColor = AppColors.animationRedLight,
             )
     }
 }
@@ -79,5 +80,5 @@ class DesktopCardAnimationManager : CommonCardAnimationManager() {
 data class CardAnimationState(
     val idx: Int = -1,
     val offset: Dp = 0.dp,
-    val targetColor: Color = Color.Transparent,
+    val targetColor: Color = AppColors.transparent,
 )

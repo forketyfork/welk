@@ -11,6 +11,14 @@ plugins {
 kotlin {
     jvm("desktop")
 
+    compilerOptions {
+        freeCompilerArgs.addAll(
+            "-opt-in=kotlin.time.ExperimentalTime",
+            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
+            "-opt-in=androidx.compose.ui.test.ExperimentalTestApi",
+        )
+    }
+
     sourceSets {
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -38,6 +46,7 @@ kotlin {
             implementation(compose.uiTest)
         }
 
+        @Suppress("unused")
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
@@ -45,6 +54,7 @@ kotlin {
             }
         }
 
+        @Suppress("unused")
         val desktopTest by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)

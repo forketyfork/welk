@@ -5,12 +5,12 @@ repository.
 
 ## Behavioral Guidelines
 
-- Always implement complete, working code - never write stub comments instead of actual implementation
+- Always implement complete, working code; never write stub comments instead of actual implementation
 - Verify that changes don't break the build by running `./gradlew :composeApp:build`
 - Run desktop tests with `./gradlew :composeApp:desktopTest` before finalizing tasks
 - Run code quality checks with `./gradlew ktlintCheck detekt` before finalizing tasks
 - Plan your approach first, then execute systematically
-- Stay focused on the requested task - avoid scope creep or unrelated changes
+- Stay focused on the requested task — avoid scope creep or unrelated changes
 
 ## Project Overview
 
@@ -101,20 +101,20 @@ Main user flow:
 
 1. Users authenticate through the login screen
 2. After successful login, cards are fetched from Firestore
-3. User can flip cards to see front/back
+3. The user can flip cards to see front/back
 4. User can swipe right (learned) or left (not learned)
 5. User can edit card content by tapping the edit button (pencil icon)
 6. User can delete cards by tapping the delete button and confirming
 7. User can create new cards when a deck is empty or by clicking "Add Card"
 8. Card status and content are updated in Firestore
-9. Next card is displayed
-10. User can log out at any time using the logout button in the side panel
+9. The next card is displayed
+10. The user can log out at any time using the logout button in the side panel
 
 For new card creation:
 
 1. A temporary card is created in memory (not in the database)
 2. The card is only saved to Firestore when the user clicks "Save"
-3. If the user clicks "Cancel", no database write occurs
+3. If the user clicks Cancel, no database write occurs
 
 ## Dependencies
 
@@ -147,11 +147,13 @@ Available log levels:
 ## Testing
 
 ### Guidelines
+
 - Focus unit tests on critical business logic that could break or change
 - Prefer integration tests over unit tests that simply mirror implementation details
 - Avoid tests that just verify method calls without testing actual behavior
 
 ### Commands
+
 - Run desktop tests: `./gradlew :composeApp:desktopTest`
 - Always run tests before finalizing any task or feature
 
@@ -207,6 +209,7 @@ Code formatting and style checking for Kotlin. Configuration is in `.editorconfi
 ## Development Flow
 
 ### General Process
+
 1. **Plan**: Understand the requirements and plan your approach
 2. **Implement**: Write code following the established patterns
 3. **Format**: Auto-format code with `./gradlew ktlintFormat`
@@ -216,20 +219,27 @@ Code formatting and style checking for Kotlin. Configuration is in `.editorconfi
 7. **Review**: Ensure code follows project conventions
 
 ### Code Organization
+
 - Maximize code reuse between iOS and Desktop by placing shared logic in the `shared` module
 - Use Kermit logging instead of println statements for better debugging
+
 ### UI Implementation
+
 When adding new UI functionality:
+
 1. **Domain Layer**: Implement the data model first
-2. **ViewModel Layer**: Add necessary state handling  
+2. **ViewModel Layer**: Add necessary state handling
 3. **UI Layer**: Implement platform-specific UI components
 
 ### Best Practices
+
 - Always provide confirmation dialogs for destructive actions (like delete)
 - Delay database operations to minimize unnecessary writes
 
 ### iOS Development
+
 When making changes to iOS code:
+
 1. **Build shared module first**: `./gradlew :shared:build`
 2. **Test Swift compilation**:
    ```bash
@@ -237,47 +247,54 @@ When making changes to iOS code:
    -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.4' build
    ```
 3. **Kotlin-Swift interop considerations**:
-   - Use optional casting (`as?`) and null checks for Kotlin types
-   - `Pair<String, String>` exposes `first` and `second` properties as `NSString?`
-   - Handle type conversions carefully
+    - Use optional casting (`as?`) and null checks for Kotlin types
+    - `Pair<String, String>` exposes `first` and `second` properties as `NSString?`
+    - Handle type conversions carefully
 
 ## Library Management
 
 ### Dependency Management
+
 - All dependencies must be defined in `gradle/libs.versions.toml`
 - Follow this process when adding new libraries:
-  1. Add library details to `libs.versions.toml` under the appropriate section
-  2. Reference the library in build files using `libs.some.library` syntax
-  3. Use `version.ref = "some-version"` format for version references
+    1. Add library details to `libs.versions.toml` under the appropriate section
+    2. Reference the library in build files using `libs.some.library` syntax
+    3. Use `version.ref = "some-version"` format for version references
 
 ## Common Patterns
 
 ### Entity Creation
+
 - Create entities as temporary in-memory objects
-- Save to Firestore only when user explicitly confirms
+- Save to Firestore only when the user explicitly confirms
 - Clear form fields after cancellation or successful save
 
 ### Empty State Handling
-- Display appropriate empty state UI when decks contain no cards
+
+- Display an appropriate empty state UI when decks contain no cards
 - Provide direct actions for content creation
 - Update `hasCards` state flow to trigger proper UI changes
 
 ### User Authentication
-- Show login screen for unauthenticated users
+
+- Show the login screen for unauthenticated users
 - Manage authentication state through `LoginViewModel`
 - Provide logout functionality in the side panel
-- Redirect to login screen after logout
+- Redirect to the login screen after logout
 
 ### Error Handling
+
 - Wrap repository operations in try-catch blocks
 - Log errors using appropriate Kermit log levels
 - Implement fallback behavior for failed operations
 - Provide user-facing feedback for error states
 
 ### Kotlin Guidelines
+
 - Use file-level annotations for Kotlin opt-ins when needed
 
 ### Concurrency
+
 - Structure code using functional reactive programming principles
 - Derive state from existing flows using Kotlin's flow operations rather than creating new flows
 - Use Kotlin's `StateFlow` for reactive patterns - avoid Android-specific reactive features
@@ -285,7 +302,14 @@ When making changes to iOS code:
 - Implement proper reactive patterns that respond to specific conditions
 
 ### Comments
+
 - Write clear, accessible, and grammatically correct comments
 - Use simple language and avoid complex terminology
-- Focus on explaining "why" rather than "what" - don't duplicate what's already visible in code
-- Comment complex logic, business rules, and non-obvious design decisions 
+- Focus on explaining "why" rather than "what" — don't duplicate what's already visible in code
+- Comment complex logic, business rules, and non-obvious design decisions
+
+### Theme
+
+- Always extract all typography and color settings to `AppTheme`
+- Always use `AppTheme` instead of referencing `MaterialTheme` directly
+- Always provide both the light and the dark theme colors

@@ -83,3 +83,4 @@ Code formatting and style checking for Kotlin. Configuration is in `.editorconfi
 - [ ] Spelling / writing modes
 - [ ] Import from other similar tools (Anki, Mochi...)
 - [ ] A word card should show connections to related words
+- [ ] Kanji writing order on iPad

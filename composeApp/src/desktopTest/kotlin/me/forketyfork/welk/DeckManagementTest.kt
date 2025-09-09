@@ -3,7 +3,6 @@
 package me.forketyfork.welk
 
 import androidx.compose.ui.InternalComposeUiApi
-import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.hasTextExactly
@@ -20,11 +19,10 @@ import org.junit.Test
 import org.koin.test.KoinTest
 
 class DeckManagementTest : KoinTest {
-    @OptIn(ExperimentalTestApi::class)
     @Test
     fun canCreateAndDeleteDeck() =
         runComposeUiTest {
-            // Get test credentials and set up the app with clean database
+            // Get test credentials and set up the app with a clean database
             val (testUsername, testPassword) = getTestCredentials()
             setupAppWithCleanDatabase(this, testUsername, testPassword)
 
@@ -78,7 +76,7 @@ class DeckManagementTest : KoinTest {
                 waitUntilExactlyOneExists(hasTextExactly("Test Front"))
 
                 // Verify that the deck now shows 1 card
-                waitUntilExactlyOneExists(hasTextExactly("1 cards, 0 learned"))
+                waitUntilExactlyOneExists(hasTextExactly("1 cards, 0 reviewed, 1 due"))
                 waitUntilExactlyOneExists(hasTextExactly("A test deck for verification"))
 
                 // Delete the deck via the delete button tagged with the deck id
@@ -100,10 +98,9 @@ class DeckManagementTest : KoinTest {
 
                 // Clean up initial decks
                 deleteTestDeck(initialDeck1)
-                deleteTestDeck(initialDeck2)
-
-                // Verify initial decks are deleted
                 waitUntilDoesNotExist(hasTextExactly("Initial Deck 1"))
+
+                deleteTestDeck(initialDeck2)
                 waitUntilDoesNotExist(hasTextExactly("Initial Deck 2"))
             } finally {
                 // Clean up: delete the test deck if it still exists

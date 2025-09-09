@@ -36,7 +36,8 @@ enum class ThemeMode(
     ) {
         @Composable
         override fun isDarkTheme(): Boolean = true
-    }, ;
+    },
+    ;
 
     @Composable
     abstract fun isDarkTheme(): Boolean
