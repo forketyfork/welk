@@ -9,7 +9,6 @@ ktor-version = "3.3.0" # https://github.com/ktorio/ktor/releases
 skie = "0.10.6" # https://github.com/touchlab/SKIE/releases
 kotlinx-serialization-json = "1.9.0" # https://github.com/Kotlin/kotlinx.serialization/releases
 firebase-kotlin-sdk = "2.3.0" # https://github.com/GitLiveApp/firebase-kotlin-sdk/releases
-compose-material = "1.8.2" # https://search.maven.org/artifact/org.jetbrains.compose.material/material
 kermit = "2.0.8" # https://github.com/touchlab/Kermit/releases/
 koin = "4.1.1" # https://github.com/InsertKoinIO/koin/releases
 detekt = "1.23.8" # https://github.com/detekt/detekt/releases
@@ -23,7 +22,7 @@ ktlint-version = "1.7.1" # https://github.com/pinterest/ktlint/releases
 androidx-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-viewmodel-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
-compose-material-ripple = { group = "org.jetbrains.compose.material", name = "material-ripple", version.ref = "compose-material" }
+compose-material-ripple = { group = "org.jetbrains.compose.material", name = "material-ripple", version.ref = "compose-multiplatform" }
 
 # kotlinx libraries
 kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
